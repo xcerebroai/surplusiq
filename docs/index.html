@@ -873,16 +873,23 @@
       ? '<span class="status-badge dv-positive" title="Real debt from court judgment PDF · positive surplus · not yet disbursement-filed.">📋 Verified</span> '
       : '';
     if (!cls) {
-      // FP-15: replace the bland "—" with a county-aware explanation.
-      // 64% of leads have no docket classification (FL counties have no
-      // docket scraper at all, Franklin/Hamilton are Cloudflare-blocked).
-      // Rendering an em-dash on those rows looked like a UI bug.
-      // The two cases:
-      //  (a) PR-fallback county (Franklin/Hamilton, Miami-Dade) — point Eric
-      //      at the clerk-portal manual-verify link in the Clerk Docket column.
-      //  (b) FL county we never scrape dockets for — say so honestly.
+      // (a) Docket WAS checked, no post-sale kill, no debt grade (Franklin
+      //     metadata-only: portal exposes no judgment amount). Honest, covered.
+      if (l.docket_evidence_level === 'docket_checked' && l.docket_covered !== false) {
+        return dvPrefix + '<span class="status-badge status-none" title="Docket checked — no post-sale kill signals. This county\'s portal exposes no judgment amount, so there is no debt figure; the lead stays apparent (auction math), not confirmed.">📋 Docket-checked · no kill</span>';
+      }
+      // (b) LOCAL-RUN county whose docket data does NOT cover this case. It is
+      //     NOT docket-verified — the local run lags the daily auction feed.
+      if (l.local_run_county && l.docket_covered === false) {
+        if (l.docket_last_scraped) {
+          return dvPrefix + '<span class="status-badge status-red" title="This county is scraped by a LOCAL manual run, not the daily cron. This case is NOT covered by the last run (' + l.docket_last_scraped + '), so the docket layer is stale for it — NOT docket-verified. Re-run the local scraper, or use the Clerk Docket link.">⚠ docket stale · last run ' + l.docket_last_scraped + '</span>';
+        }
+        return dvPrefix + '<span class="status-badge status-none" title="Portal requires a per-search CAPTCHA solve — parked, not scraped. Docket NOT verified; this is auction math only. Use the Clerk Docket link to check manually.">docket-not-verified · portal-gated</span>';
+      }
+      // (c) Portal-inaccessible county (Cloudflare, no authorized data feed:
+      //     Hamilton). Not docket-verified — manual-verify link only.
       if (l.requires_manual_docket_verify) {
-        return dvPrefix + '<span class="status-badge status-none" title="Cloudflare-blocked county — use the Verify ⚠ link in the Clerk Docket column to check the docket manually.">🔒 Manual verify</span>';
+        return dvPrefix + '<span class="status-badge status-none" title="Portal-inaccessible (Cloudflare, no authorized data feed). Docket NOT verified — use the Verify ⚠ link in the Clerk Docket column to check manually.">🔒 docket-not-verified · portal-inaccessible</span>';
       }
       if (l.state === 'FL') {
         return dvPrefix + '<span class="status-badge status-none" title="No FL docket scraper yet. Surplus number is FL opening-bid math (judgment amount). Use the Clerk Docket link to verify kill signals before acting.">no docket scrape</span>';

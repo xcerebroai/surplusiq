@@ -349,6 +349,45 @@ def export_dashboard_data():
     # surfaces these prominently with a manual-verify link.
     CF_BLOCKED = {"franklin-oh", "hamilton-oh"}
 
+    # Local-run counties (Franklin, Orange) refresh only on a manual local run,
+    # while the auction feed refreshes daily via cron. Compute per-county docket
+    # freshness so stale/uncovered cases are labeled honestly and never shown as
+    # verified. A county is STALE if the auction feed contains cases its docket
+    # JSONL doesn't cover, or the last scrape is older than the refresh window.
+    try:
+        from core.dockets import LOCAL_RUN_COUNTIES
+    except Exception:
+        LOCAL_RUN_COUNTIES = set()
+    _dockets_dir = PROJECT_ROOT / "data" / "dockets"
+    _stale_cutoff = (date.today() - timedelta(days=LEAD_WINDOW_DAYS)).isoformat()
+    _local_status = {}
+    for _cid in LOCAL_RUN_COUNTIES:
+        _covered, _last = set(), ""
+        for _f in sorted(_dockets_dir.glob(f"{_cid}_*.jsonl")):
+            try:
+                for _line in _f.open():
+                    try:
+                        _r = json.loads(_line)
+                    except Exception:
+                        continue
+                    _cn = _r.get("case_number", "")
+                    if _cn:
+                        _covered.add(_normalize_case_for_lookup(_cn))
+                    _sa = _r.get("scraped_at", "") or ""
+                    if _sa > _last:
+                        _last = _sa
+            except Exception:
+                continue
+        _auction = {_normalize_case_for_lookup(l.case_number) for l in leads if l.county_id == _cid}
+        _uncovered = _auction - _covered
+        _last_day = _last[:10]
+        _local_status[_cid] = {
+            "covered": _covered,
+            "last_scraped": _last_day,
+            "uncovered_count": len(_uncovered),
+            "stale": bool(_uncovered) or (not _last_day) or (_last_day < _stale_cutoff),
+        }
+
     for l in leads:
         cc = COUNTY_BY_ID.get(l.county_id)
         clerk_search_url = getattr(cc, "clerk_search_url", "") if cc else ""
@@ -413,6 +452,26 @@ def export_dashboard_data():
 
             "pr_match": False,
         }
+
+        # Local-run county freshness (Franklin/Orange). A case ABSENT from the
+        # county's docket JSONL is NOT docket-verified — it's uncovered by the
+        # last local run and must render honestly as stale, regardless of any
+        # other flag. Cron counties are implicitly covered by the daily scrape.
+        _lr = _local_status.get(l.county_id)
+        if _lr is not None:
+            _covered_here = _normalize_case_for_lookup(l.case_number) in _lr["covered"]
+            payload["local_run_county"]   = True
+            payload["docket_last_scraped"] = _lr["last_scraped"]
+            payload["docket_stale"]       = _lr["stale"]
+            payload["docket_covered"]     = _covered_here
+            if not _covered_here:
+                # Uncovered by the local docket run → never show as verified.
+                payload["requires_manual_docket_verify"] = True
+                if payload.get("docket_evidence_level") in ("", "docket_checked"):
+                    payload["docket_evidence_level"] = "stale_uncovered"
+        else:
+            payload["local_run_county"] = False
+            payload["docket_covered"]   = True
 
         pr_record = pr_lookup.get((l.county_id, l.case_number))
         if pr_record:
@@ -768,6 +827,14 @@ def export_dashboard_data():
         "by_state":  summary["by_state"],
         "by_county": summary["by_county"],
         "by_score":  summary["by_score"],
+
+        # Local-run county freshness (Franklin/Orange): last-scraped date + stale
+        # flag so the dashboard can warn when manual docket data lags the feed.
+        "local_run_status": {
+            cid: {"last_scraped": s["last_scraped"], "stale": s["stale"],
+                  "uncovered_count": s["uncovered_count"]}
+            for cid, s in _local_status.items()
+        },
 
         "top_5_confirmed_leads": _top5(confirmed),
         "top_5_estimated_leads": _top5(estimated),

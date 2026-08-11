@@ -103,6 +103,24 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/17/2026"
   },
   {
+    "county_id": "franklin-oh",
+    "county_name": "Franklin",
+    "state": "OH",
+    "case_number": "25CV7609 (18535)",
+    "address": "4087 BOYER RIDGE DRIVE",
+    "sale_date": "2026-07-17",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 87314.65,
+    "kill_label": "Sale vacated",
+    "kill_signals": [
+      "sale_vacated",
+      "withdrawn_from_sale"
+    ],
+    "kill_detail": "property withdrawn from sheriff sale after the sale (2026-07-22) \u2014 sale undone",
+    "docket_url": "https://fcdcfcjs.co.franklin.oh.us/CaseInformationOnline/",
+    "source_url": "https://franklin.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/17/2026"
+  },
+  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
