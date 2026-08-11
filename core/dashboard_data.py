@@ -370,6 +370,8 @@ def export_dashboard_data():
             "gross_surplus":    l.gross_surplus,
             "assessed_value":   l.assessed_value,
             "appraised_value":  getattr(l, "appraised_value", 0.0),
+            "sale_vs_appraised": getattr(l, "sale_vs_appraised", 0.0),
+            "mispriced_opener":  getattr(l, "mispriced_opener", False),
             "sale_date":        l.sale_date,
             "sale_datetime":    getattr(l, "sale_datetime", ""),
             "sold_to":          l.sold_to,

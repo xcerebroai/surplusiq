@@ -274,6 +274,15 @@ class Lead:
     evidence_level:   str = "unknown"
     pipeline_ready:   bool = False
 
+    # Appraised-value sanity signal (OH mortgage leads WITHOUT real docket debt).
+    # OH opening_bid should be the statutory 2/3-appraised value; an opener far
+    # below that (reduced-minimum second auction, or a data anomaly) makes
+    # gross_surplus = sale − opener NOT a credible surplus. Flag + show context;
+    # never suppress. Set by _flag_mispriced_opener; inert until appraised_value
+    # is populated (OH auction scrape).
+    mispriced_opener:    bool  = False
+    sale_vs_appraised:   float = 0.0   # final_sale_price / appraised_value
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -574,6 +583,36 @@ def assign_status_fields(lead) -> None:
 # ═══════════════════════════════════════════════════════════════════════
 # Public API
 # ═══════════════════════════════════════════════════════════════════════
+# Statutory OH first-auction opener = 2/3 (0.667) of appraised value. We flag an
+# opener below 90% of that floor — i.e. opening_bid < 0.60 × appraised. Reasoning:
+# real OH openers cluster EXACTLY at 2/3 appraised (observed ratio 1.00 across
+# every normal OH lead); an opener >10% under the statutory floor means a
+# reduced-minimum second auction (Ohio allows no/low minimum after a failed
+# first sale) or a data anomaly. In either case the opener no longer approximates
+# the debt, so gross_surplus = sale − opener is NOT a credible surplus. The 0.60
+# line sits well below the 0.667 normal cluster → zero false positives on normal
+# leads while catching genuine distortions (Franklin 25CV9562 at 0.067, Hamilton
+# A2505625 at 0.305). Err toward flagging (caution), never suppress.
+MISPRICED_OPENER_FLOOR = 0.60   # fraction of appraised below which the opener is anomalous
+
+
+def _flag_mispriced_opener(lead) -> None:
+    """OH mortgage leads WITHOUT real docket debt only. Leads that carry a
+    trustworthy docket debt figure (oh_mortgage_computed / _uncertain / tax /
+    FL opening) are left untouched — they already have a credible number.
+    Inert when appraised_value is 0 (not yet scraped)."""
+    if lead.state != "OH":
+        return
+    if (lead.debt_source or "") != "":        # any real debt provenance → skip
+        return
+    ap = getattr(lead, "appraised_value", 0.0) or 0.0
+    if ap <= 0 or lead.opening_bid <= 0:
+        return
+    lead.sale_vs_appraised = round((lead.final_sale_price or 0) / ap, 3)
+    if lead.opening_bid < MISPRICED_OPENER_FLOOR * ap:
+        lead.mispriced_opener = True
+
+
 def load_all_leads(
     min_surplus: float = 10_000,
     require_third_party: bool = True,
@@ -742,6 +781,7 @@ def load_all_leads(
                     _apply_docket_to_lead(lead, _docket, lead.county_id)
                 # Assign the verification status model (FP-6 gate)
                 assign_status_fields(lead)
+                _flag_mispriced_opener(lead)
                 leads.append(lead)
 
     leads.sort(key=lambda x: x.gross_surplus, reverse=True)

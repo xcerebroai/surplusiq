@@ -527,6 +527,7 @@
   /* FP-17 Item 1: OH-no-docket — visibly distinct "—" (not a missing
      field, but a deliberate "we don't know yet, click clerk link"). */
   .surplus-pending { color: #888; font-style: italic; cursor: help; }
+  .surplus-caution { color: var(--amber); font-weight: 600; cursor: help; }
   .surplus-apparent {
     display: block;
     color: var(--text-muted, #888);
@@ -839,7 +840,17 @@
     // real_surplus_source='oh_unverified' (best_real_surplus=null). Never show the
     // 2/3-appraised opening-bid number for those — render unverified.
     if (l.real_surplus_source === 'oh_unverified' || (state === 'OH' && !hasRealDebt)) {
-      return '<span class="surplus-pending" title="Docket debt not available — unverified. OH opening bid is the statutory 2/3-appraised value, NOT real debt. Use the Clerk Docket link to verify the actual judgment amount.">—</span>';
+      const ap = l.appraised_value || 0;
+      const ratioPct = ap > 0 ? Math.round((l.sale_vs_appraised || (l.final_sale_price / ap)) * 100) : null;
+      // Mispriced opener: opening bid far below the 2/3-appraised floor, so the
+      // gross surplus (sale − opener) is NOT credible. Flag amber caution.
+      if (l.mispriced_opener && ap > 0) {
+        return '<span class="surplus-caution" title="Opening bid is far below the statutory 2/3-appraised floor (reduced-minimum second auction or data anomaly), so the gross surplus is NOT a credible number. Sold ' + fmtMoney(l.final_sale_price) + ' vs appraised ' + fmtMoney(ap) + ' = ' + ratioPct + '% of appraised. No docket debt available — verify via the Clerk Docket link.">&#9888; caution — opener mispriced</span>'
+             + '<span class="surplus-apparent">sold ' + ratioPct + '% of appraised (' + fmtMoney(ap) + ')</span>';
+      }
+      const apCtx = ap > 0 ? ' Sold ' + fmtMoney(l.final_sale_price) + ' vs appraised ' + fmtMoney(ap) + ' (' + ratioPct + '% of appraised).' : '';
+      return '<span class="surplus-pending" title="Docket debt not available — unverified. OH opening bid is the statutory 2/3-appraised value, NOT real debt.' + apCtx + ' Use the Clerk Docket link to verify the actual judgment amount.">&mdash;</span>'
+           + (ap > 0 ? '<span class="surplus-apparent">appraised ' + fmtMoney(ap) + ' &middot; sold ' + ratioPct + '%</span>' : '');
     }
     const apparent = l.gross_surplus || 0;
     const best = (l.best_real_surplus !== undefined && l.best_real_surplus !== null)
