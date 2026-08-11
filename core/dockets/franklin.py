@@ -1,822 +1,212 @@
 """
-SurplusIQ — Franklin County Docket Scraper
+Franklin County (OH) docket scraper — AUTONOMOUS LOCAL, metadata-only, no debt.
 
-Franklin County uses the "Case Information Online" (CIO) portal at:
-  https://fcdcfcjs.co.franklin.oh.us/CaseInformationOnline/
+Franklin's Case Information Online portal is reachable and rich from a
+RESIDENTIAL IP but Cloudflare-challenges the datacenter (GitHub Actions) — see
+knowledge/blocked_counties.md. So Franklin runs LOCALLY and autonomously (no
+human solve, unlike Orange), and is skipped in the cloud cron via
+LOCAL_RUN_COUNTIES. It exposes NO judgment amount, so it NEVER emits a debt
+figure; its job is kill-signal detection (catch dead leads the auction "Sold"
+status hides) + owner extraction. Leads stay apparent_surplus, debt_source="".
 
-Key difference from Cuyahoga: Franklin does NOT show a structured
-"Prayer Amount" field. The real debt must be extracted from the
-Summary Judgment PDF filed in the docket.
+Built on the reusable ManualCountyScraper loop (core/dockets/manual_runner.py)
+with requires_human_solve=False. Classification is delegated to the
+ground-truthed, temporally-anchored core/dockets/franklin_classify.
 
-Navigation flow (expected):
+Verified DOM (data/samples/franklin/ci, 2026-08-11):
+  • landing is a disclaimer gate: acceptDisclaimer form, ACCEPT button.
+  • search form uses SEPARATE fields: #caseYear_nh (2-digit yr),
+    #caseType_nh (dropdown, 'CV'), #caseSeq_nh (6-digit zero-padded), #btnSearch.
+  • case detail: #defendant-container holds the DEFENDANT(S) table (homeowner);
+    docket events are dated 'MM/DD/YY DESCRIPTION <microfilm ref>'.
 
-  1. https://fcdcfcjs.co.franklin.oh.us/CaseInformationOnline/
-     → Conditions of Use page — must check "I agree" and click accept
-
-  2. Search page appears — paste full case number (e.g. "22CV5948")
-
-  3. Case detail page shows: case title, filing date, status, parties,
-     docket entries with links to PDFs
-
-  4. Scan docket entries for "JUDGMENT" / "DECREE" — open the PDF,
-     extract dollar amounts with pdfplumber
-
-Case number format from auction scraper:
-  Raw:     22CV5948 (16295)
-  Parsed:  year=2022, type=CV, number=5948
-  Stripped: "(16295)" is the auction batch ID
+Run it (residential machine):
+    source .venv/bin/activate && python3 -m core.dockets.franklin
 """
-
 from __future__ import annotations
 import re
-import asyncio
-import tempfile
-import os
 from datetime import datetime
 from typing import Optional
-from pathlib import Path
 
-from playwright.async_api import async_playwright, Page, TimeoutError as PWTimeout
+from playwright.async_api import Page, TimeoutError as PWTimeout
 
-from .base import DocketScraper, DocketResult, DocketEvent
-
+from .base import DocketResult
+from .manual_runner import ManualCountyScraper, run_manual_county
+from .franklin_classify import parse_docket_events, classify_franklin
 
 BASE_URL = "https://fcdcfcjs.co.franklin.oh.us/CaseInformationOnline"
 LANDING_URL = f"{BASE_URL}/"
 
+# The foreclosed homeowner is the FIRST defendant listed (individual, LLC, or
+# estate/"UNKNOWN HEIRS OF <name>"). The government/tax parties (treasurer,
+# state, HUD, etc.) are always secondary defendants — skip them if one somehow
+# leads. Verified across 13 real dockets: the first non-government defendant is
+# the homeowner every time. (Plaintiff banks live in #plaintiff-container, a
+# separate node, so they never appear here.)
+_GOVT = re.compile(
+    r"\b(TREASURER|STATE OF\b|UNITED STATES|SECRETARY OF HOUSING|DEPARTMENT OF|"
+    r"DEPT OF|CITY OF|COUNTY OF|INTERNAL REVENUE|OHIO STATE DEPARTMENT)\b",
+    re.I,
+)
+
 
 def parse_franklin_case_number(raw: str) -> Optional[dict]:
-    """
-    Parse a Franklin County case number into search components.
-
-    Accepts variations:
-      '22CV5948 (16295)'    -> {year: 2022, prefix: CV, number: 5948, search_text: '22CV5948'}
-      '22CV5948'            -> same
-      '24CV003247'          -> {year: 2024, prefix: CV, number: 3247, search_text: '24CV003247'}
-      '2024CV003247'        -> {year: 2024, prefix: CV, number: 3247, search_text: '24CV003247'}
-
-    Returns None if not parseable.
-    """
+    """Parse a Franklin case number into components.
+    '24CV9172 (18608)' / '2024CV009172' -> {year, prefix, number, search_text}."""
     if not raw:
         return None
-
-    # Strip auction suffix like " (16295)"
     cleaned = re.sub(r"\s*\([^)]*\)\s*$", "", raw.strip())
-    # Remove spaces/dashes but keep the core
     cleaned = re.sub(r"[-\s]", "", cleaned).upper()
-
-    # Try 2-digit year: YYCV####
     m = re.match(r"^(\d{2})(CV)(\d+)$", cleaned)
     if m:
         yr = int(m.group(1))
         year = 2000 + yr if yr <= 30 else 1900 + yr
-        return {
-            "year": year,
-            "prefix": m.group(2),
-            "number": int(m.group(3)),
-            "search_text": cleaned,  # e.g. "22CV5948"
-        }
-
-    # Try 4-digit year: YYYYCV####
+        return {"year": year, "prefix": m.group(2), "number": int(m.group(3)), "search_text": cleaned}
     m = re.match(r"^(\d{4})(CV)(\d+)$", cleaned)
     if m:
-        return {
-            "year": int(m.group(1)),
-            "prefix": m.group(2),
-            "number": int(m.group(3)),
-            "search_text": cleaned,
-        }
-
+        return {"year": int(m.group(1)), "prefix": m.group(2), "number": int(m.group(3)),
+                "search_text": cleaned}
     return None
 
 
-def extract_debt_from_pdf_bytes(pdf_bytes: bytes) -> Optional[float]:
-    """
-    Extract the judgment/debt amount from a foreclosure judgment PDF.
-
-    Strategy: scan the PDF text for dollar amounts near keywords like
-    "judgment", "decree", "total", "amount due", "principal".
-    Return the largest qualifying amount (likely the total judgment).
-    """
-    try:
-        import pdfplumber
-    except ImportError:
-        print("      ⚠ pdfplumber not installed — cannot parse PDF")
-        return None
-
-    import io
-    amounts = []
-    full_text = ""
-
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages[:10]:  # Cap at 10 pages
-                page_text = page.extract_text() or ""
-                full_text += page_text + "\n"
-    except Exception as e:
-        print(f"      ⚠ PDF parse error: {e}")
-        return None
-
-    if not full_text.strip():
-        return None
-
-    text_lower = full_text.lower()
-
-    # Look for dollar amounts near judgment-related keywords
-    # Pattern: keyword within 300 chars of a dollar amount
-    judgment_keywords = [
-        "judgment", "decree", "amount due", "principal",
-        "total amount", "sum of", "awarded", "ordered to pay",
-        "indebtedness", "balance due", "amount owing",
-    ]
-
-    # Find all dollar amounts in the text
-    dollar_pattern = re.compile(r"\$\s*([\d,]+(?:\.\d{2})?)")
-    for match in dollar_pattern.finditer(full_text):
-        try:
-            amt = float(match.group(1).replace(",", ""))
-        except ValueError:
-            continue
-
-        if amt < 1000:  # Filter trivial fees
-            continue
-
-        # Check if any judgment keyword appears within 500 chars before this amount
-        start = max(0, match.start() - 500)
-        context = text_lower[start:match.end()]
-        if any(kw in context for kw in judgment_keywords):
-            amounts.append(amt)
-
-    if not amounts:
-        # Fallback: just find the largest dollar amount > $10K in the doc
-        for match in dollar_pattern.finditer(full_text):
-            try:
-                amt = float(match.group(1).replace(",", ""))
-                if amt > 10000:
-                    amounts.append(amt)
-            except ValueError:
-                continue
-
-    return max(amounts) if amounts else None
-
-
-class FranklinDocketScraper(DocketScraper):
-
+class FranklinDocketScraper(ManualCountyScraper):
     county_id = "franklin-oh"
     county_name = "Franklin"
+    search_url = LANDING_URL
+    requires_human_solve = False          # autonomous; IP-gated, not CAPTCHA-gated
 
-    async def scrape_case(self, case_number: str) -> DocketResult:
-        """Run the full scrape against one Franklin County case."""
-        result = DocketResult(
-            county_id=self.county_id,
-            case_number=case_number,
-            scraped_at=datetime.now().isoformat(),
-        )
+    def parse_case_number(self, raw: str):
+        """→ (year2, type, seq6) tuple the search form needs, or None. CV only."""
+        p = parse_franklin_case_number(raw)
+        if not p or p["prefix"] != "CV":
+            return None
+        return (f"{p['year'] % 100:02d}", "CV", f"{p['number']:06d}")
 
-        parsed = parse_franklin_case_number(case_number)
-        if not parsed:
-            result.classification = "unknown"
-            result.classification_reason = f"case number not parseable: {case_number}"
-            return result
-
-        # Diagnostic screenshots
-        diag_dir = Path("data/diagnostics/franklin-oh")
-        diag_dir.mkdir(parents=True, exist_ok=True)
-
-        async with async_playwright() as pw:
-            browser = await pw.chromium.launch(
-                headless=self.headless,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                ],
-            )
-            context = await browser.new_context(
-                viewport={"width": 1400, "height": 900},
-                ignore_https_errors=True,
-                user_agent=(
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-                ),
-            )
-            # Remove the webdriver flag that Cloudflare checks
-            await context.add_init_script(
-                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-            )
-            page = await context.new_page()
-
-            async def snap(label):
-                try:
-                    ts = datetime.now().strftime("%H%M%S")
-                    await page.screenshot(
-                        path=str(diag_dir / f"{ts}-{label}.png"),
-                        full_page=True,
-                    )
-                    print(f"      📸 {label}: {page.url}")
-                except Exception as e:
-                    print(f"      ⚠ snap failed: {e}")
-
+    async def open_search_form(self, page: Page) -> bool:
+        """Load the landing page, accept the disclaimer, land on the search form."""
+        await page.goto(LANDING_URL, wait_until="networkidle", timeout=60000)
+        await page.wait_for_timeout(800)
+        # If the search form is already present, the disclaimer is done.
+        if await page.locator("#caseSeq_nh").count() == 0:
             try:
-                # ─── Step 1: Load portal and accept terms ───
-                print(f"      ▶ step 1: load portal & accept terms")
-                await page.goto(LANDING_URL, wait_until="domcontentloaded", timeout=30000)
-                await page.wait_for_timeout(2000)
-                await snap("01_landing")
-
-                terms_accepted = await self._accept_terms(page)
-                await snap("02_after_terms")
-                if not terms_accepted:
-                    # Maybe terms were already accepted (session cookie)
-                    print(f"      ⚠ terms acceptance uncertain, continuing...")
-
-                # ─── Step 2: Search for the case ───
-                print(f"      ▶ step 2: search for case {parsed['search_text']}")
-                found = await self._search_case(page, parsed)
-                await snap("03_after_search")
-                print(f"      → landed at: {page.url}")
-                print(f"      → search found case? {found}")
-
-                if not found:
-                    result.classification = "unknown"
-                    result.classification_reason = (
-                        f"search did not find case. URL: {page.url}"
-                    )
-                    return result
-
-                result.case_url = page.url
-
-                # ─── Step 3: Scrape case summary ───
-                print(f"      ▶ step 3: scrape case summary")
-                await self._scrape_summary(page, result)
-                await snap("04_case_summary")
-                print(f"      → title: {result.case_title[:60] if result.case_title else 'N/A'}")
-
-                # ─── Step 4: Scrape docket entries + find judgment PDF ───
-                print(f"      ▶ step 4: scrape docket entries")
-                await self._scrape_docket(page, result)
-                await snap("05_docket")
-                print(f"      → events={len(result.events)}, kill={result.kill_signals}")
-                print(f"      → prayer_amount=${result.prayer_amount:,.0f} (source: {result.debt_source or 'none'})")
-
-                # ─── Step 5: Scrape parties ───
-                print(f"      ▶ step 5: scrape parties")
-                await self._scrape_parties(page, result)
-                await snap("06_parties")
-                print(f"      → defendants={len(result.defendants)}")
-
-                # ─── Step 6: Classify ───
-                result.classification, result.classification_reason = self.classify(result, 0.0)
-                print(f"      → classification: {result.classification} ({result.classification_reason})")
-
-            except PWTimeout as e:
-                await snap("99_timeout")
-                result.classification = "unknown"
-                result.classification_reason = f"timeout: {e}"
-                print(f"      ❌ TIMEOUT: {e}")
-            except Exception as e:
-                await snap("99_error")
-                result.classification = "unknown"
-                result.classification_reason = f"scrape error: {type(e).__name__}: {e}"
-                print(f"      ❌ ERROR: {type(e).__name__}: {e}")
-                import traceback
-                traceback.print_exc()
-            finally:
-                await browser.close()
-
-        return result
-
-    # ─── Step 1: Accept Terms of Use ─────────────────────────────────────
-
-    async def _accept_terms(self, page: Page) -> bool:
-        """
-        Franklin CIO shows a terms page on first visit.
-        Look for a checkbox ("I agree") and an accept/submit button.
-        """
-        body_text = await page.inner_text("body")
-
-        # If we're already past terms (e.g. search form visible), skip
-        if "case number" in body_text.lower() and "search" in body_text.lower():
-            print(f"      → terms already accepted (search form visible)")
+                async with page.expect_navigation(wait_until="networkidle", timeout=25000):
+                    await page.click("input[value='ACCEPT'], input[name='Accept']", timeout=10000)
+            except PWTimeout:
+                pass
+        try:
+            await page.wait_for_selector("#caseSeq_nh", state="visible", timeout=15000)
             return True
-
-        # Try to find and click the agreement checkbox
-        checkbox_clicked = False
-        for sel in [
-            "input[type='checkbox']",
-            "input[id*='agree' i]",
-            "input[name*='agree' i]",
-            "input[id*='terms' i]",
-            "input[id*='accept' i]",
-        ]:
-            try:
-                cb = page.locator(sel).first
-                if await cb.count() > 0:
-                    await cb.check(timeout=3000)
-                    checkbox_clicked = True
-                    print(f"      → checked terms checkbox: {sel}")
-                    break
-            except Exception:
-                continue
-
-        # Also try clicking text that looks like the agreement label
-        if not checkbox_clicked:
-            for text_sel in [
-                "text=/I have read/i",
-                "text=/I agree/i",
-                "text=/accept/i",
-            ]:
-                try:
-                    await page.click(text_sel, timeout=3000)
-                    checkbox_clicked = True
-                    print(f"      → clicked terms text: {text_sel}")
-                    break
-                except Exception:
-                    continue
-
-        await page.wait_for_timeout(500)
-
-        # Click the submit/accept/continue button
-        button_clicked = False
-        for sel in [
-            "input[type='submit']",
-            "button[type='submit']",
-            "input[value*='Accept' i]",
-            "input[value*='Submit' i]",
-            "input[value*='Continue' i]",
-            "button:has-text('Accept')",
-            "button:has-text('Submit')",
-            "button:has-text('Continue')",
-            "a:has-text('Accept')",
-            "a:has-text('Continue')",
-        ]:
-            try:
-                btn = page.locator(sel).first
-                if await btn.count() > 0:
-                    await btn.click(timeout=5000)
-                    button_clicked = True
-                    print(f"      → clicked accept button: {sel}")
-                    break
-            except Exception:
-                continue
-
-        if not button_clicked:
-            # Last resort: try pressing Enter
-            await page.keyboard.press("Enter")
-
-        # Wait for Cloudflare security challenge to resolve.
-        # After terms submit, Cloudflare may show a JS challenge page.
-        # Poll until either: (a) we see a search form, or (b) timeout.
-        await self._wait_for_cloudflare(page)
-
-        return True
-
-    async def _wait_for_cloudflare(self, page: Page, max_wait: int = 30) -> bool:
-        """
-        Wait for Cloudflare's JS challenge to resolve.
-        Polls page content every 2 seconds for up to max_wait seconds.
-        Returns True if we got past the challenge, False if timed out.
-        """
-        import time
-        start = time.time()
-        while time.time() - start < max_wait:
-            await page.wait_for_timeout(2000)
-            body = await page.inner_text("body")
-            body_lower = body.lower()
-
-            # Check if Cloudflare challenge is still showing
-            if "security verification" in body_lower or "verifies you are not a bot" in body_lower:
-                elapsed = int(time.time() - start)
-                print(f"      → Cloudflare challenge still active ({elapsed}s elapsed)...")
-                continue
-
-            # Check if we've reached a real page (search form, case info, etc.)
-            if any(kw in body_lower for kw in [
-                "case number", "search", "case information",
-                "civil", "domestic", "criminal",
-            ]):
-                elapsed = int(time.time() - start)
-                print(f"      → Cloudflare challenge resolved ({elapsed}s)")
-                return True
-
-            # Neither challenge nor expected content — might be transitional
-            elapsed = int(time.time() - start)
-            print(f"      → waiting for page load ({elapsed}s)...")
-            continue
-
-        print(f"      ⚠ Cloudflare challenge did not resolve within {max_wait}s")
-        return False
-
-    # ─── Step 2: Search for a case ───────────────────────────────────────
-
-    async def _search_case(self, page: Page, parsed: dict) -> bool:
-        """
-        Find and fill the case number search field, submit, and verify
-        we land on a case detail page.
-        """
-        search_text = parsed["search_text"]
-
-        # Wait for the search page to be ready
-        await page.wait_for_timeout(1500)
-
-        # Strategy 1: Look for a case number input field
-        input_filled = False
-        for sel in [
-            "input[id*='CaseNumber' i]",
-            "input[name*='CaseNumber' i]",
-            "input[id*='caseNum' i]",
-            "input[name*='caseNum' i]",
-            "input[id*='case' i]",
-            "input[name*='case' i]",
-            "input[id*='search' i]",
-            "input[name*='search' i]",
-            "input[type='text']",
-        ]:
-            try:
-                el = page.locator(sel).first
-                if await el.count() > 0:
-                    # Check if it's visible
-                    if await el.is_visible():
-                        await el.fill(search_text, timeout=3000)
-                        input_filled = True
-                        print(f"      → filled search input: {sel} with '{search_text}'")
-                        break
-            except Exception:
-                continue
-
-        if not input_filled:
-            # Dump page text for diagnostics
-            body = await page.inner_text("body")
-            print(f"      ⚠ could not find search input. Page text (first 500): {body[:500]}")
+        except PWTimeout:
             return False
 
-        await page.wait_for_timeout(500)
+    async def fill_case(self, page: Page, form_value) -> None:
+        year2, ctype, seq6 = form_value
+        await page.fill("#caseYear_nh", year2)
+        try:
+            await page.select_option("#caseType_nh", ctype)
+        except Exception:
+            pass
+        await page.fill("#caseSeq_nh", seq6)
 
-        # Click search/submit button
-        submitted = False
-        for sel in [
-            "input[type='submit']",
-            "button[type='submit']",
-            "input[value*='Search' i]",
-            "input[value*='Submit' i]",
-            "button:has-text('Search')",
-            "button:has-text('Submit')",
-            "a:has-text('Search')",
-        ]:
-            try:
-                btn = page.locator(sel).first
-                if await btn.count() > 0 and await btn.is_visible():
-                    await btn.click(timeout=5000)
-                    submitted = True
-                    print(f"      → clicked search button: {sel}")
-                    break
-            except Exception:
-                continue
+    async def _extract_owner(self, page: Page) -> tuple[str, list]:
+        """Parse #defendant-container's DEFENDANT(S) table directly. Each
+        defendant has a visible NAME row plus a HIDDEN 'defdetail*' address row
+        (display:none) — we take only the name rows. Returns
+        (homeowner_name, all_defendant_names)."""
+        names = await page.evaluate("""() => {
+            const c = document.querySelector('#defendant-container');
+            if (!c) return [];
+            return [...c.querySelectorAll('tbody tr')]
+              .filter(tr => !(tr.id||'').startsWith('defdetail')
+                         && getComputedStyle(tr).display !== 'none')
+              .map(tr => {
+                 const tds = [...tr.querySelectorAll('td')]
+                    .map(td => (td.innerText||'').replace(/\\s+/g,' ').trim());
+                 return tds.find(t => t && t.toLowerCase() !== 'name'
+                                   && !/no attorney on record/i.test(t)) || '';
+              })
+              .filter(Boolean);
+        }""")
+        names = [re.sub(r"\s+", " ", n).strip() for n in names]
+        owner = next((n for n in names if not _GOVT.search(n)), names[0] if names else "")
+        return owner, names
 
-        if not submitted:
-            # Try Enter key as fallback
-            await page.keyboard.press("Enter")
-            print(f"      → pressed Enter to submit search")
+    async def _extract_plaintiff(self, page: Page) -> str:
+        try:
+            txt = await page.evaluate("""() => {
+                const c = document.querySelector('#plaintiff-container');
+                if (!c) return '';
+                const tds = [...c.querySelectorAll('table tr td')].map(td=>(td.innerText||'').trim()).filter(Boolean);
+                return tds[0] || '';
+            }""")
+            return re.sub(r"\s+", " ", txt or "").strip()
+        except Exception:
+            return ""
 
-        await page.wait_for_load_state("domcontentloaded", timeout=20000)
-        await page.wait_for_timeout(3000)
-
-        # Check if we landed on a case detail page or a results list
-        current_url = page.url.lower()
-        body_text = await page.inner_text("body")
-
-        # If results list, try clicking the first matching case link
-        if "search" in current_url or "result" in current_url:
-            print(f"      → on search results page, looking for case link...")
-            # Try clicking a link containing our case number
-            for link_sel in [
-                f"a:has-text('{search_text}')",
-                f"text={search_text}",
-                "table tbody tr:first-child a",
-                "table tr:nth-child(2) a",  # first data row (skip header)
-                ".case-link",
-                "a[href*='caseDetail']",
-                "a[href*='CaseDetail']",
-            ]:
-                try:
-                    link = page.locator(link_sel).first
-                    if await link.count() > 0:
-                        await link.click(timeout=5000)
-                        await page.wait_for_load_state("domcontentloaded", timeout=15000)
-                        await page.wait_for_timeout(2000)
-                        print(f"      → clicked case link: {link_sel}")
-                        break
-                except Exception:
-                    continue
-
-        # Verify we have case content (title, parties, docket, etc.)
-        body_text = await page.inner_text("body")
-        body_lower = body_text.lower()
-        has_case_indicators = any(kw in body_lower for kw in [
-            "docket", "parties", "filing date", "case title",
-            "plaintiff", "defendant", "foreclosure", "case summary",
-            "case detail", "case information",
-        ])
-
-        return has_case_indicators
-
-    # ─── Step 3: Scrape case summary ─────────────────────────────────────
-
-    async def _scrape_summary(self, page: Page, result: DocketResult) -> None:
-        """Extract case title, filing date, status from case detail page."""
-        text = await page.inner_text("body")
-
-        # Case title — look for "vs" pattern (plaintiff vs defendant)
-        title_m = re.search(
-            r"([A-Z][A-Z\s,\.&\']+(?:VS\.?|V\.)\s+[A-Z][A-Z\s,\.&\']+)",
-            text,
+    async def scrape_detail(self, page: Page, case_number: str,
+                            auction: dict = None) -> DocketResult:
+        result = DocketResult(
+            county_id=self.county_id, case_number=case_number,
+            case_url=page.url, scraped_at=datetime.now().isoformat(),
+            foreclosure_type="mortgage_foreclosure",
+            debt_source="", prayer_amount=0.0,      # Franklin has NO debt figure
         )
-        if title_m:
-            result.case_title = title_m.group(1).strip().replace("\n", " ")[:200]
+        try:
+            async with page.expect_navigation(wait_until="networkidle", timeout=25000):
+                await page.click("#btnSearch", timeout=12000)
+        except PWTimeout:
+            pass
+        await page.wait_for_timeout(600)
 
-        # Filing date
-        fd_m = re.search(r"(?:Filing|Filed)\s*(?:Date)?\s*:?\s*(\d{1,2}/\d{1,2}/\d{4})", text, re.IGNORECASE)
-        if fd_m:
-            try:
-                mm, dd, yyyy = fd_m.group(1).split("/")
-                result.filing_date = f"{yyyy}-{mm.zfill(2)}-{dd.zfill(2)}"
-            except ValueError:
-                pass
+        body = await page.inner_text("body")
+        if "NO CASE MATCHED" in body.upper():
+            result.classification = "unknown"
+            result.classification_reason = "no case matched the search criteria"
+            print(f"     ⚠ {case_number}: NO CASE MATCHED")
+            return result
 
-        # Case status
-        status_m = re.search(r"(?:Case\s+)?Status\s*:?\s*([A-Z][A-Za-z /]+)", text)
-        if status_m:
-            result.last_status = status_m.group(1).strip()[:50]
+        result.owner_name, result.defendants = await self._extract_owner(page)
+        result.plaintiff = await self._extract_plaintiff(page)
 
-        # Case type / designation
-        type_m = re.search(r"(?:Case\s+)?Type\s*:?\s*([A-Z][A-Za-z /\-]+)", text)
-        if type_m:
-            result.case_designation = type_m.group(1).strip()[:80]
+        events = parse_docket_events(body)
+        sale_date = (auction or {}).get("auction_date") or (auction or {}).get("sale_date") or ""
+        verdict = classify_franklin(events, sale_date)
 
-        # Scan for kill signals and proof of surplus in summary text
-        result.kill_signals = self.detect_kill_signals(text)
-        proof = self.detect_proof_of_surplus(text)
-        if proof:
-            result.proof_of_surplus = proof
+        result.kill_signals = verdict["kill_signals"]
+        result.competing_filers = verdict["competing_filers"]
+        result.evidence_level = verdict["evidence_level"]
+        result.classification_reason = verdict["classification_reason"]
+        if verdict["classification"] == "killed":
+            result.classification = "killed"
+        else:
+            # docket-checked, no kill, no debt → stays apparent_surplus. Not
+            # "green" (no proof/debt); the empty classification + docket_checked
+            # evidence level signals "reviewed, nothing killed it".
+            result.classification = ""
+            result.lead_status = "pursuable_with_caution"
 
-    # ─── Step 4: Scrape docket + extract judgment from PDF ───────────────
+        tag = "KILLED" if result.classification == "killed" else "docket-checked"
+        print(f"     ✓ {case_number}: {tag} | owner={result.owner_name or '(none)'} "
+              f"| {len(events)} events" +
+              (f" | {result.classification_reason}" if result.classification == "killed" else ""))
+        return result
 
-    async def _scrape_docket(self, page: Page, result: DocketResult) -> None:
-        """
-        Navigate to docket entries. Scan for kill signals.
-        Find judgment/decree entries and attempt to download & parse their PDFs.
-        """
-        # Try clicking a "Docket" or "Case Activity" tab/link
-        docket_clicked = False
-        for sel in [
-            "a:has-text('Docket')",
-            "a:has-text('Case Activity')",
-            "a:has-text('Events')",
-            "a:has-text('Entries')",
-            "a[href*='docket' i]",
-            "a[href*='activity' i]",
-            "a[href*='entries' i]",
-        ]:
-            try:
-                link = page.locator(sel).first
-                if await link.count() > 0:
-                    await link.click(timeout=5000)
-                    await page.wait_for_load_state("domcontentloaded", timeout=15000)
-                    await page.wait_for_timeout(2000)
-                    docket_clicked = True
-                    print(f"      → navigated to docket: {sel}")
-                    break
-            except Exception:
-                continue
 
-        # Get all text for signal scanning
-        docket_text = await page.inner_text("body")
+def _load_franklin_cases() -> list[dict]:
+    from .enrich import load_cases_from_raw
+    return load_cases_from_raw("franklin-oh")
 
-        # Kill signals + proof + competing filers from docket text
-        result.kill_signals = list(set(
-            result.kill_signals + self.detect_kill_signals(docket_text)
-        ))
-        result.competing_filers = self.detect_competing_filers(docket_text)
-        proof = self.detect_proof_of_surplus(docket_text)
-        if proof and not result.proof_of_surplus:
-            result.proof_of_surplus = proof
 
-        # Owner's claim check
-        if re.search(r"owner'?s?\s+claim", docket_text, re.IGNORECASE):
-            result.owner_filed_claim = True
+def main():
+    import asyncio
+    cases = _load_franklin_cases()
+    if not cases:
+        print("No Franklin auction data in data/raw/franklin-oh_*.jsonl. "
+              "Run the auction scraper first (or wait for the daily cron).")
+        return
+    scraper = FranklinDocketScraper(headless=False)
+    asyncio.run(run_manual_county(scraper, cases))
 
-        # Extract docket events from table rows
-        events = []
-        rows = await page.query_selector_all("table tr, tr")
-        for row in rows:
-            row_text = (await row.inner_text()).strip()
-            if not row_text:
-                continue
-            # Look for date patterns: MM/DD/YYYY
-            m = re.match(r"^(\d{1,2}/\d{1,2}/\d{4})\s+(.+)", row_text, re.DOTALL)
-            if m:
-                try:
-                    mm, dd, yyyy = m.group(1).split("/")
-                    events.append(DocketEvent(
-                        filing_date=f"{yyyy}-{mm.zfill(2)}-{dd.zfill(2)}",
-                        description=m.group(2).strip()[:200],
-                    ))
-                except ValueError:
-                    pass
-        result.events = [e.__dict__ for e in events[:50]]
 
-        # Update last_activity_date
-        if events:
-            sorted_events = sorted(events, key=lambda e: e.filing_date, reverse=True)
-            result.last_activity_date = sorted_events[0].filing_date
-
-        # ─── Judgment PDF extraction ───
-        # Look for links to judgment/decree PDFs in the docket
-        await self._extract_judgment_from_pdf(page, result)
-
-    async def _extract_judgment_from_pdf(self, page: Page, result: DocketResult) -> None:
-        """
-        Find judgment-related docket entries that have PDF links.
-        Download the PDF and extract the debt amount.
-        """
-        # Already have prayer amount from another source? Skip.
-        if result.prayer_amount > 0:
-            return
-
-        # Find all links on the page
-        links = await page.query_selector_all("a")
-        judgment_links = []
-
-        for link in links:
-            try:
-                text = (await link.inner_text()).strip().lower()
-                href = await link.get_attribute("href") or ""
-            except Exception:
-                continue
-
-            # Look for judgment-related entries
-            judgment_keywords = [
-                "judgment", "decree", "summary judgment",
-                "default judgment", "foreclosure judgment",
-                "final judgment", "entry of judgment",
-                "magistrate decision",
-            ]
-            is_judgment = any(kw in text for kw in judgment_keywords)
-
-            # Also check if the link points to a document/PDF
-            is_doc_link = any(ext in href.lower() for ext in [
-                ".pdf", "document", "doc", "image", "view",
-            ])
-
-            if is_judgment or (is_doc_link and any(kw in text for kw in judgment_keywords)):
-                judgment_links.append((link, text, href))
-
-        if not judgment_links:
-            print(f"      → no judgment PDF links found in docket")
-            # Try to find dollar amounts directly in the docket text
-            docket_text = await page.inner_text("body")
-            self._extract_debt_from_text(docket_text, result)
-            return
-
-        # Try each judgment link — download the PDF and extract amount
-        for link_el, link_text, href in judgment_links[:3]:  # Cap at 3 attempts
-            print(f"      → trying judgment link: '{link_text[:60]}' → {href[:80]}")
-            try:
-                # Use Playwright's download mechanism
-                async with page.expect_download(timeout=15000) as download_info:
-                    await link_el.click()
-                download = await download_info.value
-                tmp_path = await download.path()
-                if tmp_path:
-                    pdf_bytes = Path(tmp_path).read_bytes()
-                    amount = extract_debt_from_pdf_bytes(pdf_bytes)
-                    if amount:
-                        result.prayer_amount = amount
-                        result.debt_source = "pdf_extract"
-                        print(f"      ✅ extracted debt from PDF: ${amount:,.2f}")
-                        return
-                    else:
-                        print(f"      → no debt amount found in PDF")
-            except Exception:
-                # Download didn't trigger — might open in a new tab or inline
-                pass
-
-            # Fallback: try navigating to the link and reading page content
-            try:
-                # Open in same tab, read content, navigate back
-                original_url = page.url
-                full_href = href if href.startswith("http") else f"{BASE_URL}/{href.lstrip('/')}"
-                response = await page.goto(full_href, wait_until="domcontentloaded", timeout=15000)
-                await page.wait_for_timeout(2000)
-
-                # Check if we got a PDF (content-type) or an HTML viewer
-                content_type = response.headers.get("content-type", "") if response else ""
-
-                if "pdf" in content_type:
-                    # Direct PDF — get the bytes via the response
-                    body = await response.body()
-                    amount = extract_debt_from_pdf_bytes(body)
-                    if amount:
-                        result.prayer_amount = amount
-                        result.debt_source = "pdf_extract"
-                        print(f"      ✅ extracted debt from direct PDF: ${amount:,.2f}")
-                        await page.goto(original_url, wait_until="domcontentloaded", timeout=15000)
-                        return
-                else:
-                    # HTML page — maybe an embedded viewer, scan text
-                    viewer_text = await page.inner_text("body")
-                    self._extract_debt_from_text(viewer_text, result)
-                    if result.prayer_amount > 0:
-                        print(f"      ✅ extracted debt from doc viewer: ${result.prayer_amount:,.2f}")
-                        await page.goto(original_url, wait_until="domcontentloaded", timeout=15000)
-                        return
-
-                # Navigate back for next attempt
-                await page.goto(original_url, wait_until="domcontentloaded", timeout=15000)
-                await page.wait_for_timeout(1000)
-            except Exception as e:
-                print(f"      ⚠ link follow failed: {e}")
-                continue
-
-        # Last resort: scan docket text for inline dollar amounts
-        if result.prayer_amount == 0:
-            docket_text = await page.inner_text("body")
-            self._extract_debt_from_text(docket_text, result)
-
-    def _extract_debt_from_text(self, text: str, result: DocketResult) -> None:
-        """
-        Extract debt amount from inline docket text (no PDF needed).
-        Looks for dollar amounts near judgment keywords.
-        """
-        if result.prayer_amount > 0:
-            return
-
-        text_lower = text.lower()
-        judgment_keywords = [
-            "judgment", "decree", "amount due", "principal",
-            "total amount", "sum of", "awarded", "indebtedness",
-        ]
-
-        dollar_pattern = re.compile(r"\$\s*([\d,]+(?:\.\d{2})?)")
-        amounts = []
-
-        for match in dollar_pattern.finditer(text):
-            try:
-                amt = float(match.group(1).replace(",", ""))
-            except ValueError:
-                continue
-            if amt < 1000:
-                continue
-            start = max(0, match.start() - 500)
-            context = text_lower[start:match.end()]
-            if any(kw in context for kw in judgment_keywords):
-                amounts.append(amt)
-
-        if amounts:
-            result.prayer_amount = max(amounts)
-            result.debt_source = "docket_text_extract"
-
-    # ─── Step 5: Scrape parties ──────────────────────────────────────────
-
-    async def _scrape_parties(self, page: Page, result: DocketResult) -> None:
-        """Extract plaintiff and defendants from the case page."""
-        # Try clicking a "Parties" tab/link
-        for sel in [
-            "a:has-text('Parties')",
-            "a:has-text('Party')",
-            "a[href*='parties' i]",
-            "a[href*='party' i]",
-        ]:
-            try:
-                link = page.locator(sel).first
-                if await link.count() > 0:
-                    await link.click(timeout=5000)
-                    await page.wait_for_load_state("domcontentloaded", timeout=10000)
-                    await page.wait_for_timeout(1500)
-                    break
-            except Exception:
-                continue
-
-        text = await page.inner_text("body")
-
-        # Extract plaintiff
-        p_m = re.search(r"PLAINTIFF\s*:?\s*\n?\s*([^\n]+)", text, re.IGNORECASE)
-        if p_m:
-            result.plaintiff = p_m.group(1).strip()[:200]
-
-        # Extract defendants
-        defendants = []
-        for m in re.finditer(r"DEFENDANT\s*:?\s*\n?\s*([^\n]+)", text, re.IGNORECASE):
-            name = m.group(1).strip()[:200]
-            if name and name not in defendants:
-                defendants.append(name)
-        result.defendants = defendants
-
-        # Identify creditors among defendants
-        creditor_keywords = [
-            "LLC", "BANK", "TREASURER", "IRS", "STATE OF", "COUNTY",
-            "CITY OF", "REVENUE", "DEPARTMENT", "ASSOCIATION", "TRUST",
-            "FINANCIAL", "MORTGAGE", "CAPITAL", "FUND", "SERVICES", "INC",
-        ]
-        for name in defendants:
-            name_upper = name.upper()
-            if any(kw in name_upper for kw in creditor_keywords):
-                result.additional_parties.append(name)
+if __name__ == "__main__":
+    main()

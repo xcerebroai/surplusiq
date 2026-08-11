@@ -35,11 +35,14 @@ SCRAPER_REGISTRY = {
     "orange-fl":     OrangeDocketScraper,
 }
 
-# Manual-solve counties: registered (so their docket JSONL merges into the
-# dashboard like any other), but they require a human CAPTCHA solve per search
-# and CANNOT run in GitHub Actions. The docket step skips them; they are run
-# locally via their own command (e.g. `python -m core.dockets.orange`).
-MANUAL_COUNTIES = {"orange-fl"}
+# Local-run counties: registered (so their docket JSONL merges into the
+# dashboard like any other), but they CANNOT run in GitHub Actions and are run
+# locally via their own command. The cloud docket step skips them.
+#   • orange-fl  — per-search human CAPTCHA solve (manual).
+#   • franklin-oh — autonomous, but IP-gated to residential (Cloudflare blocks
+#                   the datacenter); no human needed.
+MANUAL_COUNTIES = {"orange-fl"}                       # need a human solve
+LOCAL_RUN_COUNTIES = {"orange-fl", "franklin-oh"}     # all local-only (cloud-skip)
 
 
 def get_scraper(county_id: str, headless: bool = True) -> DocketScraper:
@@ -65,4 +68,5 @@ __all__ = [
     "get_scraper",
     "SCRAPER_REGISTRY",
     "MANUAL_COUNTIES",
+    "LOCAL_RUN_COUNTIES",
 ]

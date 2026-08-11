@@ -158,24 +158,26 @@ async def run_county(county_id: str, headless: bool, only_case: str | None = Non
     # Cloudflare-blocked counties: no docket automation. These are Eric-approved
     # PR-fallback counties — the docket step skips them and PropertyRadar
     # enrichment + the dashboard's manual-verify clerk link carry the load.
-    PR_FALLBACK_COUNTIES = {"franklin-oh", "hamilton-oh"}
+    PR_FALLBACK_COUNTIES = {"hamilton-oh"}
     if county_id in PR_FALLBACK_COUNTIES:
-        print(f"⏭  {county_id} is Cloudflare-blocked. Skipping docket scrape — "
-              f"this county is routed through PropertyRadar enrichment + the "
-              f"dashboard's manual-verify clerk link.")
+        print(f"⏭  {county_id} is Cloudflare-blocked with no authorized data feed. "
+              f"Skipping docket scrape — routed through PropertyRadar enrichment + "
+              f"the dashboard's manual-verify clerk link.")
         return {"county_id": county_id, "results": [], "skipped": True,
                 "reason": "PR-fallback county (Cloudflare block)"}
 
-    # Manual-solve counties (per-search CAPTCHA) cannot run headless in CI.
-    # They are scraped locally via their own command (e.g.
-    # `python -m core.dockets.orange`) and their docket JSONL merges normally.
-    from core.dockets import MANUAL_COUNTIES
-    if county_id in MANUAL_COUNTIES:
-        print(f"⏭  {county_id} is a MANUAL-solve county (per-search CAPTCHA). "
-              f"Skipping in the automated run — scrape it locally with "
-              f"`python -m core.dockets.{county_id.split('-')[0]}`.")
+    # Local-run counties cannot run in GitHub Actions (orange-fl needs a human
+    # CAPTCHA solve; franklin-oh is Cloudflare-blocked from the datacenter but
+    # works autonomously from a residential IP). They are scraped locally via
+    # their own command and their docket JSONL merges into the dashboard normally.
+    from core.dockets import LOCAL_RUN_COUNTIES, MANUAL_COUNTIES
+    if county_id in LOCAL_RUN_COUNTIES:
+        how = ("a MANUAL-solve county (per-search CAPTCHA)" if county_id in MANUAL_COUNTIES
+               else "an autonomous LOCAL county (residential-IP only; Cloudflare blocks CI)")
+        print(f"⏭  {county_id} is {how}. Skipping in the automated run — "
+              f"scrape it locally with `python -m core.dockets.{county_id.split('-')[0]}`.")
         return {"county_id": county_id, "results": [], "skipped": True,
-                "reason": "manual-solve county (local run only)"}
+                "reason": "local-run county (run locally only)"}
 
     if county_id not in SCRAPER_REGISTRY:
         raise SystemExit(f"No docket scraper for {county_id}. Available: {list(SCRAPER_REGISTRY.keys())}")

@@ -73,7 +73,8 @@ class OrangeDocketScraper(ManualCountyScraper):
     def parse_case_number(self, raw: str):
         return parse_orange_case_number(raw)
 
-    async def scrape_detail(self, page: Page, case_number: str) -> DocketResult:
+    async def scrape_detail(self, page: Page, case_number: str,
+                            auction: dict = None) -> DocketResult:
         """Submit the (already-solved) search and capture the result page.
 
         PHASE 1: the post-search detail DOM has not been ground-truthed yet, so

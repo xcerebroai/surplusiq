@@ -53,6 +53,10 @@ class ManualCountyScraper(DocketScraper):
     token_sel: str = ""           # element whose non-empty value == solved
     solve_ready_sel: str = ""     # the CAPTCHA widget — must render BEFORE we
                                   # prompt the human (else they see no checkbox)
+    # True  → per-search human CAPTCHA solve (Orange).
+    # False → autonomous, but still local-only (IP-gated to residential, e.g.
+    #         Franklin) — the loop runs each case without pausing for a human.
+    requires_human_solve: bool = True
 
     # ── county-specific hooks ──
     def parse_case_number(self, raw: str) -> Optional[str]:
@@ -60,9 +64,11 @@ class ManualCountyScraper(DocketScraper):
         form expects. Return None to skip an unparseable case."""
         raise NotImplementedError
 
-    async def scrape_detail(self, page: Page, case_number: str) -> DocketResult:
-        """Parse the post-search detail page into a DocketResult. Must be
-        implemented per county once its detail DOM is ground-truthed."""
+    async def scrape_detail(self, page: Page, case_number: str,
+                            auction: Optional[dict] = None) -> DocketResult:
+        """Parse the post-search detail page into a DocketResult. `auction` is
+        the case's auction-side record (sale date/price) for counties whose
+        classification needs it (e.g. Franklin's temporal anchor)."""
         raise NotImplementedError
 
     # ── default DOM helpers (override only if a county differs) ──
@@ -140,7 +146,8 @@ async def _wait_for_solve(scraper: ManualCountyScraper, page: Page,
 
 
 async def run_manual_county(scraper: ManualCountyScraper, cases: list[dict], *,
-                            day: Optional[str] = None) -> dict:
+                            day: Optional[str] = None,
+                            headless: Optional[bool] = None) -> dict:
     """Drive the human-in-the-loop scrape for one county.
 
     `cases` is the auction-side records list (from load_cases_from_raw): each
@@ -176,12 +183,19 @@ async def run_manual_county(scraper: ManualCountyScraper, cases: list[dict], *,
     if not work:
         print("  ✓ nothing to do — all in-window cases already scraped this cycle.")
         return {"county_id": scraper.county_id, "scraped": already, "remaining": 0}
-    print("\n  You'll solve ONE checkbox per case. The form is pre-filled and the")
-    print("  checkbox is ready when prompted — click it and the scrape fires.\n")
+    if scraper.requires_human_solve:
+        print("\n  You'll solve ONE checkbox per case. The form is pre-filled and the")
+        print("  checkbox is ready when prompted — click it and the scrape fires.\n")
+    else:
+        print("\n  Autonomous local run (no human input) — IP-gated to residential.\n")
 
+    # A human-solve county MUST be headed (the human needs the window). An
+    # autonomous local county may run headless. Explicit `headless` overrides.
+    if headless is None:
+        headless = not scraper.requires_human_solve
     scraped_this_run = 0
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=False)
+        browser = await pw.chromium.launch(headless=headless)
         ctx = await browser.new_context(viewport={"width": 1280, "height": 950}, locale="en-US")
         page = await ctx.new_page()
         try:
@@ -192,10 +206,13 @@ async def run_manual_county(scraper: ManualCountyScraper, cases: list[dict], *,
                     print(f"  [{pos}/{total}] {case_number}: search form failed to load — skipping (stays docket-not-verified)")
                     continue
                 await scraper.fill_case(page, form_value)
-                print(f"  ▶ case {pos} of {total} — SOLVE THE CHECKBOX  ({case_number})")
-                await _wait_for_solve(scraper, page)
+                if scraper.requires_human_solve:
+                    print(f"  ▶ case {pos} of {total} — SOLVE THE CHECKBOX  ({case_number})")
+                    await _wait_for_solve(scraper, page)
+                else:
+                    print(f"  ▶ case {pos} of {total} — scraping  ({case_number})")
                 try:
-                    result = await scraper.scrape_detail(page, case_number)
+                    result = await scraper.scrape_detail(page, case_number, auction)
                 except Exception as e:
                     print(f"     ⚠ scrape failed for {case_number}: {type(e).__name__}: {e} — leaving docket-not-verified")
                     continue
