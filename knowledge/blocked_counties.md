@@ -92,7 +92,35 @@ manual-verify clerk link. In `enrich.PR_FALLBACK_COUNTIES`.
 **Consequence:** Franklin can run **autonomously from a local (residential-IP)
 machine** — no human, unlike Orange — but **cannot run in GitHub Actions**.
 
-**Build notes (in progress):**
+**DEBT-SOURCE INVESTIGATION (2026-08-11) — no online judgment figure exists.**
+Franklin's portal gives docket metadata but no debt amount, so all four
+alternate online sources were checked (residential IP). None yield a scrapeable
+per-case judgment/debt dollar figure:
+1. **Sheriff sale notice (RealAuction `franklin.sheriffsaleauction.ohio.gov`):**
+   per-property detail shows **Appraised Value** (e.g. 24CV9172 = $399,000) +
+   2/3 **Opening Bid** ($266,000) + Deposit. "Judgment" appears only as the
+   label "Plaintiff/Judgment Creditor" — a NAME field, no amount.
+2. **Existing auction raw (`data/raw/franklin-oh_*.jsonl`):** same RealAuction
+   source. We capture opening_bid but discard the appraised value; no judgment
+   field exists in the feed. (Appraised value is worth capturing but is NOT the
+   debt.)
+3. **Separate document system:** none. CIO is the only clerk system and exposes
+   no document images (Sup.R. 45(C) discretionary); the JUDGMENT ENTRY on
+   24CV9172 (filed 02/13/25) carries only a microfilm ref (`0H182 C74 9`), not a
+   fetchable doc. The Sheriff's official Real Estate Sales page links ONLY to
+   the RealAuction site — no sheriff judgment/writ portal.
+4. **Legal-notice publication:** foreclosure notices run in the Daily Reporter /
+   Columbus Dispatch classifieds. Ohio sale notices (ORC 2329.26) state the
+   sale terms + appraised value, not reliably the judgment principal, and the
+   classifieds are a newspaper archive — not a per-case queryable source keyed
+   to our cases. Not a viable automated debt source.
+
+**CONCLUSION: Franklin is metadata-only online.** The real judgment/debt figure
+is not reachable in any scrapeable per-case online form — it lives only in the
+microfilm court record (in-person / paid copy). So oh_debt has no input and
+Franklin leads cannot be moved out of `apparent_surplus` by a docket scrape.
+
+**Build notes (if a metadata-only scraper is chosen):**
 - Landing is a disclaimer gate; accept before the search form appears.
 - Case-number format: 2-digit year / type dropdown / 6-digit zero-padded seq
   (e.g. `24` / `CV` / `009172`).
