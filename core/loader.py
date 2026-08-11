@@ -237,6 +237,8 @@ class Lead:
     # Claim status
     claim_filed:        bool   = False
     claim_status:       str    = "Unknown"
+    appraised_value:    float  = 0.0   # OH RealAuction appraised value (stored only,
+                                       # no surplus-math change; opening_bid drives math)
 
     # Docket-enrichment fields (populated when docket scraper has run on this case)
     classification:   str = ""
@@ -357,6 +359,7 @@ def _parse_lead(record: dict, county_id: str, source_file: str) -> Optional[Lead
         opening   = float(record.get("opening_bid") or 0)
         final     = float(record.get("final_sale_price") or 0)
         assessed  = float(record.get("assessed_value") or 0)
+        appraised = float(record.get("appraised_value") or 0)
         surplus   = final - opening if final and opening else 0
     except (ValueError, TypeError):
         return None
@@ -405,6 +408,7 @@ def _parse_lead(record: dict, county_id: str, source_file: str) -> Optional[Lead
         final_sale_price = final,
         gross_surplus = surplus,
         assessed_value   = assessed,
+        appraised_value  = appraised,
         sale_date     = sale_date_iso,
         sale_datetime = _extract_sale_datetime(record),
         sold_to       = (record.get("sold_to") or "").strip(),

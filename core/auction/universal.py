@@ -374,6 +374,11 @@ class UniversalAuctionScraper:
         ]))
         final_sale  = clean_dollar(self._extract_field(text, ["Amount", "Sold Amount", "Winning Bid"]))
         assessed    = clean_dollar(self._extract_field(text, ["Assessed Value"]))
+        # OH RealAuction (sheriffsaleauction.ohio.gov) exposes "Appraised Value"
+        # alongside the 2/3 opening bid; FL realforeclose does not. Capture it —
+        # sale-vs-appraised is a more meaningful signal than sale-vs-2/3-floor.
+        # STORED ONLY (no surplus-math change): opening_bid still drives math.
+        appraised   = clean_dollar(self._extract_field(text, ["Appraised Value", "Appraisal Value"]))
 
         # If "Amount" not found directly, look for the largest dollar value below status
         if not final_sale:
@@ -425,6 +430,7 @@ class UniversalAuctionScraper:
             "final_sale_price":  final_sale,
             "gross_surplus":     surplus,
             "assessed_value":    assessed,
+            "appraised_value":   appraised,
             "sold_to":           sold_to.strip(),
             "is_third_party":    is_third_party(sold_to),
             "parcel_id":         parcel.strip(),
