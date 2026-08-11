@@ -43,3 +43,6 @@ data/samples/miami_dade/*.png
 data/samples/miami_dade/*.html
 data/samples/miami_dade/*.titles.txt
 data/samples/miami_dade/titles_*.txt
+
+# Manual-runner internal progress state (not data)
+data/dockets/.*_*.progress.json
