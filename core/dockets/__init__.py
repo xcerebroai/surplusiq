@@ -19,6 +19,7 @@ from .summit import SummitDocketScraper, parse_summit_case_number
 from .hamilton import HamiltonDocketScraper
 from .broward import BrowardDocketScraper, parse_broward_case_number
 from .duval import DuvalDocketScraper, parse_duval_case_number
+from .orange import OrangeDocketScraper, parse_orange_case_number
 
 
 # Registry — add new counties here as they're implemented
@@ -31,7 +32,14 @@ SCRAPER_REGISTRY = {
     "hamilton-oh":   HamiltonDocketScraper,
     "broward-fl":    BrowardDocketScraper,
     "duval-fl":      DuvalDocketScraper,
+    "orange-fl":     OrangeDocketScraper,
 }
+
+# Manual-solve counties: registered (so their docket JSONL merges into the
+# dashboard like any other), but they require a human CAPTCHA solve per search
+# and CANNOT run in GitHub Actions. The docket step skips them; they are run
+# locally via their own command (e.g. `python -m core.dockets.orange`).
+MANUAL_COUNTIES = {"orange-fl"}
 
 
 def get_scraper(county_id: str, headless: bool = True) -> DocketScraper:
@@ -53,6 +61,8 @@ __all__ = [
     "HamiltonDocketScraper",
     "BrowardDocketScraper",
     "DuvalDocketScraper",
+    "OrangeDocketScraper",
     "get_scraper",
     "SCRAPER_REGISTRY",
+    "MANUAL_COUNTIES",
 ]

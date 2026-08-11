@@ -166,6 +166,17 @@ async def run_county(county_id: str, headless: bool, only_case: str | None = Non
         return {"county_id": county_id, "results": [], "skipped": True,
                 "reason": "PR-fallback county (Cloudflare block)"}
 
+    # Manual-solve counties (per-search CAPTCHA) cannot run headless in CI.
+    # They are scraped locally via their own command (e.g.
+    # `python -m core.dockets.orange`) and their docket JSONL merges normally.
+    from core.dockets import MANUAL_COUNTIES
+    if county_id in MANUAL_COUNTIES:
+        print(f"⏭  {county_id} is a MANUAL-solve county (per-search CAPTCHA). "
+              f"Skipping in the automated run — scrape it locally with "
+              f"`python -m core.dockets.{county_id.split('-')[0]}`.")
+        return {"county_id": county_id, "results": [], "skipped": True,
+                "reason": "manual-solve county (local run only)"}
+
     if county_id not in SCRAPER_REGISTRY:
         raise SystemExit(f"No docket scraper for {county_id}. Available: {list(SCRAPER_REGISTRY.keys())}")
 
