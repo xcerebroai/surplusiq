@@ -99,5 +99,8 @@ machine** — no human, unlike Orange — but **cannot run in GitHub Actions**.
 - OH county → needs the `oh_debt` conservative extractor. `franklin.py` still
   carries a **dead copy of the old max()-near-keyword extractor** that must be
   replaced with `oh_debt` (same as the Summit/Cuyahoga/Montgomery port).
-- Datacenter block being confirmed with 3 spaced Actions probe runs before the
-  build proceeds (one clean pass isn't proof).
+- Datacenter block **confirmed 3/3** (Actions runs 31502945449 / 31503146928 /
+  31503336730, 2026-08-11, spaced): every run landing HTTP 200 → disclaimer-POST
+  → Cloudflare "Just a moment..." → no search form. Consistent across separate
+  runners/IPs. Residential access verified reliable. Franklin autonomous-local
+  build proceeds on this basis.
