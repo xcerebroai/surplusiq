@@ -124,7 +124,7 @@ def _write_outputs(out_file: Path, progress_file: Path, progress: dict) -> None:
 
 
 async def _wait_for_solve(scraper: ManualCountyScraper, page: Page,
-                          label: str, poll_ms: int = 400) -> None:
+                          poll_ms: int = 400) -> None:
     """Tight, indefinite poll for the CAPTCHA token. Reminds every 30s. The
     fast poll means submit fires the instant the human finishes clicking."""
     t0 = time.time()
@@ -219,12 +219,16 @@ async def run_manual_county(scraper: ManualCountyScraper, cases: list[dict], *,
             await browser.close()
 
     remaining = total - len(progress) - len(skipped_unparseable)
+    try:
+        disp = out_file.relative_to(PROJECT_ROOT)
+    except ValueError:
+        disp = out_file
     print("\n" + "=" * 64)
     print(f"  DONE: {scraped_this_run} scraped this run, {len(progress)}/{total} total.")
     if remaining > 0:
         print(f"  {remaining} case(s) still unscraped — they remain DOCKET-NOT-VERIFIED "
               f"(apparent_surplus). Re-run to finish.")
-    print(f"  Output: {out_file.relative_to(PROJECT_ROOT)}")
+    print(f"  Output: {disp}")
     print("=" * 64)
     return {"county_id": scraper.county_id, "scraped": len(progress),
             "remaining": remaining, "out_file": str(out_file)}
