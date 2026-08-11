@@ -39,6 +39,35 @@ KILL_SIGNAL_PATTERNS = {
 }
 
 
+# ─── Bankruptcy resolution guard (OH) ───
+# A bankruptcy signal alone must NOT kill — a stay filed years ago that was
+# lifted/dismissed and the sale then completed leaves a live lead (Miami-Dade
+# already flags active-vs-resolved; OH inherited the blunt rule). Same temporal
+# approach as franklin_classify: bankruptcy KILLS only when it is the latest
+# controlling status — no explicit resolution AND no sale progress dated after
+# the bankruptcy event. Vocabulary ground-truthed on real OH dockets:
+#   • Cuyahoga CV25122629: "MOTION TO VACATE JUDGMENT DUE TO BANKRUPTCY",
+#     "SINCE THIS COURT NEVER FORMALLY STAYED THE CASE", then ORDER OF SALE
+#     ISSUED / SOLD DATE after it.
+#   • Franklin dockets: "BANKRUPTCY STAY - CASE INACTIVATED", "REINSTATED".
+BANKRUPTCY_EVENT_MARKERS = (
+    "bankrupt", "chapter 7", "chapter 13", "automatic stay", "suggestion of bankruptcy",
+)
+BANKRUPTCY_RESOLUTION_MARKERS = (
+    "relief from stay", "stay lifted", "stay is lifted", "stay terminated",
+    "stay dissolved", "stay vacated", "bankruptcy dismissed", "bankruptcy closed",
+    "dismissing bankruptcy", "reinstated", "reinstate", "reactivated",
+    "never formally stayed",
+)
+# A COMPLETED sale dated AFTER a bankruptcy event proves the case moved past it.
+# Deliberately strict: only an actual sale ("SOLD DATE ...") or a confirmation
+# counts — a mere new "order of sale issued" is just another attempt that could
+# itself be stopped by the same bankruptcy, so it does NOT prove resolution.
+BANKRUPTCY_SALE_PROGRESS_MARKERS = (
+    "sold date", "confirmation of sale", "order confirming sale", "confirming sale",
+)
+
+
 # ─── Surplus proof signals: positive indicators that confirm real surplus ───
 PROOF_OF_SURPLUS_PATTERNS = {
     "certificate_of_disbursement": ["certificate of disbursement"],
@@ -177,6 +206,34 @@ class DocketScraper:
                 found.append(filer_type)
         return found
 
+    def _bankruptcy_is_controlling(self, result: DocketResult) -> bool:
+        """Return True if bankruptcy should KILL — it is the LATEST controlling
+        status (no explicit resolution AND no sale progress dated after the
+        bankruptcy event). Return False when resolved/superseded (→ do not kill;
+        the lead is flagged via the retained signal but not disqualified).
+
+        Conservative on missing evidence: if the 'bankruptcy' signal matched the
+        docket text but NO dated bankruptcy event exists to anchor a timeline,
+        we cannot prove resolution → treat as controlling (kill) so an active
+        unresolved bankruptcy never leaks through as live."""
+        events = result.events or []
+        bk_dates = [
+            (e.get("filing_date") or "")
+            for e in events
+            if any(m in (e.get("description") or "").lower() for m in BANKRUPTCY_EVENT_MARKERS)
+        ]
+        if not bk_dates:
+            return True  # no anchorable bankruptcy event → conservative kill
+        latest_bk = max(bk_dates)
+        for e in events:
+            desc = (e.get("description") or "").lower()
+            if any(m in desc for m in BANKRUPTCY_RESOLUTION_MARKERS):
+                return False  # explicit resolution anywhere → resolved
+            d = e.get("filing_date") or ""
+            if d > latest_bk and any(m in desc for m in BANKRUPTCY_SALE_PROGRESS_MARKERS):
+                return False  # the sale moved forward after the bankruptcy → resolved
+        return True  # bankruptcy is the latest status, silence after → controlling
+
     def classify(self, result: DocketResult, final_sale_price: float) -> tuple:
         """
         Determine classification (green/yellow/red/killed) and reason.
@@ -201,9 +258,14 @@ class DocketScraper:
           - no owner claim filed AND
           - proof of surplus is filed (certificate of disbursement or notice of surplus)
         """
-        # KILLED checks
-        if result.kill_signals:
-            return ("killed", f"kill signal: {result.kill_signals[0]}")
+        # KILLED checks — but a RESOLVED bankruptcy does not disqualify. If the
+        # only kill signal is a bankruptcy that was lifted/dismissed or that the
+        # sale completed past, drop it from the kill decision (Miami-Dade parity).
+        effective_kills = list(result.kill_signals)
+        if "bankruptcy" in effective_kills and not self._bankruptcy_is_controlling(result):
+            effective_kills = [k for k in effective_kills if k != "bankruptcy"]
+        if effective_kills:
+            return ("killed", f"kill signal: {effective_kills[0]}")
         if result.owner_filed_claim:
             return ("killed", "owner already filed surplus claim")
 

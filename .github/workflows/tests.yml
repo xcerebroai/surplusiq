@@ -36,3 +36,5 @@ jobs:
           python -m tests.test_cuyahoga_debt
           python -m tests.test_montgomery_debt
           python -m tests.test_franklin_docket
+          python -m tests.test_appraised_sanity
+          python -m tests.test_bankruptcy_guard
