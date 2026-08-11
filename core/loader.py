@@ -537,6 +537,20 @@ def assign_status_fields(lead) -> None:
             lead.pipeline_ready  = False
         return
 
+    # ---- docket-checked, metadata-only (no green/yellow/killed classification):
+    #      e.g. Franklin — the portal exposes NO judgment amount, so there's no
+    #      debt/prayer and no positive/negative grade, but the docket WAS reviewed
+    #      and showed no post-sale kill signals. Stays apparent (never confirmed —
+    #      no proof/debt); evidence_level reflects that a docket review happened,
+    #      not "auction only". Keyed on the explicit docket_checked marker so a
+    #      failed/no-match scrape (classification 'unknown') does NOT qualify. ----
+    if getattr(lead, "docket_evidence_level", "") == "docket_checked":
+        lead.research_status = "docket_reviewed"
+        lead.money_status    = "estimated_surplus" if has_pr else "apparent_surplus"
+        lead.evidence_level  = "docket_reviewed"
+        lead.pipeline_ready  = False
+        return
+
     # ---- no docket classification: PR-enriched or auction-only ----
     if has_pr:
         # PropertyRadar enriched, but PR does NOT verify surplus (spec Part 4)
