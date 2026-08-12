@@ -105,59 +105,76 @@
   }
 
   /* ─── KPI Grid ──────────────────────────────────────────── */
+  /* Hierarchy encodes TRUST: the court-verified card is dominant (left,
+     large); the three unverified/lagging metrics are visually subordinate
+     (smaller, lower contrast) — never equal billing with proven money. */
   .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
+    grid-template-columns: 1.7fr 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+    align-items: stretch;
   }
   .kpi {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px 24px;
+    padding: 16px 18px;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  .kpi::before {
+  /* Secondary cards: no accent bar, muted — subordinate to the hero. */
+  .kpi .kpi-label { color: var(--text-muted); }
+  .kpi .kpi-value { font-size: 22px; color: var(--text-dim); }
+
+  /* The court-verified hero — the one metric the eye should land on first. */
+  .kpi.kpi-highlight {
+    border-color: rgba(16, 185, 129, 0.55);
+    background: linear-gradient(155deg, rgba(16, 185, 129, 0.10), var(--bg-card) 70%);
+    padding: 22px 26px;
+    box-shadow: 0 0 0 1px rgba(16,185,129,0.10), 0 8px 28px rgba(0,0,0,0.28);
+  }
+  .kpi.kpi-highlight::before {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  }
-  /* FP-16: the docket-verified-positive card is the real headline most
-     days (confirmed_surplus is usually $0 because the courts publish
-     disbursement filings days/weeks after the sale). Highlight visually. */
-  .kpi.kpi-highlight {
-    border-color: rgba(46, 204, 113, 0.6);
-    background: linear-gradient(180deg, rgba(46, 204, 113, 0.08), var(--bg-card));
-  }
-  .kpi.kpi-highlight::before {
-    background: #2ECC71;
     height: 3px;
+    background: var(--green);
   }
-  .kpi.kpi-highlight .kpi-value { color: #2ECC71; }
+  .kpi.kpi-highlight .kpi-label { color: var(--green); font-size: 12px; }
+  .kpi.kpi-highlight .kpi-value { color: var(--green); font-size: 44px; }
+  .kpi.kpi-highlight .kpi-sub   { color: var(--text-dim); font-size: 12.5px; }
+
   .kpi-label {
-    font-size: 11px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--text-dim);
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-weight: 700;
+    margin-bottom: 6px;
   }
   .kpi-value {
-    font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: var(--text);
+    line-height: 1.05;
   }
   .kpi-sub {
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--text-muted);
-    margin-top: 4px;
+    margin-top: 5px;
+    line-height: 1.4;
   }
   .kpi-value.surplus { color: var(--green); }
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .kpi.kpi-highlight { grid-column: 1 / -1; }
+  }
+  @media (max-width: 520px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .kpi.kpi-highlight .kpi-value { font-size: 36px; }
+  }
 
   /* ─── Toast (FP-22: copy case# on link-click → paste into clerk search) ─ */
   .sq-toast {
@@ -272,6 +289,33 @@
     color: var(--text-muted);
     margin-top: 4px;
   }
+  /* Compact verification-composition bar — shows at a glance whether a county's
+     leads are docket-verified vs unverified/portal-gated. Subtle, not a headline. */
+  .county-compbar {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 10px;
+    background: var(--border);
+  }
+  .county-compbar span { display: block; height: 100%; }
+  .county-compbar .seg-verified { background: var(--green); }
+  .county-compbar .seg-checked  { background: #3B82F6; }
+  .county-compbar .seg-unverified { background: #5C6679; }
+  .county-complegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+  }
+  .county-complegend b { font-weight: 700; }
+  .county-complegend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 3px; vertical-align: middle; }
+  .dot-verified { background: var(--green); }
+  .dot-checked  { background: #3B82F6; }
+  .dot-unverified { background: #5C6679; }
 
   /* ─── Filters ──────────────────────────────────────────── */
   .filter-row {
@@ -355,7 +399,7 @@
   th.sorted-desc::after { content: " ↓"; color: var(--accent); }
   th.numeric { text-align: right; }
   td {
-    padding: 12px 16px;
+    padding: 9px 14px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
   }
@@ -364,8 +408,12 @@
     font-variant-numeric: tabular-nums;
     font-weight: 500;
   }
+  td.nowrap { white-space: nowrap; }
+  td.dim { color: var(--text-muted); }
+  td .cell-muted { color: var(--text-muted); }
+  tbody tr { transition: background 0.12s ease; }
   tbody tr:nth-child(even) { background: var(--bg-row-alt); }
-  tbody tr:hover { background: rgba(79, 139, 255, 0.08); }
+  tbody tr:hover { background: rgba(79, 139, 255, 0.10); box-shadow: inset 2px 0 0 var(--accent); }
   td.surplus { color: var(--green); font-weight: 600; }
 
   /* ─── Score Badges ──────────────────────────────────────────── */
@@ -536,24 +584,36 @@
     margin-top: 1px;
   }
 
-  /* Status badges */
+  /* Status badges — compact, single-line; color carries state at a glance,
+     the full explanation lives in the tooltip (title). */
   .status-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.75em;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    text-transform: none;
+    white-space: nowrap;
     cursor: help;
+    line-height: 1.5;
   }
+  /* Each badge is atomic (never wraps mid-text); multiple badges flow and may
+     wrap BETWEEN badges so a narrow column stays readable, not 3 sprawled lines. */
+  .docket-cell { min-width: 120px; }
+  .docket-cell .status-badge { margin: 1px 3px 1px 0; }
   .status-badge.status-green   { background: rgba(46, 204, 113, 0.15); color: #2ECC71; }
   .status-badge.status-yellow  { background: rgba(255, 200, 0, 0.15);  color: #f1b500; }
   .status-badge.status-red     { background: rgba(255, 99, 99, 0.15);  color: #ff6b6b; }
   .status-badge.status-killed  { background: rgba(120, 120, 120, 0.2); color: #999; }
   .status-badge.status-unknown { background: rgba(150, 150, 150, 0.1); color: #777; }
   .status-badge.status-none    { background: rgba(100, 130, 200, 0.1); color: #6688cc; }
-  .status-badge.dv-positive    { background: rgba(46, 204, 113, 0.30); color: #2ECC71; font-weight: 600; }
+  .status-badge.dv-positive    { background: rgba(16, 185, 129, 0.28); color: #34d399; font-weight: 700; }
+  /* Docket checked (no kill) but NOT a verified surplus — muted teal. */
+  .status-badge.status-checked    { background: rgba(59, 130, 246, 0.14); color: #7ab0ff; }
+  /* Not docket-verified (portal-gated / inaccessible / no scraper) — low
+     contrast so a scanning eye reads it as "not proven" without reading. */
+  .status-badge.status-unverified { background: rgba(120, 130, 150, 0.14); color: #8a94a8; }
 
   /* Subtle row tint for killed leads */
   tr.row-killed {
@@ -563,20 +623,40 @@
     text-decoration: line-through;
   }
 
-  /* Verification methodology note */
+  /* Verification methodology note — collapsible */
   .verify-note {
-    background: rgba(79, 139, 255, 0.06);
+    background: rgba(79, 139, 255, 0.05);
     border: 1px solid var(--border);
     border-left: 3px solid var(--accent, #4f8bff);
     border-radius: 8px;
-    padding: 14px 18px;
+    padding: 12px 18px;
     margin: 0 0 24px;
     font-size: 13px;
-    line-height: 1.6;
     color: var(--text-dim);
   }
+  .verify-note > summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    list-style: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .verify-note > summary::-webkit-details-marker { display: none; }
+  .verify-note > summary::before {
+    content: "▸";
+    color: var(--text-dim);
+    transition: transform 0.15s ease;
+    display: inline-block;
+  }
+  .verify-note[open] > summary::before { transform: rotate(90deg); }
+  .verify-note-hint { color: var(--text-muted); font-weight: 400; }
+  .verify-note-body { margin-top: 10px; line-height: 1.6; }
+  .verify-note-body p { margin-bottom: 8px; }
   .verify-note strong { color: var(--text); }
-  #verify-note-counts { display: block; margin-top: 6px; color: var(--text-muted); font-size: 12px; }
+  #verify-note-counts { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
 </style>
 </head>
 
@@ -632,15 +712,17 @@
     </div>
   </div>
 
-  <!-- Verification methodology note -->
-  <div class="verify-note" id="verify-note">
-    <strong>How surplus is classified:</strong>
-    <strong>📋 Verified Surplus</strong> — real prayer amount extracted from a foreclosure judgment PDF, positive (sale − prayer), no kill signals. Court-verified and actionable today. The headline metric on this dashboard.
-    <strong>Apparent Surplus</strong> — auction math only (sale − opening bid). For FL the opening bid IS the judgment amount; for OH it is the statutory 2/3-appraised figure that does NOT represent real debt — those rows need manual docket verification via the Clerk Docket link.
-    <strong>Estimated Surplus</strong> — sale price refined by PropertyRadar's reported loan balance (only when PR returns a non-zero balance). Rare on fresh foreclosures because PR data lags.
-    <strong>Disbursement Filed</strong> — the court has posted a notice of excess proceeds / certificate of disbursement. This filing typically arrives weeks after sale — by then leads have aged out of the 14-day freshness window, so this metric is normally $0 / 0 leads on a daily dashboard.
-    <span id="verify-note-counts"></span>
-  </div>
+  <!-- Verification methodology note — collapsible, collapsed by default -->
+  <details class="verify-note" id="verify-note">
+    <summary><strong>How surplus is classified</strong> <span class="verify-note-hint">— tap to read the four tiers &amp; what each means</span></summary>
+    <div class="verify-note-body">
+      <p><strong>📋 Verified Surplus</strong> — real debt from a court judgment (prayer amount / decree), positive (sale − debt), no kill signals. Court-verified and actionable today. The headline metric on this dashboard.</p>
+      <p><strong>Apparent Surplus</strong> — auction math only (sale − opening bid). For FL circuit-court mortgage cases the opening bid IS the judgment amount; for OH it is the statutory 2/3-appraised figure that does NOT represent real debt; for FL county-court (HOA/condo) cases the first mortgage survives the sale, so the number is not a real surplus. These rows need manual docket verification via the Clerk Docket link.</p>
+      <p><strong>Estimated Surplus</strong> — sale price refined by PropertyRadar's reported loan balance (only when PR returns a non-zero balance). Rare on fresh foreclosures because PR data lags.</p>
+      <p><strong>Disbursement Filed</strong> — the court has posted a notice of excess proceeds / certificate of disbursement. This filing typically arrives weeks after sale — by then most leads have aged out of the 28-day freshness window, so this metric is usually low on a daily dashboard (confirmed leads are retained up to 90 days).</p>
+      <span id="verify-note-counts"></span>
+    </div>
+  </details>
 
   <!-- County Breakdown -->
   <section class="section">
@@ -770,6 +852,21 @@
   // ─── Helpers ──────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
   const fmtMoney = (n) => "$" + Math.round(n || 0).toLocaleString();
+  // Compact one-line "sold at": "Aug 3, 2026 · 11:06a". Falls back to the raw
+  // string if unparseable so nothing is ever hidden.
+  const fmtSoldAt = (l) => {
+    const raw = l.sale_datetime || l.sale_date || "";
+    if (!raw) return '<span class="cell-muted">—</span>';
+    const d = new Date(raw);
+    if (isNaN(d)) return raw;
+    const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    // Only show a time if the source carried one (sale_datetime, not a bare date).
+    if (!l.sale_datetime) return date;
+    let h = d.getHours(), m = d.getMinutes();
+    const ap = h >= 12 ? "p" : "a"; h = h % 12 || 12;
+    const time = h + ":" + String(m).padStart(2, "0") + ap;
+    return date + " · " + time;
+  };
   const fmtDate  = (s) => {
     if (!s) return "—";
     const d = new Date(s);
@@ -841,7 +938,7 @@
     // not a real surplus. Amber caution, apparent figure shown for context.
     if (l.real_surplus_source === 'fl_hoa_unverified') {
       const gs = l.gross_surplus || 0;
-      return '<span class="surplus-caution" title="HOA/association foreclosure (county court) — the first mortgage SURVIVES the sale, so the buyer takes subject to it. The opening bid is only the small association lien, so sale minus opening bid is NOT a real surplus; the senior mortgage debt is unknown. Verify the senior lien via the Clerk Docket link before acting.">&#9888; HOA lien — mortgage survives</span>'
+      return '<span class="surplus-caution" title="HOA/association foreclosure (county court) — the first mortgage SURVIVES the sale, so the buyer takes subject to it. The opening bid is only the small association lien, so sale minus opening bid is NOT a real surplus; the senior mortgage debt is unknown. Verify the senior lien via the Clerk Docket link before acting.">&#9888; HOA lien</span>'
            + '<span class="surplus-apparent">auction math ' + fmtMoney(gs) + ' not credible</span>';
     }
     // OH-mortgage leads with no usable docket debt are tagged
@@ -884,30 +981,30 @@
       // (a) Docket WAS checked, no post-sale kill, no debt grade (Franklin
       //     metadata-only: portal exposes no judgment amount). Honest, covered.
       if (l.docket_evidence_level === 'docket_checked' && l.docket_covered !== false) {
-        return dvPrefix + '<span class="status-badge status-none" title="Docket checked — no post-sale kill signals. This county\'s portal exposes no judgment amount, so there is no debt figure; the lead stays apparent (auction math), not confirmed.">📋 Docket-checked · no kill</span>';
+        return dvPrefix + '<span class="status-badge status-checked" title="Docket checked — no post-sale kill signals. This county\'s portal exposes no judgment amount, so there is no debt figure; the lead stays apparent (auction math), not confirmed.">📋 Checked</span>';
       }
       // (b) LOCAL-RUN county whose docket data does NOT cover this case. It is
       //     NOT docket-verified — the local run lags the daily auction feed.
       if (l.local_run_county && l.docket_covered === false) {
         if (l.docket_last_scraped) {
-          return dvPrefix + '<span class="status-badge status-red" title="This county is scraped by a LOCAL manual run, not the daily cron. This case is NOT covered by the last run (' + l.docket_last_scraped + '), so the docket layer is stale for it — NOT docket-verified. Re-run the local scraper, or use the Clerk Docket link.">⚠ docket stale · last run ' + l.docket_last_scraped + '</span>';
+          return dvPrefix + '<span class="status-badge status-red" title="This county is scraped by a LOCAL manual run, not the daily cron. This case is NOT covered by the last run (' + l.docket_last_scraped + '), so the docket layer is stale for it — NOT docket-verified. Re-run the local scraper, or use the Clerk Docket link.">⚠ Stale</span>';
         }
-        return dvPrefix + '<span class="status-badge status-none" title="Portal requires a per-search CAPTCHA solve — parked, not scraped. Docket NOT verified; this is auction math only. Use the Clerk Docket link to check manually.">docket-not-verified · portal-gated</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="Portal requires a per-search CAPTCHA solve — parked, not scraped. Docket NOT verified; this is auction math only. Use the Clerk Docket link to check manually.">Portal-gated</span>';
       }
       // (c) Portal-inaccessible county (Cloudflare, no authorized data feed:
       //     Hamilton). Not docket-verified — manual-verify link only.
       if (l.requires_manual_docket_verify) {
-        return dvPrefix + '<span class="status-badge status-none" title="Portal-inaccessible (Cloudflare, no authorized data feed). Docket NOT verified — use the Verify ⚠ link in the Clerk Docket column to check manually.">🔒 docket-not-verified · portal-inaccessible</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="Portal-inaccessible (Cloudflare, no authorized data feed). Docket NOT verified — use the Verify ⚠ link in the Clerk Docket column to check manually.">🔒 No portal</span>';
       }
       if (l.state === 'FL') {
-        return dvPrefix + '<span class="status-badge status-none" title="No FL docket scraper yet. Surplus number is FL opening-bid math (judgment amount). Use the Clerk Docket link to verify kill signals before acting.">no docket scrape</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="No FL docket scraper yet. Surplus number is FL opening-bid math (judgment amount). Use the Clerk Docket link to verify kill signals before acting.">Unverified</span>';
       }
-      return dvPrefix + '<span class="status-badge status-none" title="Docket not yet checked for this lead. Use the Clerk Docket link to verify.">no docket yet</span>';
+      return dvPrefix + '<span class="status-badge status-unverified" title="Docket not yet checked for this lead. Use the Clerk Docket link to verify.">Unverified</span>';
     }
     const labels = {
       green:   '✓ Green',
       yellow:  'Yellow',
-      red:     '⚠ Red Flagged',
+      red:     '⚠ Red',
       killed:  '✗ Killed',
       unknown: '?'
     };
@@ -957,7 +1054,7 @@
       out += ' <span class="status-badge status-none" title="Confirmed surplus retained past the standard ' +
              'window — this lead has left the daily auction feed, so it is shown at its last-verified state (' +
              (l.confirmed_last_verified || 'earlier') + '), not re-checked today. Verify current status before acting.">' +
-             '⏳ retained · last verified ' + (l.confirmed_last_verified || '') + '</span>';
+             '⏳ Retained</span>';
     }
     return out;
   }
@@ -1137,6 +1234,7 @@
     counties.forEach(c => {
       const card = document.createElement("div");
       card.className = "county-card";
+      const comp = countyComposition(c.county_id);
       card.innerHTML = `
         <div class="county-card-head">
           <div class="county-name">${c.county_name}</div>
@@ -1145,7 +1243,8 @@
         <div class="county-leads">${c.leads}</div>
         <div class="county-leads-label">qualifying leads</div>
         <div class="county-surplus">${fmtMoney(c.surplus)}</div>
-        <div class="county-top">Apparent surplus · top lead ${fmtMoney(c.top_lead)}</div>
+        <div class="county-top">apparent surplus · top lead ${fmtMoney(c.top_lead)}</div>
+        ${renderCountyComposition(comp)}
       `;
       card.style.cursor = "pointer";
       card.addEventListener("click", () => {
@@ -1156,6 +1255,35 @@
       });
       grid.appendChild(card);
     });
+  }
+
+  // Per-county verification composition, computed from the visible leads.
+  //   verified   — court-proven (docket_verified_positive or confirmed_surplus)
+  //   checked    — docket reviewed with a grade / docket-checked (no debt figure)
+  //   unverified — portal-gated / no docket / HOA-unverified (auction math only)
+  function countyComposition(countyId) {
+    let verified = 0, checked = 0, unverified = 0;
+    LEADS.forEach(l => {
+      if (l.county_id !== countyId) return;
+      const cls = (l.classification || '').toLowerCase();
+      if (l.docket_verified_positive || l.money_status === 'confirmed_surplus') verified++;
+      else if ((l.docket_evidence_level === 'docket_checked' && l.docket_covered !== false)
+               || ['green','yellow','red'].includes(cls)) checked++;
+      else unverified++;
+    });
+    return { verified, checked, unverified, total: verified + checked + unverified };
+  }
+  function renderCountyComposition(comp) {
+    if (!comp.total) return '';
+    const pct = n => (100 * n / comp.total).toFixed(1) + '%';
+    const seg = (n, cls) => n ? `<span class="${cls}" style="width:${pct(n)}"></span>` : '';
+    const legend = [];
+    if (comp.verified)   legend.push(`<span><span class="dot dot-verified"></span><b>${comp.verified}</b> verified</span>`);
+    if (comp.checked)    legend.push(`<span><span class="dot dot-checked"></span><b>${comp.checked}</b> checked</span>`);
+    if (comp.unverified) legend.push(`<span><span class="dot dot-unverified"></span><b>${comp.unverified}</b> unverified</span>`);
+    return `<div class="county-compbar" title="${comp.verified} court-verified · ${comp.checked} docket-checked · ${comp.unverified} unverified/portal-gated">`
+         + seg(comp.verified, 'seg-verified') + seg(comp.checked, 'seg-checked') + seg(comp.unverified, 'seg-unverified')
+         + `</div><div class="county-complegend">${legend.join('')}</div>`;
   }
 
   function populateCountyFilter() {
@@ -1238,20 +1366,20 @@
       <tr${(l.lead_quality === 'killed') ? ' class="row-killed"' : ''}>
         <td class="numeric surplus-cell">${renderSurplusCell(l)}</td>
         <td>${renderMoneyStatusBadge(l)}</td>
-        <td>${renderDocketCell(l)}</td>
+        <td class="docket-cell">${renderDocketCell(l)}</td>
         <td><span class="badge ${scoreBadgeClass(l.score)}">${l.score}</span></td>
-        <td>${l.county_name}</td>
+        <td class="nowrap">${l.county_name}</td>
         <td><span class="state-pill">${l.state}</span></td>
-        <td>${l.case_number || "—"}</td>
-        <td>${cleanAddress(l.address) || "<span style='color:var(--text-muted)'>—</span>"}</td>
+        <td class="nowrap">${l.case_number || "—"}</td>
+        <td>${cleanAddress(l.address) || '<span class="cell-muted">—</span>'}</td>
         <td class="numeric">${fmtMoney(l.final_sale_price)}</td>
         <td class="numeric">${fmtMoney(l.opening_bid)}</td>
-        <td>${l.sale_datetime || fmtDate(l.sale_date)}</td>
-        <td>${(l.owner_name || l.pr_owner_name) ? `<span class="owner-name">${l.owner_name || l.pr_owner_name}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td class="nowrap">${fmtSoldAt(l)}</td>
+        <td>${(l.owner_name || l.pr_owner_name) ? `<span class="owner-name">${l.owner_name || l.pr_owner_name}</span>` : '<span class="cell-muted">—</span>'}</td>
         <td>${renderEvidenceBadge(l)}</td>
-        <td>${l.source_url ? `<a href="${l.source_url}" target="_blank" rel="noopener" class="src-link" onclick='sqCopyAndToast(${caseArg})'>View</a>` : '—'}</td>
+        <td>${l.source_url ? `<a href="${l.source_url}" target="_blank" rel="noopener" class="src-link" onclick='sqCopyAndToast(${caseArg})'>View</a>` : '<span class="cell-muted">—</span>'}</td>
         <td>${clerkCell}</td>
-        <td>${l.sold_to || "—"}</td>
+        <td class="nowrap">${l.sold_to || '<span class="cell-muted">—</span>'}</td>
       </tr>
     `;
     }).join("");
