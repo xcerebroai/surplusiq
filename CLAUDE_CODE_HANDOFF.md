@@ -33,7 +33,7 @@ This doc is the current-state summary and the open-work queue.
 
 ## Known constraints
 
-- **`data/dockets/_confirmed_retained.json`** is gitignored internal state (the confirmed-retention store) — it lives only where the dashboard is built. In cloud-only operation it persists via the committed rebuild; a confirmed lead is re-stamped each build while it's in the feed.
+- **`data/dockets/_confirmed_retained.json`** is the confirmed-retention store and MUST be committed (the cron's `git add data/dockets/` picks it up) — it is cross-run persistent state the cloud needs to carry a confirmed lead forward after it leaves the 28-day auction window. It was briefly gitignored during the 1.0 push, which dropped the confirmed lead on the first out-of-window run; fixed by committing it. (Distinct from the transient `.<county>_<date>.progress.json` manual-runner files, which ARE local-only.)
 - **`core/auction/base.py`** has stale `days_back=7` defaults but is not imported by the live path (`universal.py` is the entry point). Low priority.
 - Miami-Dade docket blocked only by reCAPTCHA v3 was a **misdiagnosis** — v3 passes headless; it joined the cron June 2026. Don't re-flag it as blocked.
 

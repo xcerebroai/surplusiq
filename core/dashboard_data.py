@@ -818,7 +818,7 @@ def export_dashboard_data():
     # flips it to killed (dropped here); once it leaves the feed it is carried
     # at its last-verified snapshot, flagged retained with the date so it never
     # masquerades as freshly checked.
-    _apply_confirmed_retention(leads_payload, _present_keys)
+    confirmed_retained_count = _apply_confirmed_retention(leads_payload, _present_keys)
 
     leads_payload.sort(key=lambda p: (p.get("priority_rank", 5), -float(p.get("best_real_surplus", 0) or 0)))
 
@@ -885,6 +885,7 @@ def export_dashboard_data():
         "killed_filtered_count":  killed_removed,                    # FP-14
         "killed_shown_count":     len(killed_entries),               # in killed_leads.json
         "below_floor_filtered_count": floor_removed,                  # FP-18
+        "confirmed_retained_count": confirmed_retained_count,         # carried past window (post-filter)
         "min_display_surplus":    MIN_DISPLAY_SURPLUS,                # FP-18 threshold
 
         # FP-4: separated, honestly-labeled totals. No single "total_surplus"
