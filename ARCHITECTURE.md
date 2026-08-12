@@ -1,171 +1,96 @@
-# SurplusIQ — Project Architecture
+# SurplusIQ — Architecture
 
-## Overview
+The actual module map, read from the code. For the "why" and the replication
+principles, see `README.md`. For build rules, see `CLAUDE.md`.
 
-Multi-state surplus funds intelligence system matching the signed SOW. Phase 1 + 2 covers 10 counties (FL 5 + OH 5). Built as 8 modular components that each do one job well.
-
-## Project Structure
-
-```
-surplusiq/
-├── config/
-│   ├── counties.py          # All county configs (URLs, formats, quirks)
-│   ├── thresholds.py        # Business rules (min surplus, score weights)
-│   └── __init__.py
-│
-├── core/                    # The 8 SOW components
-│   ├── auction/             # Component 4.1 — Auction Tracking Engine
-│   │   ├── base.py          # Abstract base class
-│   │   ├── realforeclose.py # FL + OH (shared platform)
-│   │   ├── sri.py           # Indiana (Phase 3)
-│   │   └── __init__.py
-│   │
-│   ├── surplus/             # Component 4.2 — Surplus Detection Engine
-│   │   ├── detector.py      # Core surplus calculation
-│   │   └── __init__.py
-│   │
-│   ├── enrichment/          # Component 4.3 — Property Intelligence
-│   │   ├── propertyradar.py # PropertyRadar API wrapper
-│   │   └── __init__.py
-│   │
-│   ├── documents/           # Component 4.4 — Document Retrieval
-│   │   ├── retriever.py     # Core doc retrieval logic
-│   │   ├── recheck.py       # Day 3/7/14 re-scan scheduler
-│   │   └── __init__.py
-│   │
-│   ├── clerks/              # Component 4.5 — Court Docket Verification
-│   │   ├── base.py          # Abstract clerk scraper
-│   │   ├── oscar.py         # Miami-Dade
-│   │   ├── broward.py       # Broward Web2
-│   │   ├── core_duval.py    # Duval CORE
-│   │   ├── lee.py           # Lee eFiling
-│   │   ├── orange.py        # Orange myEClerk
-│   │   ├── cuyahoga.py      # Cuyahoga CP Docket
-│   │   ├── franklin.py      # Franklin FCJS
-│   │   ├── montgomery.py    # Montgomery
-│   │   ├── summit.py        # Summit
-│   │   ├── hamilton.py      # Hamilton
-│   │   └── __init__.py
-│   │
-│   ├── taxdeed/             # Component 4.4b — Tax Deed Portal Scrapers
-│   │   ├── realtdm.py       # FL RealTDM portal
-│   │   ├── orange_comp.py   # Orange Comptroller
-│   │   └── __init__.py
-│   │
-│   ├── scoring/             # Component 4.7 — Lead Scoring
-│   │   ├── scorer.py        # A+/A/B/C grading logic
-│   │   └── __init__.py
-│   │
-│   └── output/              # Component 4.8 — Output Formats
-│       ├── excel.py         # XLSX export
-│       ├── csv_export.py    # CSV export
-│       ├── dashboard.py     # JSON for dashboard
-│       └── __init__.py
-│
-├── pipeline/
-│   ├── orchestrator.py      # Main daily runner
-│   ├── state.py             # Pipeline state tracking
-│   └── __init__.py
-│
-├── utils/
-│   ├── captcha.py           # Manual CAPTCHA pause helpers
-│   ├── browser.py           # Playwright session management
-│   ├── dedup.py             # Check Excess Elite for duplicates
-│   └── __init__.py
-│
-├── data/                    # Runtime data (gitignored)
-│   ├── raw/                 # Raw scraped data by county/date
-│   ├── enriched/            # After PropertyRadar enrichment
-│   ├── verified/            # After clerk verification
-│   ├── final/               # Final scored leads
-│   └── diagnostics/         # Screenshots, HTML dumps for debugging
-│
-├── docs/                    # GitHub Pages dashboard
-│   ├── index.html
-│   └── data/
-│       ├── leads.json
-│       └── summary.json
-│
-├── output/                  # Excel exports (gitignored)
-│
-├── tests/                   # Per-component tests
-│   ├── test_auction.py
-│   ├── test_clerks.py
-│   └── ...
-│
-├── .github/
-│   └── workflows/
-│       └── daily_pipeline.yml
-│
-├── run.py                   # Main entry point
-├── .env                     # API keys (gitignored)
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
-
-## Data Flow
+## Pipeline
 
 ```
-[Auction Scraper]
-      ↓
-  Raw Sales
-      ↓
-[Surplus Detector] ← filters for 3rd party + $10K+ surplus
-      ↓
-  Surplus Leads
-      ↓
-[PropertyRadar Enricher] ← adds lien/debt data
-      ↓
-  Enriched Leads
-      ↓
-[Clerk Docket Verifier] ← checks claim status, Cert of Disbursement
-      ↓
-  Verified Leads
-      ↓
-[Document Retriever] ← Day 3/7/14 re-checks
-      ↓
-[Scorer] ← A+/A/B/C grading
-      ↓
-[Output] ← Excel + Dashboard JSON
-      ↓
-[Dedup Check] ← skip leads already in Excess Elite
-      ↓
-  DELIVERY: Hosted Site + Excel
+  scrape ──────► docket-validate ──────► enrich ──────► classify ──────► publish
+  universal.py   dockets/enrich.py       propertyradar   loader.py        dashboard_data.py
+  → data/raw/    → data/dockets/         → data/enriched  (Lead objects)   → docs/data/leads.json
 ```
 
-## Build Order
+Runs daily via `.github/workflows/daily-refresh.yml` (11:00 UTC), which gates on
+the full test suite, scrapes → dockets → PR → dashboard, commits `docs/data/`,
+and GitHub Pages serves it. Two counties (franklin-oh, orange-fl) run only
+locally and merge their docket JSONL on the next cloud build.
 
-### Phase 1 (Florida) — Week 1-2
-1. Build `auction/realforeclose.py` working for Miami-Dade
-2. Build `clerks/oscar.py` for Miami-Dade OSCAR
-3. Build `surplus/detector.py` with Eric's rules
-4. Build `enrichment/propertyradar.py`
-5. Connect end-to-end for Miami-Dade
-6. Replicate auction config for Broward, Duval, Lee, Orange
-7. Build each FL clerk scraper
-8. Build `taxdeed/realtdm.py` for FL tax sales
+## Module map (real files only)
 
-### Phase 2 (Ohio) — Week 3
-9. Extend `auction/realforeclose.py` with Ohio 2/3 appraisal logic
-10. Build 5 Ohio clerk scrapers
-11. Handle Ohio's "prayer amount" lookup for debt
+```
+core/
+  auction/
+    universal.py          # ALL 10 counties' auction scraper (RealForeclose FL, sheriffsaleauction OH)
+    base.py               # auction scraper base (dead-ish; universal.py is the entry point)
+  dockets/
+    __init__.py           # SCRAPER_REGISTRY, MANUAL_COUNTIES, LOCAL_RUN_COUNTIES, get_scraper()
+    base.py               # DocketScraper base, DocketResult/DocketEvent dataclasses,
+                          #   shared detectors (kill/proof/competing-filer), classify(),
+                          #   bankruptcy resolution guard
+    enrich.py             # orchestrates the docket step; WORKING_DOCKET_COUNTIES; parallel run
+    oh_debt.py            # OH-mortgage conservative debt (principal+interest+junior+buffer)
+    cuyahoga.py           # OH: structured prayer field + decree (oh_debt)
+    montgomery.py         # OH: decree PDF (oh_debt, Summit-family parser)
+    summit.py             # OH: decree PDF (oh_debt)
+    franklin.py           # OH: metadata-only (kill signals + owner, NO debt); LOCAL-RUN
+    franklin_classify.py  # Franklin's temporal kill classifier (pure, tested)
+    hamilton.py           # OH: registered but PR-fallback (portal-inaccessible)
+    miami_dade.py         # FL: docket review (flag-based)
+    broward.py            # FL: docket + recovery-firm kill gate (local firm list)
+    duval.py              # FL: docket, 3-signal cross-confirm (own firm list)
+    orange.py             # FL: manual-solve (reCAPTCHA v2); LOCAL-RUN
+    manual_runner.py      # reusable human-in-the-loop / autonomous local scrape loop
+  enrichment/
+    propertyradar.py      # PropertyRadar API client (owner/lien/loan enrichment)
+    lee_liens.py          # Lee County PR-first lien classifier
+  loader.py               # merge auction+docket+PR → Lead; filters; status/tier model;
+                          #   appraised-value sanity flag; docket-rescue; overbid gate
+  dashboard_data.py       # build docs/data/leads.json + summary.json; kill filter;
+                          #   confirmed-lead retention; local-run staleness
+config/
+  counties.py             # CountyConfig × 10; LEAD_WINDOW_DAYS=28; CONFIRMED_WINDOW_DAYS=90
+data/
+  raw/                    # auction output (per county, per day)
+  dockets/                # docket output (per county, per day) + _confirmed_retained.json (gitignored)
+  enriched/               # PropertyRadar output
+  samples/<county>/ci/    # REAL captured dockets/decrees — acceptance-test fixtures
+docs/
+  index.html              # dashboard (vanilla JS)
+  data/leads.json         # the published deliverable
+  data/summary.json       # headline totals + per-county + local_run_status
+tests/                     # 11 acceptance suites, 255 checks (one per county/capability)
+knowledge/blocked_counties.md   # investigation record for portal-limited counties
+.github/workflows/
+  daily-refresh.yml       # the cron (test gate → scrape → docket → PR → dashboard → commit)
+  tests.yml               # standalone test suite on push
+```
 
-### Polish — Week 4
-12. `documents/recheck.py` Day 3/7/14 scheduler
-13. Dashboard polish + GitHub Actions automation
-14. Excel formatting final pass
-15. Dedup against Excess Elite API
-16. Deliver
+## Key data structures
 
-## Key Design Principles
+- **`config/counties.py:CountyConfig`** — per-county URLs, clerk system, case format, flags.
+- **`core/dockets/base.py:DocketResult`** — docket scrape output attached to a lead
+  (prayer_amount, debt_components, kill_signals, proof_of_surplus, competing_filers,
+  classification, owner_name, evidence_level, events).
+- **`core/loader.py:Lead`** — the merged auction+docket+PR record with the verification
+  status model (money_status, evidence_level, true_surplus, debt_source, appraised_value,
+  mispriced_opener, …). `to_dict()` → the dashboard payload.
 
-**Each county scraper is independent** — if Hamilton breaks, the other 9 keep running. No shared state between counties.
+## Entry points
 
-**Every stage saves output** — auction → surplus → enriched → verified → final. If any stage fails, we can resume from the last checkpoint.
+| Purpose | Command |
+|---|---|
+| Auction scrape | `python -m core.auction.universal --all` |
+| Cloud docket step | `python -m core.dockets.enrich auto` (or a county-id / comma list) |
+| Franklin docket (local) | `python -m core.dockets.franklin` |
+| Orange docket (local) | `python -m core.dockets.orange` |
+| Build dashboard | `python -m core.dashboard_data` |
 
-**CAPTCHA counties run headed with manual pause** — Lee, Cuyahoga, Hamilton prompt the user to solve manually. The pipeline pauses until they press Enter.
+`run.py` at the repo root is **dead** pre-refactor code — never run it.
 
-**All selectors/URLs live in config** — when a county changes its site, update the config file, not the code.
+## Empty scaffold packages (not used)
 
-**Dedup before delivery** — the final step hits Excess Elite API to skip any case numbers already in his system. Only NEW leads go to Eric.
+`core/clerks/`, `core/documents/`, `core/scoring/`, `core/surplus/`, `core/taxdeed/`,
+`core/output/` are 0-line `__init__.py` placeholders from an early SOW-era design that
+was never built. The real logic lives in `core/dockets/` + `core/loader.py` +
+`core/dashboard_data.py`. (These are on the cleanup delete list.)

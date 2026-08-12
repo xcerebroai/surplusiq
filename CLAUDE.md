@@ -1,267 +1,111 @@
-CLAUDE.md — SurplusIQ Project Memory & Build Rules
-Auto-loaded every session. Hard constraints. Overrides convenience.
-PROJECT
+# CLAUDE.md — SurplusIQ Project Memory & Build Rules
 
-SurplusIQ: daily lead-intelligence system finding real-estate foreclosure SURPLUS opportunities across 10 counties.
-Builder: Quentin Flores (Jarvis LLC). Client: Eric Richardson (Excess Elite LLC).
-Contract: $10K flat, paid, signed Apr 11 2026. Past deadline — finishing fast is the priority.
-Repo: github.com/xcerebroai/surplusiq. Live dashboard: https://xcerebroai.github.io/surplusiq/
+Auto-loaded every session. Hard constraints. Overrides convenience.
+See `README.md` for the full architecture and `ARCHITECTURE.md` for the module map.
+
+## PROJECT
+
+SurplusIQ: daily lead-intelligence finding real-estate foreclosure SURPLUS opportunities across 10 counties.
+Repo: github.com/xcerebroai/surplusiq. Live dashboard: https://xcerebroai.github.io/surplusiq/ (GitHub Pages, source = `docs/`).
 10 counties — FL: miami-dade, broward, duval, lee, orange. OH: cuyahoga, franklin, montgomery, summit, hamilton.
 
-WORKING STYLE
+## WORKING STYLE
 
-Direct execution. No session timestamps, no break/stopping-point suggestions, no padding.
-Quentin is not a professional developer — give exact, copy-paste-able commands. Hard technical pushback when warranted is welcome.
-When delivering instructions or content to paste elsewhere, deliver as ONE single block, never split across multiple blocks.
+Direct execution. Give exact, copy-paste-able commands. Hard technical pushback when warranted is welcome.
+When delivering instructions/content to paste elsewhere, deliver as ONE single block, never split.
 
-TESTING — GITHUB-FIRST, ALWAYS
+## TESTING — GITHUB-FIRST, ALWAYS
 
-NEVER run scrapers locally. GitHub Actions is the only environment that proves anything.
-Loop: edit → commit → push → trigger Daily Refresh workflow via workflow_dispatch → diagnose from gh run view <id> --log.
-Single-county scraper test: county=target, docket_county=target, run_pr=false, commit_results=false. Set commit_results=true only once proven.
-"Run completed" does NOT mean "scraper works." Always read the docket-step log content per case.
+NEVER run cloud scrapers locally to "prove" them — GitHub Actions is the only environment that proves a cloud scraper.
+(Exception: the two LOCAL-RUN counties, orange-fl and franklin-oh, run ONLY locally — see below.)
+Loop: edit → commit → push → trigger Daily Refresh via `gh workflow run` → diagnose from `gh run view <id> --log`.
+Single-county test: `-f county=<id> -f commit_results=false`. Set `commit_results=true` only once proven.
+"Run completed / green" does NOT mean "works" — verify the PUBLISHED `docs/data/leads.json`, per-lead, not the run status.
+Pure transforms (`core.dashboard_data`, tests, the loader on committed data) MAY run locally — they're deterministic.
 
-NEVER FABRICATE DATA — CORE ANTI-FALSE-POSITIVE RULE
+## NEVER FABRICATE DATA — CORE ANTI-FALSE-POSITIVE RULE
 
-If a debt amount cannot be extracted (PDF not found, parse failed, ambiguous): field stays 0, lead classified unknown — NEVER green, NEVER confirmed.
-A scraper that runs clean but returns a guessed/wrong number is worse than one that fails loudly. Fail loudly.
+If a debt amount cannot be extracted (PDF not found, parse failed, ambiguous): field stays 0, lead classified unknown/apparent — NEVER green, NEVER confirmed.
+A scraper that runs clean but returns a guessed number is worse than one that fails loudly. Fail loudly.
 Debt comes from the document or it does not exist. No inference, no estimation.
-A prayer/debt amount equal to the opening bid is a RED FLAG — that is the Ohio 2/3-appraised trap. Reject it.
-The returned case number must match the searched case number.
+An OH prayer/debt equal to the opening bid is the 2/3-appraised trap — reject it. The returned case number must match the searched case number.
 
-ERIC'S 6 CORRECTIONS (client-defined — violating these undoes prior work)
+## THREE-TIER MONEY MODEL — never conflate tiers
 
-PropertyRadar is a lien REPORT, not a kill switch. Only reports 2nd-position liens/HELOCs. Never confirms or kills a lead.
-Ohio opening bid = statutory 2/3-appraised value, NOT real debt. Real OH debt = docket prayer/writ/final-judgment amount only.
-Florida is "one tier" — FL opening bid IS the real debt.
-Killed leads are filtered OUT of the deliverable entirely — not badged, not kept.
-Docket is primary for Ohio.
-Only Cuyahoga shows the prayer amount as a field. Franklin, Montgomery, Summit, Hamilton require opening the summary judgment PDF and extracting debt from it.
+- `confirmed_surplus` — docket-verified WITH all proof fields. The only tier that means real money.
+- `estimated_surplus` — PropertyRadar refined the surplus NUMBER (real TLB > $0). An estimate.
+- `apparent_surplus` — auction math only. Unverified. The honest default.
 
-THREE-TIER MONEY MODEL — never conflate tiers
+`confirmed_surplus = $0` is a correct, honest result when nothing is docket-proven. Never inflate it.
+`tests.test_verification` (the status model) must stay green.
 
-confirmed_surplus — docket-verified WITH all proof fields. The only tier that means real money.
-estimated_surplus — PropertyRadar enrichment. An estimate.
-apparent_surplus — auction math only. Unverified.
-confirmed_surplus = $0 is a correct, honest result when nothing is docket-proven. Never inflate it.
-The 22-case suite python -m tests.test_verification must stay green (it tests the status model).
+## CLIENT-DEFINED CORRECTIONS (govern all build decisions)
 
-CURRENT STATE
+1. PropertyRadar is a lien REPORT, not a kill switch. It refines/enriches; never confirms or kills.
+2. OH opening bid = statutory 2/3-appraised value, NOT real debt. Real OH debt = docket decree only.
+3. Florida is "one tier" — FL opening bid IS the real debt.
+4. Killed leads are filtered OUT of the deliverable entirely — not badged, not kept.
+5. Docket is primary for Ohio.
+6. Only Cuyahoga exposes a structured prayer field. Franklin/Montgomery/Summit/Hamilton need the decree PDF (Franklin's exposes none — metadata-only).
 
-HEAD around f8ab3f9 or newer on main. GitHub is the source of truth.
-DONE: repo recovery; verification hardening (three-tier model, 22/22 tests); dashboard UI aligned; daily automation (.github/workflows/daily-refresh.yml, 6AM, all counties); dead daily_pipeline.yml removed; workflow v2 with single-county/test-mode inputs; Duval auction URL fixed (realtaxdeed.com to realforeclose.com).
-IN PROGRESS: Franklin docket scraper built (core/dockets/franklin.py), registered, first Actions test run done — verify PDF extraction actually works before replicating the pattern.
+## CURRENT STATE (2026-08, read from code)
 
-MAIN TASK — 4 OHIO DOCKET SCRAPERS
-Build docket scrapers for Franklin, Montgomery, Summit, Hamilton. This is the deliverable gap — confirmed_surplus is $0 because 9 of 10 counties have no docket layer.
+All 9 cloud/local docket scrapers are BUILT (`SCRAPER_REGISTRY` in `core/dockets/__init__.py`: cuyahoga, miami-dade, franklin, montgomery, summit, hamilton, broward, duval, orange).
 
-Template: core/dockets/cuyahoga.py (proven). Base class + shared detectors: core/dockets/base.py. Register in core/dockets/__init__.py SCRAPER_REGISTRY.
-County configs live in config/counties.py.
-Hard part: these 4 counties need summary-judgment PDF extraction (pdfplumber is available), not a structured prayer field.
+**Cloud cron** (`WORKING_DOCKET_COUNTIES` in `core/dockets/enrich.py`, run by `docket_county=auto`):
+cuyahoga-oh, montgomery-oh, summit-oh (OH conservative debt) + miami-dade-fl, broward-fl, duval-fl (FL docket review).
 
-DEFERRED ENHANCEMENTS (do not action pre-emptively)
+**Local-run only** (`LOCAL_RUN_COUNTIES`, skipped by the cron — cannot run in CI):
+- `franklin-oh` — autonomous, residential-IP only (Cloudflare blocks the datacenter). Metadata-only: kill signals + owner, NO debt. `python -m core.dockets.franklin`.
+- `orange-fl` — per-search reCAPTCHA v2, human solves one checkbox per case. Parked on time-cost grounds. `python -m core.dockets.orange`.
 
-PR Documents endpoint — `GET /v1/documents/{DocumentID}` returns document-level lien detail (LienPosition, LienType, LienCourtCaseNumber, LoanPosition) — deeper than the property-level lien flags from the Card fieldset. Evaluate ONLY after the property-level fields (PropertyHasOpenLiens, PropertyHasOpenPersonLiens, NumberLoans, TotalLoanBalance, Persons[]) prove too coarse for Eric's "here's the second positions or liens, or none" report on real run data. Do not build pre-emptively.
+**PR-fallback** (`PR_FALLBACK_COUNTIES`): `hamilton-oh` — Cloudflare managed challenge on every IP AND no authorized data feed. Permanent. See `knowledge/blocked_counties.md`.
 
-KNOWN ISSUES (lower priority than the Ohio scrapers)
+OH conservative debt = `core/dockets/oh_debt.py` (principal + accrued interest on the correct base + junior liens + buffer), used by Cuyahoga/Summit/Montgomery. Miami-Dade joined the cron June 2026 after reCAPTCHA v3 was proven to pass headless from the Actions IP — it is NOT blocked.
 
-Dead-browser-context bug in core/auction/universal.py — the day-loop keeps calling page.goto() on a closed page. Should detect a dead context and break.
-Miami-Dade docket (core/dockets/miami_dade.py) blocked by site-wide reCAPTCHA v3. Out of scope for the 2-day Ohio push.
-Multi-parcel blanket-judgment surplus aggregation — FIXED in `core/dockets/enrich.py:run_county`. Parcels are grouped by clerk-case-key (per-county parser: Summit→`joined`, Montgomery→`search_text`, Cuyahoga→derived from `case_prefix/year/number`), the docket is scraped ONCE per group, and `true_surplus = aggregate_sale_across_group - prayer`. classify() is called with the aggregate sale, not per-parcel sale. The dashboard still emits one row per parcel (so each parcel's address/sale are preserved) but all rows in a group share the group's classification.
+Test suite: 11 files, 255 checks, all green, wired into the CI test gate (runs before every scrape).
 
-## PROPERTYRADAR API
+## ENTRY POINTS
 
-Token: `PROPERTYRADAR_TOKEN` is a GitHub Actions secret AND must be exported locally for any local test. NO hardcoded fallback. The `9ffe6b0b…0700` token is live and funded (~33,781 free exports as of 2026-05-26). The token guard fails loud on missing/empty ONLY — it must never reject a token by prefix. Earlier CLAUDE.md guidance calling this token "dead" was wrong; so was prior guidance about `SiteAddress`/`SiteCity`/`SiteState` being correct criterion names — those were WRONG field names. Credit use is authorized; do not ask before each Purchase=1 call.
+Real: `core.auction.universal` (scrape), `core.dockets.enrich` (cloud docket step), `core.dockets.franklin` / `core.dockets.orange` (local docket), `core.dashboard_data` (build dashboard). Config: `config/counties.py`.
 
-### VERIFIED PRODUCTION CHAIN (Purchase=1 verified end-to-end 2026-05-26 against PBD4D8F5)
+## KEY IMPLEMENTATION RULES (hard-won — carry forward)
 
-```
-STEP 1: POST https://api.propertyradar.com/v1/suggestions/SiteAddress
-        Query: SuggestionInput="<street>, <city>, <state> <zip>"   (Limit=5)
-        Body : {"Criteria": []}                                    (body REQUIRED, array can be empty)
-        →    : {"results": [{"Criteria":[{name:Address,value:...},
-                                          {name:City,...},
-                                          {name:State,...},
-                                          {name:ZipFive,...}],
-                              "Label":"..."}]}
-        Free, no export deducted.
+### State-aware surplus (FL vs OH)
+- OH: `opening_bid` is 2/3-appraised, NOT debt. No decree ⇒ `true_surplus=None`, `debt_source=""`. `debt_source` values: `""`, `oh_mortgage_computed`/`oh_mortgage_uncertain` (decree math), `oh_tax_minimum_bid`, `pdf_extract:…`.
+- FL: `opening_bid` IS the judgment. `_parse_lead` sets `true_surplus = sale − opening_bid`, `debt_source="fl_opening_bid"`.
+- `true_surplus` alone never promotes to `confirmed_surplus` — the lead must clear `_has_required_proof` (classification green/yellow + proof_of_surplus + docket_url + sale_date + sale price > 0).
 
-STEP 2: POST https://api.propertyradar.com/v1/properties
-        Query: Fields=RadarID, Limit=5, Purchase=0, Start=0   (Purchase REQUIRED)
-        Body : {"Criteria": <step-1 Criteria verbatim>}
-        →    : {"results": [{"RadarID":"PXXXXXXX"}], "totalResultCount":1}
-        Free under Purchase=0 — returns RadarID without burning an export.
+### Temporal kill logic
+A kill signal only counts if it POST-DATES the completed sale (anchor on the auction sale date). Superseded pre-sale vacates/bankruptcies are noise. Implemented in `franklin_classify.py` and the bankruptcy guard in `base.py`.
 
-STEP 3: GET  https://api.propertyradar.com/v1/properties/{RadarID}
-        Query: Fields=Card, Purchase=1                       (Purchase REQUIRED)
-        →    : {"results": [{...full Card payload...}]}
-        Burns 1 export per call. Card payload includes Owner, AssessedValue,
-        TotalLoanBalance, AvailableEquity, AVM, PropertyHasOpenLiens,
-        PropertyHasOpenPersonLiens, isFreeAndClear, isCashBuyer, inForeclosure,
-        inTaxDelinquency, DistressScore, Persons[] (with PersonHasOpenLiens,
-        inBankruptcy, inProbate, isDeceased per person).
-```
+### Bankruptcy resolution guard (`base.py`)
+Bankruptcy alone does NOT kill. It kills only when it is the LATEST controlling status — no explicit resolution (relief from stay / dismissed / reinstated) AND no COMPLETED sale (SOLD DATE / confirmation) dated after the bankruptcy event. Otherwise the signal is dropped from the kill decision. Vocabulary ground-truthed on real OH dockets.
 
-### CRITERION NAMES (the source of every earlier 400)
+### OH prayer plausibility floor
+A sub-$10K OH prayer/principal is fee-noise, not a judgment — reject it (Cuyahoga at scrape time; Summit/Montgomery via the loader docket-rescue floor). `oh_debt` conservative model: principal + `rate × interest_base × years(from_date→sale)` + stated junior liens + 10% buffer; watch split-balance decrees (interest accrues on a subset of principal).
 
-The suggestion endpoint returns the canonical names; mirror them:
-- `Address`  ✓  (NOT `SiteAddress` — that name produces "Unexpected Criterion")
-- `City`     ✓  (NOT `SiteCity`)
-- `State`    ✓  (NOT `SiteState`)
-- `ZipFive`  ✓
+### Appraised-value sanity (OH-no-debt only)
+`opening_bid < 0.60 × appraised_value` flags a mispriced opener (reduced-minimum second auction / anomaly) → amber caution, gross_surplus not credible. `MISPRICED_OPENER_FLOOR` in loader. Gated on `debt_source==""` — never touches leads with real docket debt. Inert until `appraised_value` (OH RealAuction) is scraped.
 
-Nothing in the address-lookup chain is plan-gated; every previous "feature not included in your subscription" error was caused by wrong field names. The current plan accepts the chain above.
+### Windows — one source of truth per window (`config/counties.py`)
+`LEAD_WINDOW_DAYS=28` governs BOTH the auction scrape depth and the display window (they MUST match, or leads display without re-verification). `CONFIRMED_WINDOW_DAYS=90` retains confirmed-tier leads past the standard window (past FL's 60-day junior-lien claim window, within escheat). Confirmed leads are RE-VERIFIED while in the feed and carried at their last-verified snapshot once they leave it (store: `data/dockets/_confirmed_retained.json`); a reappeared-but-no-longer-confirmed lead is dropped, not carried.
 
-### PURCHASE PARAMETER (billing-critical)
+### Local-run staleness = coverage, not just age
+`dashboard_data` marks a local-run county (Franklin/Orange) stale when the auction feed has cases its docket JSONL doesn't cover. A case ABSENT from the local docket renders docket-not-verified (`stale_uncovered`), NEVER checked-and-clean, regardless of other flags. `summary.local_run_status` surfaces last-scraped + stale per county.
 
-- `Purchase=0` is preview-only by design — returns counts and (for `/properties` POST) RadarIDs. No record payload. Required on `/properties` POST and `GET /properties/{RadarID}`.
-- `Purchase=1` returns full data and deducts 1 export per matched property on `/properties`, 1 export per call on `GET /properties/{RadarID}`.
-- Workflow rule: any time the request shape changes, validate with the `pr_probe_chain` workflow input first (it now uses Purchase=1 by default — burns 1 export per probe but proves end-to-end). Free shape-only probes still available via `pr_probe_criteria` (Purchase=0 on POST).
+### Killed-leads handling & display
+Killed leads are filtered OUT of `leads.json` (FP-14) and written to `killed_leads.json` for the QA trail. Dashboard status badges distinguish: `📋 Verified` (docket-PDF-backed positive), `📋 Docket-checked · no kill` (Franklin metadata-only), `⚠ docket stale` (local-run uncovered), `docket-not-verified · portal-gated` (Orange), `🔒 docket-not-verified · portal-inaccessible` (Hamilton). The FP-18 $5K display floor filters near-zero surpluses (exempts OH-unverified).
 
-### LOCAL SMOKE TEST
+### PropertyRadar (`core/enrichment/propertyradar.py`)
+Token = `PROPERTYRADAR_TOKEN` env/Actions secret, NO hardcoded fallback (fails loud on missing). `estimated_surplus` requires a real this-run PR match with TLB > $0 — a $0-TLB match attaches intel fields but keeps the lead `apparent_surplus` (freshly-foreclosed properties haven't propagated through PR). Only today's `all_enriched_<today>.json` is loaded — a failed/skipped PR step drops leads back to their docket-derived tier, never leaving yesterday's badge stuck.
 
-```
-PROPERTYRADAR_TOKEN=<token> python -m core.enrichment.propertyradar \
-  --probe-chain "1253 MCINTOSH AVE|AKRON|OH|44314"
-```
-Prints the full three-step trace including the Card payload on success.
+### Per-county recovery-firm lists are LOCAL
+Broward ≠ Duval ≠ (any OH county). Never reuse one county's competing-filer/recovery-firm list for another without local ground-truth.
 
-### ANTI-FABRICATION
-
-If the chain fails at any step (suggestion has no match, RadarID lookup empty, GET errors), the lead must keep its docket-derived classification or fall back to `apparent_surplus`. NEVER fabricate a `pr_*` field or upgrade a tier without real this-run PR data.
-
-### NO STALE TIERS RULE (FP-7)
-
-`core/dashboard_data.py:_load_pr_enrichment` only loads `all_enriched_<today>.json` — never older files. Any lead missing from today's PR run drops back to its docket-derived tier (or `apparent_surplus` if no docket data). A failed or skipped PR step must NOT leave yesterday's `estimated_surplus` badges sitting on the dashboard. This is the only way `estimated_surplus` can mean "real this-run PR data" rather than "we ran PR once weeks ago and the badge stuck."
-
-### TIER PROVENANCE — estimated_surplus REQUIRES PR TLB > $0 (FP-8)
-
-`estimated_surplus` means "PR refined the SURPLUS NUMBER" — not "PR matched the property." A PR match with `TotalLoanBalance == $0` (the dominant case — freshly foreclosed properties haven't propagated through PR's source data yet) drops the lead to `apparent_surplus`. The PR data (owner, lien flags, tax_delinquency, distress score) still attaches as INTEL FIELDS on the lead, but the surplus tier honestly reflects "auction math only."
-
-Enforced in two places:
-- `_reassign_status_after_pr` only sets `money_status = estimated_surplus` when `pr_total_loan_balance > 0`.
-- `_surplus_for_payload` defensively checks `tlb > 0` even for leads the loader pre-tagged `estimated_surplus`.
-
-Eric's spec is the source: "PropertyRadar is a lien REPORT, not a kill switch / not a surplus source." The tier badge must not imply PR contributed to the dollar figure when it didn't.
-
-### LOADER FILTER DOCKET-RESCUE (FP-11)
-
-`core/loader.py:load_all_leads()` applies four filters: third-party, min-gross-surplus, sale-date-parseable, sale-date-window. The first two use **auction-side data only** (`is_third_party`, `gross_surplus = sale − opening_bid`). For OH this math is meaningless without the docket because `opening_bid` is the fake 2/3-appraised value.
-
-Docket-rescue (FP-11): before applying filters 1 and 2, look up the lead in `_docket_lookup`. If the docket reports:
-- `prayer_amount > 0`, AND
-- `classification in {green, yellow, red}` (NOT killed), AND
-- `(final_sale_price − prayer_amount) > 0`
-
-then the lead is **rescued** from filters 1 and 2 — `is_third_party=False` and `gross_surplus < $10K` no longer drop it. Filters 3 (sale date parseable) and 4 (14-day window) still apply. Killed leads are never rescued.
-
-Background: this fix recovered 3 Summit leads previously dropped — one plaintiff-won case (CV2025031449, RED, $14.5K true surplus) and two thin-opening-bid-margin cases (CV2025094689 RED $11.5K, CV2025115614 YELLOW $17.5K). All three had positive `(sale − prayer)` math but failed the auction-side filters.
-
-### DOCKET-CHECKED BADGE (FP-9)
-
-A lead earns `docket_verified_positive: True` (internal field name — do not rename to avoid breaking historical JSON) and `priority_rank: 1` when it has:
-- A real docket-extracted prayer amount ≥ $10,000
-- A positive `true_surplus = sale − prayer`
-- A classification in {green, yellow, red} — NOT killed
-
-The visible dashboard label is **"📋 Docket-checked"**, deliberately NOT "Verified" — these leads sit in `apparent_surplus`, not `confirmed_surplus`. The label communicates that the debt figure came from a real docket prayer (vs auction math), without implying the lead has cleared the proof-of-disbursement gate. Tooltip: "Real debt from docket prayer amount — positive (sale − prayer). NOT confirmed surplus; still needs proof-of-disbursement filing."
-
-`leads.json` is sorted by `priority_rank` ascending so docket-checked leads surface above PR-matched and auction-only rows. Three tiers only: confirmed / estimated / apparent. The badge is a visual highlight within `apparent_surplus`, not a fourth tier.
-
-### CUYAHOGA PRAYER-FIELD PLAUSIBILITY FLOOR
-
-`core/dockets/cuyahoga.py:_scrape_summary_page` rejects any `Prayer Amount` value below $10,000 as implausible for a foreclosure judgment. For many older Cuyahoga cases the "Prayer Amount" field on the case-summary page holds court costs / filing fees / small-claim amounts (typical range $100–$3K), not the actual judgment principal. Below-floor values are logged and `prayer_amount` stays 0 so downstream `true_surplus` math doesn't credit fee noise as a real judgment.
-
-### RECENCY FILTER (sale-date, not case-filing-date)
-
-`core/loader.py:load_all_leads()` enforces a hard 14-day window on the sale/auction date, NOT the case-filing date. A case can be filed in 2023 and auctioned last week — what matters is `_extract_sale_date()`, which pulls from `sale_date` / `sale_datetime` / `auction_date` / `soldDate` / `AUCTIONDATE` fields written by the scraper at point of sale. Never use a case number as a date source.
-
-### SCRAPER WAITS — condition-based, never blind sleeps
-
-Scraper page interactions wait for the THING THE NEXT STEP NEEDS, never for a flat duration. Allowed wait primitives:
-
-- `page.wait_for_selector(...)` — element appears in the DOM
-- `page.wait_for_url(...)` — URL pattern lands (great for classic ASP / postback navigation)
-- `page.wait_for_function(...)` — JS predicate becomes true (the right tool for SPAs)
-- `page.wait_for_load_state("domcontentloaded" | "networkidle", ...)` — page-level lifecycle
-
-`page.wait_for_timeout(N)` and `asyncio.sleep(N)` are BANNED in production scraper paths. Two narrow exceptions:
-1. Polite-pacing between unrelated polite-pacing requests, capped at ~500ms (e.g. `core/auction/universal.py` day-loop)
-2. Polling loops where each iteration's body waits a short tick (~500ms) before re-checking a condition (e.g. `core/dockets/montgomery.py` `#Case` populate poll)
-
-### CHOOSING THE RIGHT WAIT PRIMITIVE — placeholder-container trap
-
-When converting a blind sleep that previously allowed time for **JS-rendered content** to appear, the order of preference is:
-
-1. **`wait_for_load_state("networkidle", timeout=N)`** — first choice for JS-populated lists. Waits for the browser to register no network activity for 500ms; the XHRs that populate the content have finished by then. Doesn't care which selectors match — works regardless of DOM shape.
-
-2. **`wait_for_function("() => document.querySelectorAll('SEL').length > N", timeout=N)`** — second choice. The predicate counts ACTUAL populated content rows, so it can't be fooled by an empty placeholder container.
-
-3. **`wait_for_selector("SEL", state="visible")`** — only when (a) you can fully enumerate every selector variant the page might render AND (b) the matched element is the rendered-with-data element, not its placeholder container.
-
-**`wait_for_selector(..., state="attached")` is a trap for JS lists.** "Attached" returns the instant the element node exists in the DOM — including empty placeholder wrapper `div`s that JS populates with child rows afterward. Stage 1 of FP-12 lost ALL 5 FL counties (32 leads) by using `state="attached"` on a wrapper selector; the wait returned in milliseconds while the actual auction items were still being fetched, and `_extract_auction_items` then ran on an empty wrapper.
-
-Recovery rule: if a converted wait drops leads in a verification run, the conversion is wrong. Default back to `networkidle` and re-evaluate. Never ship a conversion that's faster but lossy.
-
-### REGRESSION REPORTING RULE
-
-When a test/verification run drops leads, fails to extract, or otherwise produces fewer/worse results than the baseline, that regression IS the report headline — not a footnote, not a "by the way" after the wall-time improvement. Report it the moment it's discovered, not after recovery. Speedup with lost leads is a regression, not a win.
-
-### ONE-SCRAPER-CHANGE-PER-VERIFICATION-RUN RULE
-
-A verification run that includes two unrelated scraper changes is useless if it regresses — you can't tell which change caused it. Hard rule: **one scraper change per Actions verification run**. If two changes are ready, push them as separate commits and trigger separate runs.
-
-Counts as "scraper change": any edit to `core/auction/*`, `core/dockets/*`, or `core/loader.py` that affects how data is scraped, filtered, or merged.
-
-Does NOT count: dashboard JS, README/docs, CLAUDE.md, test files, workflow YAML changes that don't touch scraper logic, CSV export, badge wording. Those can be bundled with a single scraper change in one run because their effect is observable without re-running the scraper.
-
-Violation of this rule (e.g. bundling Broward 500ms fix + Stage 2 Montgomery `wait_for_function` in run 26532517350) means a regression cannot be root-caused without splitting and re-running — wasted time. Don't do it.
-
-**`browser.launch(slow_mo=...)` is BANNED in production.** It injects the supplied delay before EVERY Playwright action — clicks, fills, waits, everything. Useful for debugging visual flow at headed mode; toxic for production wall time. Removed from `core/auction/universal.py:browser.launch` in FP-12.
-
-Stage 1 (FP-12) results: 26 blind sleeps + 1 `slow_mo=250` eliminated from `universal.py` + `cuyahoga.py` + `summit.py`. Stage 2 (FP-13) replaces the Montgomery SPA `wait_for_timeout(5000)` with a `wait_for_function` predicate that returns the instant `#tblSearchResults` populates.
-
-### AUCTION SCRAPER PARALLELIZATION
-
-`core/auction/universal.py:run_all()` runs counties concurrently via `asyncio.gather` bounded by a `Semaphore`. Defaults:
-- **Headless runs (CI): cap = 3.** Five+ OH counties share the Grant Street backend at `sheriffsaleauction.ohio.gov`; higher concurrency risks CDN rate-limiting from a single runner IP. The GitHub Actions standard runner (7 GB RAM, 2 vCPU) handles 3 concurrent Chromium contexts comfortably; 5+ with xvfb starts squeezing.
-- **Headed runs (local): cap = 1 (serial).** Some scrapers pause for `input()` on CAPTCHA / EULA flow — overlapping prompts from concurrent scrapers would be unusable.
-- **`PARALLEL_SCRAPERS` env var** overrides the cap (clamped 1–10) for debugging.
-- **Per-county isolation**: `asyncio.gather(return_exceptions=True)` captures crashes per county; failures are logged and the batch continues. One county's crash never aborts the others.
-- Wall time impact: ~79 min (sequential) → ~31 min (cap=3, 2.57× speedup). Ceiling is the slowest single county since wall time = `max(per_county_time)` when one county exceeds total work / cap.
-
-### DOCKET SCRAPER PARALLELIZATION
-
-`core/dockets/enrich.py:run_counties_parallel()` mirrors the auction-step pattern:
-- **`docket_county` workflow input** accepts a single county-id, a comma-separated list, or the special value `all_working` (expands to the `WORKING_DOCKET_COUNTIES` constant: `cuyahoga-oh, montgomery-oh, summit-oh`). The default `auto` resolves to `all_working` so the Daily Refresh runs every verified docket scraper in one pass.
-- **Concurrency cap = 3 in CI, 1 headed.** Same rationale as auction step (CDN, runner RAM, headed input-prompt collisions).
-- **`PARALLEL_DOCKETS` env var** overrides (clamped 1–10).
-- **Per-county isolation** via `asyncio.gather(return_exceptions=True)`. A docket scraper crash never aborts the batch; other counties still save.
-- Loader picks up any `data/dockets/*_*.jsonl` file at dashboard-regen time — no today-only restriction — so docket data from prior runs merges naturally with this run's output.
-
-To add a new docket scraper to the parallel default: prove it on real Actions runs first, then append the county-id to `WORKING_DOCKET_COUNTIES` in `core/dockets/enrich.py`.
-
-### STATE-AWARE SURPLUS RULE (FL vs OH opening_bid) — FP-10
-
-Per Eric's May 12 call. Implemented 2026-05-27 in `core/loader.py:_parse_lead` + `_apply_docket_to_lead`.
-
-- **Ohio** — `opening_bid` is the **statutory 2/3-appraised value, NOT real debt**. The only valid OH debt is the docket prayer amount. No prayer ⇒ `true_surplus = None`, `debt_source = ""`.
-- **Florida** — `opening_bid` **IS the judgment amount** (set from the FL auction calendar). `_parse_lead` pre-populates `true_surplus = sale_price - opening_bid` and `debt_source = "fl_opening_bid"` for FL leads at load time. A docket prayer (from a future Miami-Dade-style scraper) OVERRIDES the opening-bid figure in `_apply_docket_to_lead` and flips `debt_source` to `"docket_prayer"` (or county-specific PDF marker).
-
-`debt_source` values:
-- `""` — no debt known (OH without docket).
-- `"fl_opening_bid"` — Florida opening-bid math.
-- `"docket_prayer"` — generic docket prayer amount.
-- `"pdf_extract:docket_row_NN:judgment"` — Montgomery/Summit PDF extraction.
-
-**ZERO NEW TIERS, ZERO NEW BADGES.** Eric's three tiers stand: confirmed / estimated / apparent. A FL lead with `debt_source="fl_opening_bid"` and no docket data sits in `apparent_surplus` — same tier as everything else without a docket pass. The `debt_source` field is provenance only, not a tier signal.
-
-**Confirmation rule is uniform across states:** `true_surplus` alone never promotes a lead to `confirmed_surplus`. The lead must clear `_has_required_proof` — `classification in {green, yellow}` + `proof_of_surplus` non-empty + docket_url/source_url present + sale_date + final_sale_price > 0 — which only happens after a docket pass. FL leads await a Miami-Dade/Broward/etc. docket scraper for any path to confirmed.
-
-Verified by `tests.test_verification` T9 (FL opening_bid → apparent_surplus) and T10 (OH opening_bid stays fake).
-
-SCOPE DISCIPLINE
+## SCOPE DISCIPLINE
 
 Narrow, scoped changes. State exactly what changed and what did not.
-run.py is dead pre-refactor code — never run it. Real entry points: core.auction.universal, core.dockets.enrich, core.dashboard_data.
-dashboard/ (not docs/) is a dead directory — do not touch or delete unless asked.
+One scraper change per verification run (bundling two makes a regression un-rootcauseable). Dashboard/loader/test/doc/YAML changes may bundle with one scraper change.
+Investigation-first per county: capture real dockets, read the actual text, commit them as fixtures — never code a spec on faith.
+`dashboard/` (not `docs/`) is dead. `run.py` is dead. Do not run or resurrect them.
