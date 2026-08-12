@@ -21,6 +21,19 @@ from typing import Literal
 # were displayed but never re-verified (audit finding 1.5).
 LEAD_WINDOW_DAYS = 28
 
+# Confirmed-tier leads (docket-proven surplus, e.g. a certificate of
+# disbursement) are the actual deliverable and must NOT age out on the standard
+# clock before they can be pursued. They are retained for a full quarter:
+#   • past the FL 60-day junior-lienholder claim window (FS 45.032) — after
+#     which the homeowner's own recovery window is the live opportunity — with
+#     working margin to locate the owner and file;
+#   • well within the escheat timeline (FL reports unclaimed surplus after ~1yr;
+#     OH escheats after years), so a 90-day retention never shows funds that
+#     have already left the clerk.
+# 90d ≈ 3× the standard window. Apparent / estimated / unverified leads keep
+# LEAD_WINDOW_DAYS unchanged — only confirmed leads get the longer window.
+CONFIRMED_WINDOW_DAYS = 90
+
 
 @dataclass
 class CountyConfig:

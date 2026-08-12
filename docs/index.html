@@ -943,6 +943,14 @@
     const ls = renderLeadStatusBadge(l);
     if (fc) out += ' ' + fc;
     if (ls) out += ' ' + ls;
+    // Confirmed lead carried past the standard window (no longer in the auction
+    // feed) — retained at its last-verified snapshot, not freshly re-checked.
+    if (l.confirmed_retained) {
+      out += ' <span class="status-badge status-none" title="Confirmed surplus retained past the standard ' +
+             'window — this lead has left the daily auction feed, so it is shown at its last-verified state (' +
+             (l.confirmed_last_verified || 'earlier') + '), not re-checked today. Verify current status before acting.">' +
+             '⏳ retained · last verified ' + (l.confirmed_last_verified || '') + '</span>';
+    }
     return out;
   }
 

@@ -323,6 +323,78 @@ def _apply_lee_lien_verdict(payload: dict) -> None:
             payload["lee_lien_caution_reason"] = reason
 
 
+_CONFIRMED_STORE = PROJECT_ROOT / "data" / "dockets" / "_confirmed_retained.json"
+
+
+def _apply_confirmed_retention(leads_payload: list, present_keys: set) -> int:
+    """Persist confirmed-tier leads and carry them past the standard window.
+
+    Store keyed by (county|normalized-case). Each build:
+      1. upsert every currently-confirmed lead (stamp last_verified = today);
+      2. carry forward stored leads that are NO LONGER in the feed but still
+         within CONFIRMED_WINDOW_DAYS (flagged retained, last-verified shown);
+      3. drop stored leads that reappeared-but-are-no-longer-confirmed
+         (re-verified as claimed/killed) or that aged past the confirmed window.
+    """
+    from config.counties import CONFIRMED_WINDOW_DAYS, LEAD_WINDOW_DAYS
+    today = date.today()
+
+    def key(cid, cn):
+        return f"{cid}|{_normalize_case_for_lookup(cn)}"
+
+    try:
+        store = json.loads(_CONFIRMED_STORE.read_text()) if _CONFIRMED_STORE.exists() else {}
+    except Exception:
+        store = {}
+
+    # 1. upsert current confirmed leads
+    live_confirmed = set()
+    for p in leads_payload:
+        if p.get("money_status") == "confirmed_surplus":
+            k = key(p["county_id"], p["case_number"])
+            live_confirmed.add(k)
+            first = store.get(k, {}).get("confirmed_first_seen", today.isoformat())
+            store[k] = {"payload": p, "sale_date": p.get("sale_date", ""),
+                        "confirmed_first_seen": first, "last_verified": today.isoformat()}
+            p["confirmed_retained"] = False
+            p["confirmed_last_verified"] = today.isoformat()
+
+    # 2/3. carry-forward, prune, and drop re-verified-not-confirmed
+    carried = 0
+    for k, entry in list(store.items()):
+        if k in live_confirmed:
+            continue
+        cid, norm = k.split("|", 1)
+        try:
+            age = (today - date.fromisoformat((entry.get("sale_date") or "")[:10])).days
+        except Exception:
+            age = 10 ** 6
+        if age > CONFIRMED_WINDOW_DAYS:
+            del store[k]                      # aged out of the confirmed window
+            continue
+        if (cid, norm) in present_keys:
+            # Reappeared this build but NOT currently confirmed → re-verified as
+            # claimed/killed/downgraded. Drop it — do not carry a stale confirm.
+            del store[k]
+            continue
+        # Out of the auction feed but still within the confirmed window → carry
+        # the last-verified snapshot, clearly flagged retained.
+        cp = dict(entry["payload"])
+        cp["confirmed_retained"] = True
+        cp["confirmed_last_verified"] = entry.get("last_verified", "")
+        leads_payload.append(cp)
+        carried += 1
+
+    try:
+        _CONFIRMED_STORE.write_text(json.dumps(store, indent=1))
+    except Exception as e:
+        print(f"   ⚠ confirmed-retention store write failed: {e}")
+    if carried:
+        print(f"   ✓ Retained {carried} confirmed lead(s) past the {LEAD_WINDOW_DAYS}-day "
+              f"window (confirmed window {CONFIRMED_WINDOW_DAYS}d)")
+    return carried
+
+
 def export_dashboard_data():
     docs_data = PROJECT_ROOT / "docs" / "data"
     docs_data.mkdir(parents=True, exist_ok=True)
@@ -546,6 +618,11 @@ def export_dashboard_data():
     # actionable surplus opportunity and rendering them — even greyed —
     # wastes Eric's screen real estate and erodes trust in the
     # deliverable. Killed-lead data stays in data/dockets/ for audit.
+    # Every case seen this build (live + killed), so confirmed-retention can tell
+    # "dropped from the auction feed" (carry forward) from "reappeared but now
+    # killed/downgraded" (re-verified as no longer confirmed → do NOT carry).
+    _present_keys = {(p["county_id"], _normalize_case_for_lookup(p["case_number"]))
+                     for p in leads_payload}
     pre_kill = len(leads_payload)
     _killed_audit = [p for p in leads_payload
                      if (p.get("lead_quality") or "").lower() == "killed"
@@ -733,6 +810,16 @@ def export_dashboard_data():
 
     # Sort by priority_rank (asc), then by best_real_surplus (desc) within rank.
     # The dashboard frontend can re-sort but the wire order is the audit order.
+    # ── Confirmed-lead retention (Phase 3) ─────────────────────────────
+    # Confirmed-tier leads are the deliverable — retain them past the standard
+    # window (config.CONFIRMED_WINDOW_DAYS) even after the auction feed drops
+    # them. RE-VERIFIED, not frozen: while a confirmed lead is still in the feed
+    # it is re-scraped + re-classified daily and a competing claim/disbursement
+    # flips it to killed (dropped here); once it leaves the feed it is carried
+    # at its last-verified snapshot, flagged retained with the date so it never
+    # masquerades as freshly checked.
+    _apply_confirmed_retention(leads_payload, _present_keys)
+
     leads_payload.sort(key=lambda p: (p.get("priority_rank", 5), -float(p.get("best_real_surplus", 0) or 0)))
 
     leads_file = docs_data / "leads.json"

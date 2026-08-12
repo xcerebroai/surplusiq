@@ -48,7 +48,9 @@
     "docket_covered": true,
     "best_real_surplus": 97051.34,
     "real_surplus_source": "confirmed_surplus",
-    "priority_rank": 0
+    "priority_rank": 0,
+    "confirmed_retained": false,
+    "confirmed_last_verified": "2026-08-11"
   },
   {
     "county_id": "summit-oh",
