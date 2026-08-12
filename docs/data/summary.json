@@ -1,29 +1,29 @@
 {
-  "generated_at": "2026-08-11T22:19:38",
-  "total_leads": 44,
-  "total_leads_pre_filter": 56,
-  "killed_filtered_count": 11,
-  "killed_shown_count": 23,
+  "generated_at": "2026-08-12T04:59:46",
+  "total_leads": 45,
+  "total_leads_pre_filter": 54,
+  "killed_filtered_count": 8,
+  "killed_shown_count": 20,
   "below_floor_filtered_count": 1,
   "min_display_surplus": 5000.0,
-  "confirmed_surplus_total": 97051.34,
+  "confirmed_surplus_total": 0,
   "estimated_surplus_total": 335875.0,
-  "apparent_surplus_total": 2687574.5,
-  "docket_verified_positive_count": 7,
-  "docket_verified_positive_total": 222813.69000000003,
-  "confirmed_surplus_count": 1,
+  "apparent_surplus_total": 2968556.61,
+  "docket_verified_positive_count": 6,
+  "docket_verified_positive_total": 132272.54,
+  "confirmed_surplus_count": 0,
   "estimated_surplus_count": 3,
-  "apparent_surplus_count": 32,
+  "apparent_surplus_count": 34,
   "unverified_count": 8,
   "killed_count": 0,
   "red_count": 2,
-  "pipeline_ready_count": 1,
-  "pr_matched_count": 14,
-  "docket_matched_count": 32,
+  "pipeline_ready_count": 0,
+  "pr_matched_count": 16,
+  "docket_matched_count": 20,
   "by_state": {
     "FL": {
-      "leads": 39,
-      "surplus": 3732040.6400000015
+      "leads": 37,
+      "surplus": 3544448.1500000013
     },
     "OH": {
       "leads": 17,
@@ -43,16 +43,16 @@
       "county_id": "duval-fl",
       "county_name": "Duval",
       "state": "FL",
-      "leads": 11,
-      "surplus": 882419.71,
+      "leads": 10,
+      "surplus": 791878.56,
       "top_lead": 251206.87
     },
     {
       "county_id": "miami-dade-fl",
       "county_name": "Miami-Dade",
       "state": "FL",
-      "leads": 7,
-      "surplus": 783580.0,
+      "leads": 6,
+      "surplus": 686528.66,
       "top_lead": 205511.11
     },
     {
@@ -106,33 +106,23 @@
   ],
   "by_score": {
     "A+": 13,
-    "A": 21,
+    "A": 19,
     "B": 12,
     "C": 7
   },
   "local_run_status": {
-    "franklin-oh": {
-      "last_scraped": "2026-08-11",
-      "stale": false,
-      "uncovered_count": 0
-    },
     "orange-fl": {
       "last_scraped": "",
       "stale": true,
       "uncovered_count": 10
+    },
+    "franklin-oh": {
+      "last_scraped": "2026-08-11",
+      "stale": false,
+      "uncovered_count": 0
     }
   },
-  "top_5_confirmed_leads": [
-    {
-      "county": "Miami-Dade",
-      "state": "FL",
-      "case_number": "2026-004417-CA-01",
-      "address": "8215 SW 152 AVE G-303",
-      "surplus": 97051.34,
-      "money_status": "confirmed_surplus",
-      "evidence_level": "docket_confirmed"
-    }
-  ],
+  "top_5_confirmed_leads": [],
   "top_5_estimated_leads": [
     {
       "county": "Lee",
@@ -150,7 +140,7 @@
       "address": "1803 MAYFAIR RD",
       "surplus": 108530.0,
       "money_status": "estimated_surplus",
-      "evidence_level": "docket_reviewed"
+      "evidence_level": "property_enriched"
     },
     {
       "county": "Duval",
@@ -159,7 +149,7 @@
       "address": "3554 DELLWOOD AVE",
       "surplus": 89900.0,
       "money_status": "estimated_surplus",
-      "evidence_level": "docket_reviewed"
+      "evidence_level": "property_enriched"
     }
   ],
   "top_5_apparent_leads": [
@@ -169,6 +159,15 @@
       "case_number": "2025-CC-017428-O",
       "address": "12086 JEWEL FISH LN",
       "surplus": 420336.41,
+      "money_status": "apparent_surplus",
+      "evidence_level": "auction_only"
+    },
+    {
+      "county": "Duval",
+      "state": "FL",
+      "case_number": "16-2025-CA-005579-AXXX-MA",
+      "address": "9227 CHANDLER OAKS DR",
+      "surplus": 251206.87,
       "money_status": "apparent_surplus",
       "evidence_level": "auction_only"
     },
@@ -196,15 +195,6 @@
       "case_number": "2023-CC-006558-O",
       "address": "4654 COPPOLA DR",
       "surplus": 192618.76,
-      "money_status": "apparent_surplus",
-      "evidence_level": "auction_only"
-    },
-    {
-      "county": "Orange",
-      "state": "FL",
-      "case_number": "2025-CA-003157-O",
-      "address": "1370 PORTMOOR WAY",
-      "surplus": 172241.57,
       "money_status": "apparent_surplus",
       "evidence_level": "auction_only"
     }
