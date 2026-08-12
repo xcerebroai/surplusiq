@@ -191,6 +191,20 @@ def _surplus_for_payload(payload_lead: dict) -> tuple:
         ts = payload_lead.get("true_surplus")
         return (float(ts) if ts is not None else 0.0, "confirmed_surplus")
 
+    # FL COUNTY-COURT / HOA-lien foreclosure: the plaintiff is an HOA/condo
+    # association, the opening bid is the small association lien, and the SENIOR
+    # MORTGAGE SURVIVES the sale (buyer takes subject to it). So sale − opening_bid
+    # is NOT a real surplus — the senior debt is unknown. Return None so the
+    # phantom can't pollute the KPI totals, the sort, or the surplus floor; the
+    # dashboard renders a caution with the reason. This is reached ONLY when the
+    # lead is not docket-confirmed (the has_real_docket_debt + confirmed_surplus
+    # returns above already handled real-debt/proven cases) — so a rare
+    # free-and-clear HOA case that clears the docket proof gate still confirms.
+    # Case-type-gated (not ratio-gated): the confirmed circuit lead at ratio 0.030
+    # is never touched. Same shape as oh_debt's HOA/junior-lien flag.
+    if payload_lead.get("fl_county_court"):
+        return (None, "fl_hoa_unverified")
+
     # OH TAX (RC 5721): opening_bid IS the Minimum Bid = real tax debt, so
     # true_surplus = sale − opening is valid (set in _parse_lead with
     # debt_source='oh_tax_minimum_bid'). Display it as apparent surplus.
@@ -483,6 +497,7 @@ def export_dashboard_data():
             "appraised_value":  getattr(l, "appraised_value", 0.0),
             "sale_vs_appraised": getattr(l, "sale_vs_appraised", 0.0),
             "mispriced_opener":  getattr(l, "mispriced_opener", False),
+            "fl_county_court":   getattr(l, "fl_county_court", False),
             "sale_date":        l.sale_date,
             "sale_datetime":    getattr(l, "sale_datetime", ""),
             "sold_to":          l.sold_to,
@@ -796,7 +811,7 @@ def export_dashboard_data():
     pre_floor = len(leads_payload)
 
     def _below_floor(p):
-        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain"):
+        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified"):
             return False  # no known surplus figure → can't floor-filter; keep visible
         return (p.get("best_real_surplus") or 0) < MIN_DISPLAY_SURPLUS
 
@@ -838,7 +853,7 @@ def export_dashboard_data():
     # VISIBLE in the list but must NOT inflate the real-surplus KPI count/total —
     # they're tracked in their own 'unverified' bucket for the headline.
     def _unverified(p):
-        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain")
+        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified")
 
     confirmed = [p for p in leads_payload if _bucket(p) == "confirmed_surplus" and not _unverified(p)]
     estimated = [p for p in leads_payload if _bucket(p) == "estimated_surplus" and not _unverified(p)]

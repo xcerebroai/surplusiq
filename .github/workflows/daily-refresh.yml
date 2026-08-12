@@ -110,6 +110,7 @@ jobs:
           python -m tests.test_franklin_docket
           python -m tests.test_appraised_sanity
           python -m tests.test_bankruptcy_guard
+          python -m tests.test_fl_county_court
 
       - name: Install Playwright Chromium
         run: |

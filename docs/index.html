@@ -836,6 +836,14 @@
     if (l.real_surplus_source === 'oh_uncertain') {
       return '<span class="surplus-pending" title="Surplus uncertain — conservative debt computed, but the interest rate was not parseable (old decree) or the sale date is missing, so the surplus can\'t be stated confidently. A real surplus may exist — manual review via the Clerk Docket link.">— uncertain</span>';
     }
+    // FL county-court / HOA-lien foreclosure: the plaintiff is an HOA/condo
+    // association, the first mortgage SURVIVES the sale, so sale − opening_bid is
+    // not a real surplus. Amber caution, apparent figure shown for context.
+    if (l.real_surplus_source === 'fl_hoa_unverified') {
+      const gs = l.gross_surplus || 0;
+      return '<span class="surplus-caution" title="HOA/association foreclosure (county court) — the first mortgage SURVIVES the sale, so the buyer takes subject to it. The opening bid is only the small association lien, so sale minus opening bid is NOT a real surplus; the senior mortgage debt is unknown. Verify the senior lien via the Clerk Docket link before acting.">&#9888; HOA lien — mortgage survives</span>'
+           + '<span class="surplus-apparent">auction math ' + fmtMoney(gs) + ' not credible</span>';
+    }
     // OH-mortgage leads with no usable docket debt are tagged
     // real_surplus_source='oh_unverified' (best_real_surplus=null). Never show the
     // 2/3-appraised opening-bid number for those — render unverified.

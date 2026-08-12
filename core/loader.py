@@ -124,6 +124,26 @@ def is_oh_tax_case(case_number: str) -> bool:
     return "CVG" in (case_number or "").upper()
 
 
+# FL COUNTY-COURT (HOA/condo lien) foreclosure detector — LOCAL PER COUNTY.
+# A county-court foreclosure is filed by an HOA/condo association over a small
+# maintenance-fee lien; the SENIOR MORTGAGE SURVIVES the sale (buyer takes
+# subject to it). So the opening bid is the small association lien, NOT the real
+# debt, and sale − opening_bid is a phantom surplus. Prefix taxonomy confirmed
+# from real historical raw (2026-08):
+#   • Broward — circuit = 'CACE'; county-court = 'CO**' (CONO/COCE/COWE/COSO).
+#   • Orange / Duval / Miami-Dade / Lee — circuit = '-CA-'; county-court = '-CC-'.
+# NOT shared across counties — each county's format is encoded explicitly.
+def is_fl_county_court_case(county_id: str, case_number: str) -> bool:
+    cn = (case_number or "").upper()
+    if county_id == "broward-fl":
+        # first token before the dash: CACE = circuit, CO** = county court
+        m = re.match(r"^([A-Z]{2,5})-", cn)
+        return bool(m and m.group(1).startswith("CO"))
+    if county_id in ("orange-fl", "duval-fl", "miami-dade-fl", "lee-fl"):
+        return "-CC-" in cn
+    return False
+
+
 def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     """
     Merge a docket result onto a Lead in place.
@@ -282,6 +302,9 @@ class Lead:
     # is populated (OH auction scrape).
     mispriced_opener:    bool  = False
     sale_vs_appraised:   float = 0.0   # final_sale_price / appraised_value
+    # FL county-court (HOA/condo lien) foreclosure — senior mortgage survives the
+    # sale, so sale − opening_bid is NOT a real surplus (set in _parse_lead).
+    fl_county_court:     bool  = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -428,6 +451,7 @@ def _parse_lead(record: dict, county_id: str, source_file: str) -> Optional[Lead
         source_file   = source_file,
         true_surplus  = initial_true_surplus,
         debt_source   = initial_debt_source,
+        fl_county_court = is_fl_county_court_case(county_id, _case_no),
     )
 
 
@@ -828,13 +852,18 @@ def get_summary(leads: list[Lead]) -> dict:
                 "surplus":     0.0,
                 "top_lead":    0.0,
             }
+        # FL county-court/HOA leads have NO credible surplus (senior mortgage
+        # survives) — count them as leads but contribute $0 to the surplus
+        # breakdown, so a county's headline total isn't inflated by phantom
+        # HOA-lien math (consistent with the KPI apparent-total treatment).
+        credible_surplus = 0.0 if getattr(lead, "fl_county_court", False) else lead.gross_surplus
         by_county[cid]["leads"] += 1
-        by_county[cid]["surplus"] += lead.gross_surplus
-        by_county[cid]["top_lead"] = max(by_county[cid]["top_lead"], lead.gross_surplus)
+        by_county[cid]["surplus"] += credible_surplus
+        by_county[cid]["top_lead"] = max(by_county[cid]["top_lead"], credible_surplus)
 
         if lead.state in by_state:
             by_state[lead.state]["leads"] += 1
-            by_state[lead.state]["surplus"] += lead.gross_surplus
+            by_state[lead.state]["surplus"] += credible_surplus
 
         if lead.score in by_score:
             by_score[lead.score] += 1
