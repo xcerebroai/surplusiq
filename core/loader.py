@@ -34,6 +34,27 @@ from typing import Optional
 from config.counties import LEAD_WINDOW_DAYS
 
 
+# Generic / non-real-party defendant names (unknown heirs, tenants, John Doe,
+# "any and all parties claiming", etc.). Mirrors core.dockets.miami_dade's
+# _GENERIC_PARTY — kept local to avoid importing the Playwright-heavy scraper
+# module at load time. Used to skip junk when falling back to the defendants
+# list for owner_name (a corporate owner like an investor LLC IS a real party
+# and is deliberately NOT excluded here — only true non-parties are).
+_GENERIC_DEFENDANT = re.compile(
+    r"unknown|tenant|any and all|all other|in possession|et al|john doe|jane doe|"
+    r"parties claiming|lienors|creditors|whether dissolved|n/k/a|a/k/a unknown", re.I)
+
+# Foreclosure-PLAINTIFF institution markers. Some counties' docket "defendants"
+# lists are not cleanly role-separated (Broward mixes the plaintiff bank/HOA into
+# the party list, sometimes token-reversed), so a bare defendants[0] could put a
+# bank or HOA in the owner column. These markers identify institutional plaintiffs
+# that are never a residential owner of record — while deliberately NOT matching a
+# plain investor LLC/INC owner (e.g. "LOYAL CIMA LLC", "2912 CLINTON AVE LLC").
+_PLAINTIFF_ORG = re.compile(
+    r"\b(bank|mortgage|homeowner|home\s*owners?|association|assn|condominium|"
+    r"savings|credit union|servicing|federal home loan|n\.?a\.?)\b", re.I)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Project paths
 # ═══════════════════════════════════════════════════════════════════════
@@ -250,6 +271,33 @@ def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     # no-op. Fill ONLY when the auction scrape left owner_name blank, and never
     # overwrite a name the auction already provided.
     docket_owner = (docket.get("owner_name", "") or "").strip()
+    if not docket_owner:
+        # Fallback: the scraper blanks owner_name when the defendant of record is
+        # a company (its _is_individual_homeowner filter excludes corporate
+        # names). But a foreclosed property owned by an investor LLC — e.g.
+        # "LOYAL CIMA LLC" — makes that LLC the surplus-entitled party Eric must
+        # pursue; blank is strictly worse. The raw name survives in the docket
+        # "defendants" list (already role-filtered to Defendant-tagged parties at
+        # scrape time, so never the plaintiff). Take the first real defendant,
+        # skipping only true non-parties (John Doe / tenants / unknown heirs).
+        for cand in docket.get("defendants", []) or []:
+            cand = (cand or "").strip()
+            if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
+                    and not _PLAINTIFF_ORG.search(cand)):
+                docket_owner = cand
+                break
+    if not docket_owner:
+        # Second fallback: parse the owner from the caption. Cuyahoga records
+        # carry no structured "defendants" list, only a clean case_title of the
+        # form "PLAINTIFF vs. DEFENDANT, ET AL." — the defendant follows "vs".
+        # Same shape Miami-Dade's owner_from_caption handles.
+        m = re.search(r"\bvs\.?\s+(.+?)(?:,?\s+et\s+al\b|$)",
+                      docket.get("case_title", "") or "", re.I)
+        if m:
+            cand = re.sub(r"\s+", " ", m.group(1)).strip().strip(",").strip()
+            if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
+                    and not _PLAINTIFF_ORG.search(cand)):
+                docket_owner = cand
     if docket_owner and not (getattr(lead, "owner_name", "") or "").strip():
         lead.owner_name = docket_owner
 
