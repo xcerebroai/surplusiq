@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-12T08:10:33",
+  "generated_at": "2026-08-12T22:41:56",
   "total_leads": 43,
   "total_leads_pre_filter": 55,
   "killed_filtered_count": 12,
@@ -9,13 +9,13 @@
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 97051.34,
   "estimated_surplus_total": 245975.0,
-  "apparent_surplus_total": 1598539.8,
+  "apparent_surplus_total": 1459386.62,
   "docket_verified_positive_count": 6,
   "docket_verified_positive_total": 132272.54,
   "confirmed_surplus_count": 1,
   "estimated_surplus_count": 2,
-  "apparent_surplus_count": 22,
-  "unverified_count": 18,
+  "apparent_surplus_count": 21,
+  "unverified_count": 19,
   "killed_count": 0,
   "red_count": 3,
   "pipeline_ready_count": 1,
@@ -24,7 +24,7 @@
   "by_state": {
     "FL": {
       "leads": 37,
-      "surplus": 2545954.6000000006
+      "surplus": 2406801.420000001
     },
     "OH": {
       "leads": 18,
@@ -41,20 +41,20 @@
       "top_lead": 251206.87
     },
     {
-      "county_id": "miami-dade-fl",
-      "county_name": "Miami-Dade",
-      "state": "FL",
-      "leads": 6,
-      "surplus": 686528.66,
-      "top_lead": 205511.11
-    },
-    {
       "county_id": "orange-fl",
       "county_name": "Orange",
       "state": "FL",
       "leads": 10,
       "surplus": 662767.96,
       "top_lead": 212718.63
+    },
+    {
+      "county_id": "miami-dade-fl",
+      "county_name": "Miami-Dade",
+      "state": "FL",
+      "leads": 6,
+      "surplus": 547375.48,
+      "top_lead": 205511.11
     },
     {
       "county_id": "broward-fl",
@@ -200,11 +200,11 @@
       "evidence_level": "docket_reviewed"
     },
     {
-      "county": "Miami-Dade",
+      "county": "Orange",
       "state": "FL",
-      "case_number": "2026A00192",
-      "address": "",
-      "surplus": 139153.18,
+      "case_number": "2024-CA-009840-O",
+      "address": "13851 BEAUREGARD PL",
+      "surplus": 118123.22,
       "money_status": "apparent_surplus",
       "evidence_level": "auction_only"
     }

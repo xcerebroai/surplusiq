@@ -205,6 +205,20 @@ def _surplus_for_payload(payload_lead: dict) -> tuple:
     if payload_lead.get("fl_county_court"):
         return (None, "fl_hoa_unverified")
 
+    # FL TAX DEED (FS 197.582) — a DIFFERENT mechanism from the HOA case. The
+    # REDEEMED guard runs first: a redeemed tax deed is a NON-SALE (owner paid
+    # the back taxes) → no surplus figure at all. A real tax-deed sale has a
+    # surplus POOL (sale − tax opening bid) that IS real and clerk-held, but it
+    # is distributed to lienholders (incl. the former mortgagee, whose mortgage
+    # the tax deed extinguished into a claim) BEFORE the former owner, so
+    # owner-net is unknown from auction data. Return None (excluded from the
+    # owner-surplus totals + floor); the dashboard shows the pool from
+    # gross_surplus with the lien caveat. Reached only when NOT docket-confirmed.
+    if payload_lead.get("fl_tax_deed_redeemed"):
+        return (None, "fl_taxdeed_redeemed")
+    if payload_lead.get("fl_tax_deed"):
+        return (None, "fl_taxdeed_pool")
+
     # OH TAX (RC 5721): opening_bid IS the Minimum Bid = real tax debt, so
     # true_surplus = sale − opening is valid (set in _parse_lead with
     # debt_source='oh_tax_minimum_bid'). Display it as apparent surplus.
@@ -477,6 +491,14 @@ def export_dashboard_data():
     for l in leads:
         cc = COUNTY_BY_ID.get(l.county_id)
         clerk_search_url = getattr(cc, "clerk_search_url", "") if cc else ""
+        # Tax-deed leads: the foreclosure clerk docket scraper falls through on
+        # tax-deed case numbers, so the verify link must point at the county's
+        # SEPARATE tax-deed system (RealTDM / realtaxdeed / deedauction), where
+        # the real excess-proceeds / claim status lives.
+        if getattr(l, "fl_tax_deed", False) or getattr(l, "fl_tax_deed_redeemed", False):
+            _td = getattr(cc, "tax_deed_url", "") if cc else ""
+            if _td:
+                clerk_search_url = _td
         payload = {
             "county_id":        l.county_id,
             "county_name":      l.county_name,
@@ -498,6 +520,8 @@ def export_dashboard_data():
             "sale_vs_appraised": getattr(l, "sale_vs_appraised", 0.0),
             "mispriced_opener":  getattr(l, "mispriced_opener", False),
             "fl_county_court":   getattr(l, "fl_county_court", False),
+            "fl_tax_deed":          getattr(l, "fl_tax_deed", False),
+            "fl_tax_deed_redeemed": getattr(l, "fl_tax_deed_redeemed", False),
             "sale_date":        l.sale_date,
             "sale_datetime":    getattr(l, "sale_datetime", ""),
             "sold_to":          l.sold_to,
@@ -811,7 +835,7 @@ def export_dashboard_data():
     pre_floor = len(leads_payload)
 
     def _below_floor(p):
-        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified"):
+        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed"):
             return False  # no known surplus figure → can't floor-filter; keep visible
         return (p.get("best_real_surplus") or 0) < MIN_DISPLAY_SURPLUS
 
@@ -853,7 +877,7 @@ def export_dashboard_data():
     # VISIBLE in the list but must NOT inflate the real-surplus KPI count/total —
     # they're tracked in their own 'unverified' bucket for the headline.
     def _unverified(p):
-        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified")
+        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed")
 
     confirmed = [p for p in leads_payload if _bucket(p) == "confirmed_surplus" and not _unverified(p)]
     estimated = [p for p in leads_payload if _bucket(p) == "estimated_surplus" and not _unverified(p)]

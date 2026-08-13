@@ -144,6 +144,41 @@ def is_fl_county_court_case(county_id: str, case_number: str) -> bool:
     return False
 
 
+# FL TAX-DEED detector — a DIFFERENT mechanism from the county-court HOA case.
+# A tax-deed sale extinguishes junior liens (incl. the mortgage) and FL statute
+# (FS 197.582) provides a claimable surplus. So the surplus POOL (sale − opening
+# bid) is REAL and clerk-held — NOT a phantom. But the opening bid is the
+# delinquent taxes + costs, NOT the judgment debt, and the pool is distributed
+# to lienholders (governmental, then the former mortgagee, then others) BEFORE
+# the former owner, so owner-net is unknown from auction data. Detect on the
+# reliable auction_type field, with a per-county case-format backup:
+#   Miami-Dade 'YYYY' + 'A' + digits (e.g. 2026A00192); Duval 'YYYY-NNNN' + 'TD'.
+def is_fl_tax_deed(county_id: str, case_number: str, auction_type: str) -> bool:
+    if (auction_type or "").strip().upper() == "TAXDEED":
+        return True
+    cn = (case_number or "").upper().strip()
+    if county_id == "miami-dade-fl":
+        return bool(re.match(r"^\d{4}A\d{3,}$", cn))
+    if county_id == "duval-fl":
+        return bool(re.match(r"^\d{4}-\d+TD$", cn))
+    return False
+
+
+def is_tax_deed_redeemed(record: dict) -> bool:
+    """A tax deed the owner REDEEMED (paid the back taxes) is a NON-SALE — no
+    surplus exists. Primary signal: auction_status contains 'redeem' (covers
+    'Redeemed' and 'Redeemed After Sale'; verified to catch all 34 real cases).
+    Defensive backup: final_sale_price == assessed_value exactly, the artifact a
+    redeemed auction leaves when the scraper reads assessed value as the sale
+    (a subset of the status signal — 0 false positives observed)."""
+    st = (record.get("auction_status") or "").lower()
+    if "redeem" in st:
+        return True
+    sale = record.get("final_sale_price") or 0
+    assessed = record.get("assessed_value") or 0
+    return bool(sale > 0 and assessed > 0 and sale == assessed)
+
+
 def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     """
     Merge a docket result onto a Lead in place.
@@ -305,6 +340,11 @@ class Lead:
     # FL county-court (HOA/condo lien) foreclosure — senior mortgage survives the
     # sale, so sale − opening_bid is NOT a real surplus (set in _parse_lead).
     fl_county_court:     bool  = False
+    # FL tax-deed sale (FS 197.582). fl_tax_deed: the surplus POOL is real but
+    # pre-lien (owner-net unknown). fl_tax_deed_redeemed: a NON-SALE (owner paid
+    # the back taxes) — no surplus at all. Both set in _parse_lead.
+    fl_tax_deed:          bool  = False
+    fl_tax_deed_redeemed: bool  = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -418,7 +458,18 @@ def _parse_lead(record: dict, county_id: str, source_file: str) -> Optional[Lead
     # 2/3-appraised value, NOT debt — true_surplus stays None until a docket prayer
     # is found; the fake opening-bid number is NEVER used for OH-mortgage surplus.
     _case_no = (record.get("case_number") or "").strip()
-    if state == "FL" and final > 0 and opening > 0:
+    _auction_type = (record.get("auction_type") or "").strip()
+    _is_tax_deed = is_fl_tax_deed(county_id, _case_no, _auction_type)
+    _tax_deed_redeemed = _is_tax_deed and is_tax_deed_redeemed(record)
+    if _is_tax_deed:
+        # TAX DEED — the tax opening bid is NOT the judgment debt, so it must NOT
+        # be tagged fl_opening_bid. A redeemed (non-sale) tax deed has NO surplus;
+        # a real tax-deed sale has a pre-lien POOL (owner-net unknown). Neither is
+        # a clean owner true_surplus → leave None; the dashboard surfaces the pool
+        # figure from gross_surplus with the FS 197.582 lien caveat.
+        initial_true_surplus = None
+        initial_debt_source = ""
+    elif state == "FL" and final > 0 and opening > 0:
         initial_true_surplus = round(final - opening, 2)
         initial_debt_source = "fl_opening_bid"
     elif state == "OH" and is_oh_tax_case(_case_no) and final > 0 and opening > 0:
@@ -452,6 +503,8 @@ def _parse_lead(record: dict, county_id: str, source_file: str) -> Optional[Lead
         true_surplus  = initial_true_surplus,
         debt_source   = initial_debt_source,
         fl_county_court = is_fl_county_court_case(county_id, _case_no),
+        fl_tax_deed          = _is_tax_deed and not _tax_deed_redeemed,
+        fl_tax_deed_redeemed = _tax_deed_redeemed,
     )
 
 
@@ -853,10 +906,14 @@ def get_summary(leads: list[Lead]) -> dict:
                 "top_lead":    0.0,
             }
         # FL county-court/HOA leads have NO credible surplus (senior mortgage
-        # survives) — count them as leads but contribute $0 to the surplus
-        # breakdown, so a county's headline total isn't inflated by phantom
-        # HOA-lien math (consistent with the KPI apparent-total treatment).
-        credible_surplus = 0.0 if getattr(lead, "fl_county_court", False) else lead.gross_surplus
+        # survives); FL tax-deed pools are real but pre-lien (owner-net unknown)
+        # and redeemed tax deeds are non-sales — none is a clean owner-recoverable
+        # figure, so all contribute $0 to the county surplus breakdown (consistent
+        # with the KPI apparent-total treatment). They stay counted as leads.
+        _not_owner_surplus = (getattr(lead, "fl_county_court", False)
+                              or getattr(lead, "fl_tax_deed", False)
+                              or getattr(lead, "fl_tax_deed_redeemed", False))
+        credible_surplus = 0.0 if _not_owner_surplus else lead.gross_surplus
         by_county[cid]["leads"] += 1
         by_county[cid]["surplus"] += credible_surplus
         by_county[cid]["top_lead"] = max(by_county[cid]["top_lead"], credible_surplus)
