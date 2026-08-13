@@ -1,0 +1,19 @@
+name: TaxDeed Verify
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Scrape real cases from datacenter IP (fresh + redeemed + surplus)
+        run: |
+          for C in 2026A00192 2026A00103 2014A00429; do
+            echo "=== $C ==="
+            python -m core.dockets.miami_dade_taxdeed --case $C
+          done
