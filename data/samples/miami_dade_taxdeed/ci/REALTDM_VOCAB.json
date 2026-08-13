@@ -1,0 +1,72 @@
+{
+ "captured": "2026-08-13, real RealTDM cases (Miami-Dade)",
+ "case_statuses_seen": {
+  "ACTIVE - SOLD BIDDER": {
+   "example": "2026A00192",
+   "meaning": "fresh sale, in-window; surplus process not started"
+  },
+  "COMPLETED - SOLD BIDDER": {
+   "example": "2014A00429",
+   "meaning": "sale complete; surplus docs may be present"
+  },
+  "COMPLETED - REDEEMED": {
+   "example": "2026A00103",
+   "meaning": "owner redeemed \u2014 NON-SALE, no surplus (KILL)"
+  },
+  "CANCELED - VACATE SALE": {
+   "example": "2015A00053",
+   "meaning": "sale vacated (KILL)"
+  },
+  "CANCELED - PER BANKRUPTCY": {
+   "example": "2011A00655",
+   "meaning": "bankruptcy (KILL)"
+  },
+  "COMPLETED - ESCHEATMENT": {
+   "example": "2012A01419",
+   "meaning": "surplus unclaimed \u2192 escheated to state, money gone (KILL)"
+  }
+ },
+ "surplus_document_types_seen": {
+  "SURPLUS_LETTER / SURPLUS LETTER": {
+   "example": "2014A00429",
+   "meaning": "PROOF \u2014 surplus confirmed & claimable; PDF states the clerk-held POOL amount (e.g. $58,504.73), pre-lien"
+  },
+  "Surplus Court Order": {
+   "example": "2014A00429",
+   "meaning": "distribution adjudicated (Interpleader Order) \u2014 CLAIMED/KILL"
+  },
+  "RETURNED CERT SURPLUS MAIL": {
+   "example": "2014A00429",
+   "meaning": "surplus-notice mail to claimants (supporting only, not itself proof)"
+  }
+ },
+ "variants_noted": [
+  "American spelling 'CANCELED' (one L) in status strings",
+  "'SURPLUS_LETTER' (underscore) and 'SURPLUS LETTER' (space) both appear as doc-type labels",
+  "row status and detail status match (uppercase)",
+  "redeemed cases also carry a 'Release NOA' doc, but the COMPLETED-REDEEMED status is the reliable signal"
+ ],
+ "fresh_in_window_2026A00192_docs": [],
+ "surplus_case_2014A00429_docs": [
+  "Surplus Court Order 2014A00429 Interpleader Order0001.pdf Case Document Uploaded April 10, 2020 View",
+  "SURPLUS_LETTER SURPLUS_LETTER0001.pdf The Surplus Letter is now available December 30, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A00429A0004.pdf Case Document Uploaded January 5, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A004290010.pdf Case Document Uploaded January 5, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A004290009.pdf Case Document Uploaded December 28, 2015 View",
+  "SURPLUS LETTER vendors_miamidade_cases_C14538_SURPLUS_LETTER 14-429.pdf Case Document Uploaded December 4, 2015 View",
+  "RECORDED TAXDEED 14-429_201511050827.pdf RECORDED TAXDEED 14-429_201511050827.pdf Case Document Uploaded November 5, 2015 View",
+  "TAXSYS INFO 2014A00429.pdf TAXSYS INFO 2014A00429.pdf Case Document Uploaded November 3, 2015 View",
+  "PUBLICATION.pdf PUBLICATION.pdf Case Document Uploaded October 19, 2015 View",
+  "RETURNED REGULAR MAIL 2014A004290008.pdf Case Document Uploaded October 19, 2015 View",
+  "NOA_PARTIES NOA_PARTIES0001.pdf The NOA parties letter is available October 15, 2015 View",
+  "SHERIFF_LETTER SHERIFF_LETTER0001.pdf The Sheriff_Letter October 15, 2015 View",
+  "REVISED NOA PUB 2014A00355.pdf REVISED NOA PUB 2014A00355.pdf Case Document Uploaded October 13, 2015 View",
+  "NOA_PUBLISHER NOA_PUBLISHER0001.pdf The NOA Publisher letter is available October 13, 2015 View",
+  "PUBLICATION 14-429.pdf Case Document Uploaded September 29, 2015 View",
+  "UPDATED TITLE REPORT 2014A004290007.pdf Case Document Uploaded September 28, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429C.pdf USPS CERT MAIL STATUS 2014A00429C.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429B.pdf USPS CERT MAIL STATUS 2014A00429B.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2015A00429A.pdf USPS CERT MAIL STATUS 2015A00429A.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429.pdf USPS CERT MAIL STATUS 2014A00429.pdf Case Document Uploaded September 25, 2015 View"
+ ]
+}

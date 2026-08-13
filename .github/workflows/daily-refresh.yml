@@ -112,6 +112,7 @@ jobs:
           python -m tests.test_bankruptcy_guard
           python -m tests.test_fl_county_court
           python -m tests.test_fl_tax_deed
+          python -m tests.test_miami_dade_taxdeed
 
       - name: Install Playwright Chromium
         run: |
@@ -182,6 +183,18 @@ jobs:
           echo "Running docket enrichment for: ${{ steps.params.outputs.docket_county }}"
           xvfb-run -a --server-args="-screen 0 1280x800x24" \
             python -m core.dockets.enrich "${{ steps.params.outputs.docket_county }}"
+        continue-on-error: true
+
+      # Miami-Dade tax-deed CLAIM-STATUS layer (RealTDM). Open portal, cloud-
+      # runnable (no CAPTCHA/Cloudflare). Runs on the full-pipeline path only.
+      # Kills dead tax-deed leads + confirms/surfaces the clerk pool when a
+      # Surplus Letter is posted. Never local-run; never computes owner-net.
+      - name: Run Miami-Dade tax-deed claim-status (RealTDM)
+        id: taxdeed
+        if: steps.params.outputs.run_dockets == 'true' && steps.params.outputs.county == 'all' && github.event.inputs.pr_probe_address == '' && github.event.inputs.pr_probe_criteria == '' && github.event.inputs.pr_probe_radarid == '' && github.event.inputs.pr_probe_chain == ''
+        run: |
+          xvfb-run -a --server-args="-screen 0 1280x800x24" \
+            python -m core.dockets.miami_dade_taxdeed
         continue-on-error: true
 
       - name: PR API probe (Purchase=0, free)

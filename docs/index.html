@@ -954,6 +954,15 @@
       return '<span class="surplus-caution" title="Tax-deed sale (FS 197.582). This surplus POOL is real and held by the clerk, but it is distributed to lienholders — governmental units, then the former mortgagee (the tax deed extinguished the mortgage into a claim on the surplus), then other liens — BEFORE the former owner. Owner-net recovery is unknown from auction data. Verify excess-proceeds / claim status via the county tax-deed portal (Clerk Docket link).">&#127991;&#65039; tax-deed pool</span>'
            + '<span class="surplus-apparent">pool ' + fmtMoney(gs) + ' · pre-lien, owner-net unknown</span>';
     }
+    // FL tax deed with a CONFIRMED Surplus Letter (RealTDM claim-status) — the
+    // clerk has posted the surplus and stated the pool amount. Prefer that
+    // clerk-stated figure (better than auction math); still pre-lien, not owner-net.
+    if (l.real_surplus_source === 'fl_taxdeed_confirmed_pool') {
+      const pool = (l.taxdeed_surplus_pool != null) ? l.taxdeed_surplus_pool : (l.gross_surplus || 0);
+      const dl = l.taxdeed_claim_deadline_days ? (' · ' + l.taxdeed_claim_deadline_days + '-day claim window') : '';
+      return '<span class="surplus-caution" title="Surplus Letter posted by the clerk (RealTDM) — the tax-deed surplus is CONFIRMED and claimable. This is the clerk-stated pool amount' + (l.taxdeed_surplus_pool != null ? ' (' + fmtMoney(pool) + ')' : '') + ', which reflects the clerk\'s actual cost deductions — but it is still PRE-LIEN: governmental units and the former mortgagee are paid before the former owner, so owner-net is not this figure. File a notarized statement of claim within the claim window. Verify via the tax-deed portal (Clerk Docket link).">&#128196; surplus confirmed</span>'
+           + '<span class="surplus-apparent">clerk pool ' + fmtMoney(pool) + ' · pre-lien' + dl + '</span>';
+    }
     // OH-mortgage leads with no usable docket debt are tagged
     // real_surplus_source='oh_unverified' (best_real_surplus=null). Never show the
     // 2/3-appraised opening-bid number for those — render unverified.

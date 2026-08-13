@@ -217,6 +217,11 @@ def _surplus_for_payload(payload_lead: dict) -> tuple:
     if payload_lead.get("fl_tax_deed_redeemed"):
         return (None, "fl_taxdeed_redeemed")
     if payload_lead.get("fl_tax_deed"):
+        # RealTDM claim-status confirmed a Surplus Letter is posted → surface the
+        # CLERK-stated pool (better than auction math), still labeled pre-lien and
+        # excluded from owner-surplus totals. Bucket distinguishes it for the UI.
+        if payload_lead.get("taxdeed_verdict") == "surplus_confirmed":
+            return (None, "fl_taxdeed_confirmed_pool")
         return (None, "fl_taxdeed_pool")
 
     # OH TAX (RC 5721): opening_bid IS the Minimum Bid = real tax debt, so
@@ -522,6 +527,9 @@ def export_dashboard_data():
             "fl_county_court":   getattr(l, "fl_county_court", False),
             "fl_tax_deed":          getattr(l, "fl_tax_deed", False),
             "fl_tax_deed_redeemed": getattr(l, "fl_tax_deed_redeemed", False),
+            "taxdeed_verdict":      getattr(l, "taxdeed_verdict", ""),
+            "taxdeed_surplus_pool": getattr(l, "taxdeed_surplus_pool", None),
+            "taxdeed_claim_deadline_days": getattr(l, "taxdeed_claim_deadline_days", None),
             "sale_date":        l.sale_date,
             "sale_datetime":    getattr(l, "sale_datetime", ""),
             "sold_to":          l.sold_to,
@@ -835,7 +843,7 @@ def export_dashboard_data():
     pre_floor = len(leads_payload)
 
     def _below_floor(p):
-        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed"):
+        if p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed", "fl_taxdeed_confirmed_pool"):
             return False  # no known surplus figure → can't floor-filter; keep visible
         return (p.get("best_real_surplus") or 0) < MIN_DISPLAY_SURPLUS
 
@@ -877,7 +885,7 @@ def export_dashboard_data():
     # VISIBLE in the list but must NOT inflate the real-surplus KPI count/total —
     # they're tracked in their own 'unverified' bucket for the headline.
     def _unverified(p):
-        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed")
+        return p.get("real_surplus_source") in ("oh_unverified", "oh_uncertain", "fl_hoa_unverified", "fl_taxdeed_pool", "fl_taxdeed_redeemed", "fl_taxdeed_confirmed_pool")
 
     confirmed = [p for p in leads_payload if _bucket(p) == "confirmed_surplus" and not _unverified(p)]
     estimated = [p for p in leads_payload if _bucket(p) == "estimated_surplus" and not _unverified(p)]

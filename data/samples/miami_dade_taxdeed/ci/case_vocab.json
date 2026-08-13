@@ -1,0 +1,101 @@
+{
+ "2014A00429": {
+  "case": "2014A00429",
+  "found": true,
+  "row_status": "COMPLETED - SOLD BIDDER",
+  "detail_status": "COMPLETED - SOLD BIDDER",
+  "doc_types": [
+   "RETURNED CERT SURPLUS MAIL",
+   "RECORDED TAXDEED",
+   "TAXSYS INFO",
+   "RETURNED REGULAR MAIL",
+   "REVISED NOA PUB",
+   "PUBLICATION",
+   "UPDATED TITLE REPORT",
+   "USPS CERT MAIL STATUS"
+  ]
+ },
+ "2026A00103": {
+  "case": "2026A00103",
+  "found": true,
+  "row_status": "COMPLETED - REDEEMED",
+  "detail_status": "COMPLETED - REDEEMED",
+  "doc_types": [
+   "Publication Tax Deeds",
+   "Returned Certified Mail CERTIFIED",
+   "Release NOA RECORDED",
+   "Returned Certified Mail RETURNED CERT",
+   "Sheriff's Return Of Service RETURN OF SERVICE",
+   "Sheriff's Return Of Service SHERIFF RETURN OF",
+   "Recorded NOA",
+   "INVOICE",
+   "Title Search"
+  ]
+ },
+ "2025A00443": {
+  "case": "2025A00443",
+  "found": true,
+  "row_status": "COMPLETED - REDEEMED",
+  "detail_status": "COMPLETED - REDEEMED",
+  "doc_types": [
+   "Returned Certified Mail RETURNED CERT",
+   "Returned Certified Mail",
+   "Publication Tax Deeds",
+   "Sheriff's Return Of Service RETURN OF SERVICE",
+   "Release NOA NOTICE OF",
+   "Sheriff's Return Of Service SHERIFF RETURN OF",
+   "Returned Regular Mail REGULAR",
+   "Returned Certified Mail CERTIFIED",
+   "Recorded NOA",
+   "Certificate of Mailings CERTIFICATE OF MAILING"
+  ]
+ },
+ "2026A00107": {
+  "case": "2026A00107",
+  "found": true,
+  "row_status": "COMPLETED - REDEEMED",
+  "detail_status": "COMPLETED - REDEEMED",
+  "doc_types": [
+   "Publication Tax Deeds",
+   "Release NOA",
+   "Returned Certified Mail RETURNED CERTIFIED",
+   "Returned Regular Mail REGULAR",
+   "Sheriff's Return Of Service RETURN OF SERVICE",
+   "Recorded NOA NOA RECORDED",
+   "INVOICE",
+   "Title Search"
+  ]
+ },
+ "2026A00109": {
+  "case": "2026A00109",
+  "found": true,
+  "row_status": "COMPLETED - REDEEMED",
+  "detail_status": "COMPLETED - REDEEMED",
+  "doc_types": [
+   "Publication Tax Deeds",
+   "Release NOA",
+   "Sheriff's Return Of Service RETURN OF SERVICE",
+   "Recorded NOA NOA RECORDED",
+   "INVOICE",
+   "Title Search"
+  ]
+ },
+ "2025A00968": {
+  "case": "2025A00968",
+  "found": true,
+  "row_status": "COMPLETED - REDEEMED",
+  "detail_status": "COMPLETED - REDEEMED",
+  "doc_types": [
+   "Publication Tax Deeds",
+   "Returned Certified Mail",
+   "Release NOA",
+   "Returned Regular Mail RETURNED REG",
+   "Returned Certified Mail RETURNED CERTIFIED",
+   "Sheriff's Return Of Service RETURN OF SERVICE",
+   "Sheriff's Return Of Service SHERIFF RETURN OF",
+   "Returned Regular Mail RETURN",
+   "Recorded NOA"
+  ]
+ },
+ "2026A00192": {}
+}

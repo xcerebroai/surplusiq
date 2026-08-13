@@ -1,0 +1,54 @@
+{
+ "2014A00429_docs": [
+  "Surplus Court Order 2014A00429 Interpleader Order0001.pdf Case Document Uploaded April 10, 2020 View",
+  "SURPLUS_LETTER SURPLUS_LETTER0001.pdf The Surplus Letter is now available December 30, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A00429A0004.pdf Case Document Uploaded January 5, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A004290010.pdf Case Document Uploaded January 5, 2016 View",
+  "RETURNED CERT SURPLUS MAIL 2014A004290009.pdf Case Document Uploaded December 28, 2015 View",
+  "SURPLUS LETTER vendors_miamidade_cases_C14538_SURPLUS_LETTER 14-429.pdf Case Document Uploaded December 4, 2015 View",
+  "RECORDED TAXDEED 14-429_201511050827.pdf RECORDED TAXDEED 14-429_201511050827.pdf Case Document Uploaded November 5, 2015 View",
+  "TAXSYS INFO 2014A00429.pdf TAXSYS INFO 2014A00429.pdf Case Document Uploaded November 3, 2015 View",
+  "PUBLICATION.pdf PUBLICATION.pdf Case Document Uploaded October 19, 2015 View",
+  "RETURNED REGULAR MAIL 2014A004290008.pdf Case Document Uploaded October 19, 2015 View",
+  "NOA_PARTIES NOA_PARTIES0001.pdf The NOA parties letter is available October 15, 2015 View",
+  "SHERIFF_LETTER SHERIFF_LETTER0001.pdf The Sheriff_Letter October 15, 2015 View",
+  "REVISED NOA PUB 2014A00355.pdf REVISED NOA PUB 2014A00355.pdf Case Document Uploaded October 13, 2015 View",
+  "NOA_PUBLISHER NOA_PUBLISHER0001.pdf The NOA Publisher letter is available October 13, 2015 View",
+  "PUBLICATION 14-429.pdf Case Document Uploaded September 29, 2015 View",
+  "UPDATED TITLE REPORT 2014A004290007.pdf Case Document Uploaded September 28, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429C.pdf USPS CERT MAIL STATUS 2014A00429C.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429B.pdf USPS CERT MAIL STATUS 2014A00429B.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2015A00429A.pdf USPS CERT MAIL STATUS 2015A00429A.pdf Case Document Uploaded September 25, 2015 View",
+  "USPS CERT MAIL STATUS 2014A00429.pdf USPS CERT MAIL STATUS 2014A00429.pdf Case Document Uploaded September 25, 2015 View"
+ ],
+ "Canceled - Vacate Sale": {
+  "status_label": "Canceled - Vacate Sale",
+  "picked": true,
+  "first": {
+   "caseid": "23961",
+   "case": "2015A00053",
+   "status": "CANCELED - VACATE SALE"
+  },
+  "detail_status": "CANCELED - VACATE SALE"
+ },
+ "Canceled - Per Bankruptcy": {
+  "status_label": "Canceled - Per Bankruptcy",
+  "picked": true,
+  "first": {
+   "caseid": "16620",
+   "case": "2011A00655",
+   "status": "CANCELED - PER BANKRUPTCY"
+  },
+  "detail_status": "CANCELED - PER BANKRUPTCY"
+ },
+ "Completed - Escheatment": {
+  "status_label": "Completed - Escheatment",
+  "picked": true,
+  "first": {
+   "caseid": "19505",
+   "case": "2012A01419",
+   "status": "COMPLETED - ESCHEATMENT"
+  },
+  "detail_status": "COMPLETED - ESCHEATMENT"
+ }
+}

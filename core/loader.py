@@ -179,6 +179,32 @@ def is_tax_deed_redeemed(record: dict) -> bool:
     return bool(sale > 0 and assessed > 0 and sale == assessed)
 
 
+def _apply_taxdeed_claim_status(lead, rec: dict) -> None:
+    """Apply a RealTDM tax-deed CLAIM-STATUS record to a tax-deed lead.
+
+      • killed            → classification='killed' + reason (FP-14 filters it,
+                            killed_leads shows the cited reason).
+      • surplus_confirmed → keep it a labeled pool but surface the CLERK-stated
+                            pool amount (better than auction math; still pre-lien,
+                            NOT owner-net) + the 90-day claim window.
+      • pool_pending      → no change (fresh sale; absence of a surplus doc is
+                            the normal in-window state — never a penalty).
+    Never computes owner-net; never presents the pool as owner-recoverable."""
+    verdict = (rec.get("taxdeed_verdict") or "").strip()
+    lead.taxdeed_verdict = verdict
+    if verdict == "killed":
+        lead.classification = "killed"
+        lead.classification_reason = rec.get("classification_reason") or rec.get("taxdeed_reason") or "tax-deed dead"
+        sig = rec.get("kill_signal") or "taxdeed_killed"
+        lead.kill_signals = list(set((lead.kill_signals or []) + [sig]))
+    elif verdict == "surplus_confirmed":
+        pool = rec.get("surplus_pool_amount")
+        lead.taxdeed_surplus_pool = float(pool) if pool is not None else None
+        dd = rec.get("claim_deadline_days")
+        lead.taxdeed_claim_deadline_days = int(dd) if dd is not None else None
+    # pool_pending: intentionally no change.
+
+
 def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     """
     Merge a docket result onto a Lead in place.
@@ -345,6 +371,12 @@ class Lead:
     # the back taxes) — no surplus at all. Both set in _parse_lead.
     fl_tax_deed:          bool  = False
     fl_tax_deed_redeemed: bool  = False
+    # Tax-deed CLAIM-STATUS (RealTDM claim-status layer, Miami-Dade). Verdict:
+    # pool_pending (fresh) / surplus_confirmed / killed. On surplus_confirmed the
+    # clerk-stated POOL amount (pre-lien, NOT owner-net) + 90-day claim window.
+    taxdeed_verdict:        str   = ""
+    taxdeed_surplus_pool:   Optional[float] = None
+    taxdeed_claim_deadline_days: Optional[int] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -855,7 +887,12 @@ def load_all_leads(
                 _norm = _normalize_case_for_lookup(lead.case_number)
                 _docket = _docket_lookup.get((lead.county_id, _norm))
                 if _docket:
-                    _apply_docket_to_lead(lead, _docket, lead.county_id)
+                    # A tax-deed claim-status record (RealTDM) has its own shape —
+                    # route it to the dedicated handler, NOT the foreclosure merge.
+                    if "taxdeed_verdict" in _docket:
+                        _apply_taxdeed_claim_status(lead, _docket)
+                    else:
+                        _apply_docket_to_lead(lead, _docket, lead.county_id)
                 # Assign the verification status model (FP-6 gate)
                 assign_status_fields(lead)
                 _flag_mispriced_opener(lead)
