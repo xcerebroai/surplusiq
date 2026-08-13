@@ -64,12 +64,30 @@ async def one_attempt(pw, user_data_dir: str, label: str) -> dict:
     context = await pw.chromium.launch_persistent_context(
         user_data_dir,
         headless=HEADLESS,
-        args=["--disable-blink-features=AutomationControlled"],
+        args=[
+            "--disable-blink-features=AutomationControlled",
+            "--disable-features=IsolateOrigins,site-per-process",
+        ],
         viewport={"width": 1400, "height": 900},
         user_agent=REAL_UA,
         locale="en-US",
         timezone_id="America/New_York",
         ignore_https_errors=True,
+    )
+    # Hard-mask the automation tells the CLI flag alone doesn't remove in this
+    # Chromium build — navigator.webdriver, and a couple of headless signals.
+    await context.add_init_script(
+        """
+        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        window.chrome = window.chrome || {runtime: {}};
+        Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+        Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+        const _q = window.navigator.permissions && window.navigator.permissions.query;
+        if (_q) window.navigator.permissions.query = (p) =>
+            p && p.name === 'notifications'
+              ? Promise.resolve({state: Notification.permission})
+              : _q(p);
+        """
     )
     out = {
         "label": label, "homepage_ok": False, "index_ok": False,
