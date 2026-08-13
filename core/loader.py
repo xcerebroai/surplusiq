@@ -55,6 +55,43 @@ _PLAINTIFF_ORG = re.compile(
     r"savings|credit union|servicing|federal home loan|n\.?a\.?)\b", re.I)
 
 
+def derive_owner_from_docket(docket: dict) -> str:
+    """Best owner-of-record name from a docket record, or "" if none derivable.
+
+    Each county's scraper stores party data differently:
+      • Miami-Dade / Summit / Montgomery / Duval: a role-filtered "defendants"
+        list (owner first, plaintiff excluded). The scraper blanks owner_name
+        when the defendant of record is a company — but a foreclosed property
+        owned by an investor LLC (e.g. "LOYAL CIMA LLC") makes that LLC the
+        surplus-entitled party, so blank is strictly worse.
+      • Cuyahoga: no defendants list, only a clean "PLAINTIFF vs. DEFENDANT,
+        ET AL." case_title.
+
+    Guards: skip true non-parties (_GENERIC_DEFENDANT: John Doe, tenants, unknown
+    heirs) and institutional plaintiffs (_PLAINTIFF_ORG: bank/mortgage/HOA/…) so a
+    plaintiff never lands in the owner column — needed because some counties'
+    party lists are NOT role-separated (Broward mixes the plaintiff in, sometimes
+    token-reversed) — WITHOUT dropping a legitimate investor LLC/INC owner. Never
+    fabricates: no usable party data → "".
+    """
+    owner = (docket.get("owner_name", "") or "").strip()
+    if owner:
+        return owner
+    for cand in docket.get("defendants", []) or []:
+        cand = (cand or "").strip()
+        if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
+                and not _PLAINTIFF_ORG.search(cand)):
+            return cand
+    m = re.search(r"\bvs\.?\s+(.+?)(?:,?\s+et\s+al\b|$)",
+                  docket.get("case_title", "") or "", re.I)
+    if m:
+        cand = re.sub(r"\s+", " ", m.group(1)).strip().strip(",").strip()
+        if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
+                and not _PLAINTIFF_ORG.search(cand)):
+            return cand
+    return ""
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Project paths
 # ═══════════════════════════════════════════════════════════════════════
@@ -266,38 +303,10 @@ def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     lead.claim_filed           = bool(docket.get("claim_filed", False))
     lead.claim_type            = docket.get("claim_type", "") or ""
 
-    # Owner = defendant homeowner from the docket. Only counties that extract it
-    # set docket["owner_name"] (currently Miami-Dade); for others it's absent →
-    # no-op. Fill ONLY when the auction scrape left owner_name blank, and never
-    # overwrite a name the auction already provided.
-    docket_owner = (docket.get("owner_name", "") or "").strip()
-    if not docket_owner:
-        # Fallback: the scraper blanks owner_name when the defendant of record is
-        # a company (its _is_individual_homeowner filter excludes corporate
-        # names). But a foreclosed property owned by an investor LLC — e.g.
-        # "LOYAL CIMA LLC" — makes that LLC the surplus-entitled party Eric must
-        # pursue; blank is strictly worse. The raw name survives in the docket
-        # "defendants" list (already role-filtered to Defendant-tagged parties at
-        # scrape time, so never the plaintiff). Take the first real defendant,
-        # skipping only true non-parties (John Doe / tenants / unknown heirs).
-        for cand in docket.get("defendants", []) or []:
-            cand = (cand or "").strip()
-            if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
-                    and not _PLAINTIFF_ORG.search(cand)):
-                docket_owner = cand
-                break
-    if not docket_owner:
-        # Second fallback: parse the owner from the caption. Cuyahoga records
-        # carry no structured "defendants" list, only a clean case_title of the
-        # form "PLAINTIFF vs. DEFENDANT, ET AL." — the defendant follows "vs".
-        # Same shape Miami-Dade's owner_from_caption handles.
-        m = re.search(r"\bvs\.?\s+(.+?)(?:,?\s+et\s+al\b|$)",
-                      docket.get("case_title", "") or "", re.I)
-        if m:
-            cand = re.sub(r"\s+", " ", m.group(1)).strip().strip(",").strip()
-            if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
-                    and not _PLAINTIFF_ORG.search(cand)):
-                docket_owner = cand
+    # Owner = defendant homeowner from the docket. Fill ONLY when the auction
+    # scrape left owner_name blank, and never overwrite a name the auction
+    # already provided.
+    docket_owner = derive_owner_from_docket(docket)
     if docket_owner and not (getattr(lead, "owner_name", "") or "").strip():
         lead.owner_name = docket_owner
 

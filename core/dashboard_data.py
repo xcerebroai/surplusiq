@@ -28,7 +28,7 @@ from config.counties import LEAD_WINDOW_DAYS
 from core.loader import (
     load_all_leads, get_summary, PROJECT_ROOT,
     _POSITIVE_CLASSIFICATIONS, _NEGATIVE_CLASSIFICATIONS,
-    _load_docket_data, _normalize_case_for_lookup,
+    _load_docket_data, _normalize_case_for_lookup, derive_owner_from_docket,
 )
 
 
@@ -380,6 +380,10 @@ def _apply_confirmed_retention(leads_payload: list, present_keys: set) -> int:
     except Exception:
         store = {}
 
+    # Live docket lookup — used to self-heal a blank owner on carried-forward
+    # confirmed snapshots taken before the owner-derivation fix (see step 2).
+    _retention_docket_lookup = _load_docket_data()
+
     # 1. upsert current confirmed leads
     live_confirmed = set()
     for p in leads_payload:
@@ -415,6 +419,16 @@ def _apply_confirmed_retention(leads_payload: list, present_keys: set) -> int:
         cp = dict(entry["payload"])
         cp["confirmed_retained"] = True
         cp["confirmed_last_verified"] = entry.get("last_verified", "")
+        # Self-heal a blank owner on snapshots taken before the owner-derivation
+        # fix: the payload froze owner_name="" but the live docket still carries
+        # the party data. Re-derive from the current docket record (never the
+        # auction, never fabricated) so retained confirmed leads show their owner.
+        if not (cp.get("owner_name") or "").strip():
+            _dk = _retention_docket_lookup.get((cid, norm))
+            if _dk:
+                _own = derive_owner_from_docket(_dk)
+                if _own:
+                    cp["owner_name"] = _own
         leads_payload.append(cp)
         carried += 1
 
