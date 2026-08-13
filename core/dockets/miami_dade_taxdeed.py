@@ -173,11 +173,16 @@ class MiamiDadeTaxDeedScraper:
                 try:
                     await page.click("text=Documents", timeout=6000)
                     await page.wait_for_timeout(2200)
+                    # Collect each document row's FULL text (any row that names a
+                    # .pdf). The classifier checks its markers as substrings, so
+                    # full-row text reliably catches multi-word doc types like
+                    # 'Surplus Court Order' whose complex filename defeated a
+                    # leading-label regex (would misread a disbursed case as
+                    # merely confirmed).
                     doc_types = await page.evaluate(
                         r"""()=>{const out=[];document.querySelectorAll('tr').forEach(r=>{
                           const t=(r.innerText||'').replace(/\s+/g,' ').trim();
-                          const m=t.match(/^([A-Za-z_'` ]+?)\s+[\w.'@`-]+\.pdf/);
-                          if(m)out.push(m[1].trim());});return [...new Set(out)];}""")
+                          if(/\.pdf/i.test(t)) out.push(t);});return [...new Set(out)];}""")
                 except PWTimeout:
                     pass
                 result["taxdeed_status"] = status

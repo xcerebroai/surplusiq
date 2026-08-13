@@ -87,6 +87,32 @@ def main():
     check("2014A00429 (letter + 2020 court order) → killed/disbursed",
           v["verdict"] == "killed", v["verdict"])
 
+    # Realism: the scraper feeds FULL document-row text (label + filename + date),
+    # not clean labels. The classifier's substring markers must still work — this
+    # is what caught the live 2014A00429 misread (a disbursed case reading as
+    # merely confirmed because the multi-word 'Surplus Court Order' label was
+    # lost by a leading-label regex).
+    real_rows_disbursed = [
+        "Surplus Court Order 2014A00429 Interpleader Order0001.pdf Case Document Uploaded April 10, 2020 View",
+        "SURPLUS_LETTER SURPLUS_LETTER0001.pdf The Surplus Letter is now available December 30, 2016 View",
+        "RETURNED CERT SURPLUS MAIL 2014A00429A0004.pdf Case Document Uploaded January 5, 2016 View",
+    ]
+    v = classify_tax_deed("COMPLETED - SOLD BIDDER", real_rows_disbursed)
+    check("full-row text (Court Order present) → killed/disbursed", v["verdict"] == "killed", v["verdict"])
+    real_rows_confirmed = [
+        "SURPLUS_LETTER SURPLUS_LETTER0001.pdf The Surplus Letter is now available December 30, 2016 View",
+        "RETURNED CERT SURPLUS MAIL 2014A00429A0004.pdf Case Document Uploaded January 5, 2016 View",
+        "Publication 2026A00192.pdf Case Document Uploaded July 30, 2026 View",
+    ]
+    v = classify_tax_deed("COMPLETED - SOLD BIDDER", real_rows_confirmed)
+    check("full-row text (letter, no order) → surplus_confirmed", v["verdict"] == "surplus_confirmed", v["verdict"])
+    real_rows_mail_only = [
+        "RETURNED CERT SURPLUS MAIL 2014A00429A0004.pdf Case Document Uploaded January 5, 2016 View",
+        "Publication 2026A00192.pdf Case Document Uploaded July 30, 2026 View",
+    ]
+    v = classify_tax_deed("COMPLETED - SOLD BIDDER", real_rows_mail_only)
+    check("full-row text (surplus MAIL only, no letter) → pool_pending", v["verdict"] == "pool_pending", v["verdict"])
+
     print("\n── THE CRITICAL ONE: fresh in-window sale is NOT penalized ──")
     v = classify_tax_deed("ACTIVE - SOLD BIDDER", FRESH_DOCS)
     check("2026A00192 (ACTIVE - SOLD BIDDER, no surplus doc) → pool_pending (NOT killed)",
