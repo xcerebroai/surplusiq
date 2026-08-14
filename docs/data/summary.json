@@ -1,60 +1,52 @@
 {
-  "generated_at": "2026-08-13T10:06:12",
-  "total_leads": 49,
-  "total_leads_pre_filter": 60,
-  "killed_filtered_count": 11,
-  "killed_shown_count": 28,
+  "generated_at": "2026-08-14T11:54:25",
+  "total_leads": 52,
+  "total_leads_pre_filter": 61,
+  "killed_filtered_count": 9,
+  "killed_shown_count": 21,
   "below_floor_filtered_count": 1,
   "confirmed_retained_count": 1,
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 97051.34,
   "estimated_surplus_total": 245975.0,
-  "apparent_surplus_total": 1801943.11,
-  "docket_verified_positive_count": 9,
-  "docket_verified_positive_total": 286855.92,
+  "apparent_surplus_total": 2084299.96,
+  "docket_verified_positive_count": 8,
+  "docket_verified_positive_total": 252494.45,
   "confirmed_surplus_count": 1,
   "estimated_surplus_count": 2,
-  "apparent_surplus_count": 26,
+  "apparent_surplus_count": 29,
   "unverified_count": 20,
   "killed_count": 0,
-  "red_count": 3,
+  "red_count": 2,
   "pipeline_ready_count": 1,
-  "pr_matched_count": 17,
-  "docket_matched_count": 32,
+  "pr_matched_count": 15,
+  "docket_matched_count": 30,
   "by_state": {
     "FL": {
-      "leads": 39,
-      "surplus": 2518098.4800000004
+      "leads": 43,
+      "surplus": 2583609.9300000006
     },
     "OH": {
-      "leads": 21,
-      "surplus": 1239265.75
+      "leads": 18,
+      "surplus": 999694.75
     }
   },
   "by_county": [
     {
-      "county_id": "duval-fl",
-      "county_name": "Duval",
+      "county_id": "orange-fl",
+      "county_name": "Orange",
       "state": "FL",
-      "leads": 9,
-      "surplus": 682185.29,
-      "top_lead": 251206.87
+      "leads": 12,
+      "surplus": 760770.9299999999,
+      "top_lead": 172241.57
     },
     {
       "county_id": "broward-fl",
       "county_name": "Broward",
       "state": "FL",
-      "leads": 13,
-      "surplus": 622905.7899999999,
+      "leads": 14,
+      "surplus": 715857.7399999999,
       "top_lead": 221453.33
-    },
-    {
-      "county_id": "orange-fl",
-      "county_name": "Orange",
-      "state": "FL",
-      "leads": 10,
-      "surplus": 588356.6799999999,
-      "top_lead": 172241.57
     },
     {
       "county_id": "miami-dade-fl",
@@ -63,6 +55,14 @@
       "leads": 6,
       "surplus": 534709.2000000001,
       "top_lead": 205511.11
+    },
+    {
+      "county_id": "duval-fl",
+      "county_name": "Duval",
+      "state": "FL",
+      "leads": 10,
+      "surplus": 482330.54000000004,
+      "top_lead": 154518.47999999998
     },
     {
       "county_id": "franklin-oh",
@@ -79,14 +79,6 @@
       "leads": 7,
       "surplus": 291616.53,
       "top_lead": 90100.0
-    },
-    {
-      "county_id": "montgomery-oh",
-      "county_name": "Montgomery",
-      "state": "OH",
-      "leads": 3,
-      "surplus": 239571.0,
-      "top_lead": 143671.0
     },
     {
       "county_id": "cuyahoga-oh",
@@ -114,16 +106,16 @@
     }
   ],
   "by_score": {
-    "A+": 16,
-    "A": 19,
-    "B": 14,
-    "C": 8
+    "A+": 15,
+    "A": 21,
+    "B": 13,
+    "C": 9
   },
   "local_run_status": {
     "orange-fl": {
       "last_scraped": "",
       "stale": true,
-      "uncovered_count": 10
+      "uncovered_count": 12
     },
     "franklin-oh": {
       "last_scraped": "2026-08-11",
