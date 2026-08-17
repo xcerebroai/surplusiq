@@ -41,8 +41,12 @@ SCRAPER_REGISTRY = {
 #   • orange-fl  — per-search human CAPTCHA solve (manual).
 #   • franklin-oh — autonomous, but IP-gated to residential (Cloudflare blocks
 #                   the datacenter); no human needed.
-MANUAL_COUNTIES = {"orange-fl"}                       # need a human solve
-LOCAL_RUN_COUNTIES = {"orange-fl", "franklin-oh"}     # all local-only (cloud-skip)
+#   • broward-fl — autonomous, IP-gated to residential (Cloudflare Turnstile
+#                   auto-issues a token headed on residential but NOT from the CI
+#                   datacenter — proven by the Phase-1 probe, 2026-08-13); no
+#                   human needed. `python -m core.dockets.broward`.
+MANUAL_COUNTIES = {"orange-fl"}                                   # need a human solve
+LOCAL_RUN_COUNTIES = {"orange-fl", "franklin-oh", "broward-fl"}   # all local-only (cloud-skip)
 
 
 def get_scraper(county_id: str, headless: bool = True) -> DocketScraper:

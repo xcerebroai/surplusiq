@@ -17,6 +17,23 @@
     "source_url": "https://hamilton.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/12/2026"
   },
   {
+    "county_id": "broward-fl",
+    "county_name": "Broward",
+    "state": "FL",
+    "case_number": "CACE-22-002423",
+    "address": "9571 ASHLEY DR",
+    "sale_date": "2026-07-29",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 221453.33,
+    "kill_label": "Surplus claim filed",
+    "kill_signals": [
+      "surplus_claim_filed"
+    ],
+    "kill_detail": "Docket checked. Surplus claim activity found: 'Notice of Claim VERIFIED OWNER'S CLAIM TO SURPLUS FORECLOSURE PROCEEDS, REQUEST TO PRESERVE REGISTRY FUNDS, AND NOTI E OF RELATED FOR",
+    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
+    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/29/2026"
+  },
+  {
     "county_id": "miami-dade-fl",
     "county_name": "Miami-Dade",
     "state": "FL",
@@ -154,6 +171,23 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
   },
   {
+    "county_id": "broward-fl",
+    "county_name": "Broward",
+    "state": "FL",
+    "case_number": "CACE-24-008842",
+    "address": "4921 NW 11 PL",
+    "sale_date": "2026-07-29",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 67043.48000000001,
+    "kill_label": "Surplus claim filed",
+    "kill_signals": [
+      "surplus_claim_filed"
+    ],
+    "kill_detail": "Docket checked. Surplus claim activity found: 'Motion for Disbursement MOTION TO INTERVENE AND TO DISBURSE SURPLUS FUNDS'. Lead already being pursued.",
+    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
+    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/29/2026"
+  },
+  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -286,6 +320,23 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/27/2026"
   },
   {
+    "county_id": "broward-fl",
+    "county_name": "Broward",
+    "state": "FL",
+    "case_number": "CACE-25-013698",
+    "address": "9420 NW 24 PL",
+    "sale_date": "2026-07-22",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 35604.75,
+    "kill_label": "Surplus claim filed",
+    "kill_signals": [
+      "surplus_firm_appearance"
+    ],
+    "kill_detail": "Docket checked. Notice of Appearance found from AMERIFUND EQUITY GROUP/ ATTORNEY KEVIN J LOFTUS ESQUIRE FBN:495506. Lead already being pursued.",
+    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
+    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/22/2026"
+  },
+  {
     "county_id": "montgomery-oh",
     "county_name": "Montgomery",
     "state": "OH",
@@ -332,6 +383,23 @@
     "kill_detail": "conservative debt $112,371 \u2265 sale $82,800 \u2014 NO surplus (principal $83,571 + interest $20,443 + junior $0 + buffer $8,357)",
     "docket_url": "https://pro.mcohio.org/",
     "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
+  },
+  {
+    "county_id": "broward-fl",
+    "county_name": "Broward",
+    "state": "FL",
+    "case_number": "CACE-24-016354",
+    "address": "3051 S PALM AIRE DR",
+    "sale_date": "2026-07-22",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 19978.490000000005,
+    "kill_label": "Surplus claim filed",
+    "kill_signals": [
+      "surplus_claim_filed"
+    ],
+    "kill_detail": "Docket checked. Surplus claim activity found: 'Motion for Disbursement REQUEST FOR SURPLUS AND SURPLUS FUNDS Party: Defendant Palm-Aire Country Club Condominium Association No.3, I",
+    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
+    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/22/2026"
   },
   {
     "county_id": "montgomery-oh",
@@ -398,6 +466,23 @@
     "kill_detail": "conservative debt $585,105 \u2265 sale $48,870 \u2014 NO surplus (principal $453,658 + interest $86,081 + junior $0 + buffer $45,366)",
     "docket_url": "https://pro.mcohio.org/",
     "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
+  },
+  {
+    "county_id": "broward-fl",
+    "county_name": "Broward",
+    "state": "FL",
+    "case_number": "CACE-25-016326",
+    "address": "7355 NW 5 CT",
+    "sale_date": "2026-08-12",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 13629.619999999999,
+    "kill_label": "Surplus claim filed",
+    "kill_signals": [
+      "surplus_firm_appearance"
+    ],
+    "kill_detail": "Docket checked. Notice of Appearance found from Get Liquid Funding, LLC. Lead already being pursued.",
+    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
+    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/12/2026"
   },
   {
     "county_id": "cuyahoga-oh",

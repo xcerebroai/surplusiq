@@ -319,14 +319,19 @@ async def run_county(county_id: str, headless: bool, only_case: str | None = Non
 # events — FL debt is the opening bid, not a prayer field). Miami-Dade joined
 # 2026-06-10 after run 27283288299 proved reCAPTCHA v3 passes clean from the
 # GitHub Actions datacenter IP (9/9 mortgage-FC cases reached searchResults,
-# zero v3 blocks). Broward (FL) joined 2026-06-10 after runs 27313584624 +
-# 27313823862 proved the public path + detail-click reach GetCaseDetail headless
-# (zero CAPTCHA) and the flag-based classifier ran live on real leads (Capital
-# Crafter recovery-firm NOA → KILLED; GHIDOTTI/BERGER plaintiff counsel → GREEN
-# after the false-kill fix). Hamilton + Franklin remain Cloudflare-blocked and
-# excluded (PR-fallback). Add to this set ONLY after a scraper proves itself on
-# real run data.
-WORKING_DOCKET_COUNTIES = ["cuyahoga-oh", "montgomery-oh", "summit-oh", "miami-dade-fl", "broward-fl", "duval-fl"]
+# zero v3 blocks).
+#
+# Broward (FL) was REMOVED 2026-08-13: ~Aug 8 the clerk deleted the public GET
+# endpoint and put search behind Cloudflare Turnstile. The token auto-issues
+# headed on a residential IP but NOT from the CI datacenter (Phase-1 probe:
+# 4/4 attempts, webdriver masked, no token). Broward is now a LOCAL-RUN county
+# (LOCAL_RUN_COUNTIES) on the autonomous Franklin pattern — the cron skips it and
+# it runs locally via `python -m core.dockets.broward`. See knowledge notes /
+# the broward.py header for the rebuilt flow.
+#
+# Hamilton + Franklin remain Cloudflare-blocked and excluded (PR-fallback /
+# local-run). Add to this set ONLY after a scraper proves itself on real run data.
+WORKING_DOCKET_COUNTIES = ["cuyahoga-oh", "montgomery-oh", "summit-oh", "miami-dade-fl", "duval-fl"]
 
 
 DEFAULT_PARALLEL_DOCKETS = 3

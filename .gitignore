@@ -47,3 +47,6 @@ data/samples/miami_dade/titles_*.txt
 # Manual-runner internal progress state (not data)
 data/dockets/.*_*.progress.json
 
+
+# Local persistent browser profiles (Broward local-run; never commit)
+data/browser_profiles/

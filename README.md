@@ -89,7 +89,7 @@ The docket step's `docket_county=auto` expands to `WORKING_DOCKET_COUNTIES` (the
 
 ### Local-run counties (cannot run in CI)
 
-Two counties are **local-only** and skipped by the cron (their docket JSONL still merges into the dashboard on the next cloud build):
+Three counties are **local-only** and skipped by the cron (their docket JSONL still merges into the dashboard on the next cloud build):
 
 - **`orange-fl`** — the clerk portal gates every search behind a reCAPTCHA v2 checkbox (per-search; one solve unlocks one lookup). A human solves one checkbox per case. *Currently parked* on time-cost grounds — built and runnable, not in active use.
   ```
@@ -99,8 +99,21 @@ Two counties are **local-only** and skipped by the cron (their docket JSONL stil
   ```
   source .venv/bin/activate && python3 -m core.dockets.franklin
   ```
+- **`broward-fl`** — around 2026-08-08 the clerk deleted the old public search endpoint and put case search behind **Cloudflare Turnstile**. Turnstile issues its token only to a **genuine browser on a residential IP** — it withholds the widget under any Playwright/CDP automation, and it does not issue from the CI datacenter (proven). So Broward runs locally through a small **Chrome bridge extension**: the runner serves a localhost queue, and the unpacked extension (`core/dockets/broward_extension/`) drives the real search flow in your Chrome and posts each docket back. No human interaction per case; the classification layer is unchanged.
 
-Both use the reusable `core/dockets/manual_runner.py` loop (one browser session, resumable via a progress file, interrupt-safe). Local-run counties surface a **last-scraped date** on the dashboard and are marked stale when their docket data doesn't cover the current auction feed (coverage-based, not just age).
+  **One-time setup** (needed once because Chrome 151 removed CLI `--load-extension`):
+  1. Run the runner once to create the profile: `python3 -m core.dockets.broward --selftest` (it launches Chrome on the dedicated `data/browser_profiles/broward-fl` profile).
+  2. In that Chrome window: open `chrome://extensions`, turn on **Developer mode** (top-right), click **Load unpacked**, and select the folder:
+     `core/dockets/broward_extension`
+  3. Re-run `--selftest` — it should print “Channel OK”. (If localhost is blocked, it falls back to `chrome.downloads`; see the extension source.)
+
+  **Run it** (residential machine, after the one-time setup):
+  ```
+  source .venv/bin/activate && python3 -m core.dockets.broward
+  ```
+  The runner launches Chrome on the `broward-fl` profile, the extension scrapes every in-window case, and results write to `data/dockets/broward-fl_<date>.jsonl` (resumable; a case it can't reach is left docket-not-verified, never written clean).
+
+Orange and Franklin use the reusable `core/dockets/manual_runner.py` loop; Broward uses the bridge extension. All three surface a **last-scraped date** on the dashboard and are marked stale when their docket data doesn't cover the current auction feed (coverage-based, not just age).
 
 ### Tests
 
@@ -128,12 +141,12 @@ Every OH-debt / docket test runs the **exact production logic** against **real c
 ## Per-county status (read from the code)
 
 Registered docket scrapers (`core/dockets/__init__.py:SCRAPER_REGISTRY`): cuyahoga, miami-dade, franklin, montgomery, summit, hamilton, broward, duval, orange.
-Cloud docket cron (`enrich.py:WORKING_DOCKET_COUNTIES`): cuyahoga, montgomery, summit (OH) + miami-dade, broward, duval (FL).
+Cloud docket cron (`enrich.py:WORKING_DOCKET_COUNTIES`): cuyahoga, montgomery, summit (OH) + miami-dade, duval (FL). Broward moved to local-run 2026-08-13 (Turnstile — see above).
 
 | County | ST | Docket validation | Runs where | Notes |
 |---|---|---|---|---|
 | Miami-Dade | FL | Docket review (flag-based) | cloud cron | reCAPTCHA v3 passes headless — joined June 2026 |
-| Broward | FL | Docket (recovery-firm kill gate) | cloud cron | local firm list |
+| Broward | FL | Docket (recovery-firm kill gate) | **local only** (Turnstile; Chrome bridge extension) | local firm list |
 | Duval | FL | Docket (3-signal cross-confirm) | cloud cron | own firm list, distinct from Broward |
 | Lee | FL | PR-first lien classifier | cloud cron | no docket portal; lien-based |
 | Orange | FL | Manual-solve docket | **local only** | reCAPTCHA v2 per-search; parked (time cost) |

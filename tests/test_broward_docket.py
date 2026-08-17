@@ -25,9 +25,12 @@ from core.dockets.broward import (
     BrowardDocketScraper,
     classify_appearance,
     collect_party_and_purchaser_names,
+    collect_defendant_names,
+    owner_from_defendants,
     NOA_BENIGN,
     NOA_RECOVERY_KILL,
 )
+from core.loader import derive_owner_from_docket
 
 SAMPLE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "data", "samples", "broward", "ci")
@@ -153,6 +156,41 @@ def main() -> int:
     for firm in ["Apex Surplus Funding LLC", "Statewide Asset Recovery Group"]:
         _check(classify_appearance(firm, set(), set())[0] == NOA_RECOVERY_KILL,
                f"unknown generic-keyword firm residual kills: {firm[:40]}")
+
+    # ── Owner extraction: multi-word surname + government-party exclusion.
+    #    COCE-25-060300 (live 2026-08-17): the individual defendant is "LEON
+    #    ALVARADO, PAULINA" (two-word surname). The old single-word-surname regex
+    #    missed it → owner_name blank → the loader fallback put the co-defendant
+    #    HUD ("Secretary of Housing and Urban Development") in the owner column.
+    print("\n8. owner extraction — multi-word surname + govt-party exclusion")
+    _hud_rows = [
+        {"description": "Motion for Default", "additional":
+         "Party: Defendant THE SECRETARY OF HOUSING AND URBAN DEVELOPMENT"},
+        {"description": "Answer to Complaint", "additional":
+         "Party: Defendant LEON ALVARADO, PAULINA"},
+        {"description": "eSummons", "additional":
+         "Party: Plaintiff REPUBLIC SQUARE CONDOMINIUM ASSOCIATION, INC"},
+    ]
+    _names = collect_defendant_names(_hud_rows)
+    _check("LEON ALVARADO, PAULINA" in _names,
+           "two-word surname 'LEON ALVARADO, PAULINA' now parses")
+    _check(owner_from_defendants(_names) == "LEON ALVARADO, PAULINA",
+           "owner_from_defendants returns the individual, not the HUD co-defendant")
+    _check(collect_defendant_names(
+        [{"additional": "Party: Defendant THE SECRETARY OF HOUSING AND URBAN DEVELOPMENT"}]) == [],
+        "HUD (no comma) is never captured as a defendant name")
+    _check(collect_defendant_names([{"additional": "Party: Defendant Merritt, Randolph"}])
+           == ["Merritt, Randolph"], "single-surname regression still parses")
+    # loader fallback: a blank owner_name with Broward's sorted token-set defendants
+    # must skip the HUD party (govt exclusion), never surfacing a federal agency.
+    _tokset = {"owner_name": "", "case_title": "",
+               "defendants": ["development housing secretary urban",
+                              "alvarado leon paulina", "condominium republic square"]}
+    _derived = derive_owner_from_docket(_tokset)
+    _check("secretary" not in _derived.lower() and "housing" not in _derived.lower(),
+           f"loader fallback excludes the HUD govt party (got '{_derived}')")
+    _check(_derived == "alvarado leon paulina",
+           "loader fallback returns the individual defendant token-set")
 
     print("\n" + "=" * 70)
     print(f"  RESULT: {_PASS}/{_PASS + _FAIL} checks passed")

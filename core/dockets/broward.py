@@ -7,17 +7,29 @@ Built 2026-06-10 from the investigation ground-truth in
 (scripts/broward_investigate.py + the Broward Investigate workflow) is REMOVED
 as part of this commit — this file is the production replacement.
 
-ACCESS PATH (proven headless from the GitHub Actions datacenter IP, zero CAPTCHA
-— unlike Miami-Dade's v3 form, the Broward public path is a plain server-rendered
-grid):
+ACCESS PATH — REBUILT 2026-08-13 (LOCAL-RUN, residential IP only).
 
-  1. GET  /Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS         (session)
-  2. GET  /Web2/CaseSearchECA/CaseNumberSearchResultsPUBLIC?CaseNum=<NODASH>
-  3. CLICK button.bc-casedetail-viewer  (onclick=ViewDetails(`<~152-char Viewer
-     blob>`) — the SHORT CaseID token is NOT the detail token; passing it 302s to
-     an ASP.NET error. Click the rendered button = faithful user action.)
-  4. → /Web2/CaseSearchECA/GetCaseDetail?Viewer=<blob>  (static HTML tables)
-  5. Docket events table headers: Date | Description | Additional Text | View/Pages
+Around 2026-08-08 the clerk deleted the old public GET endpoint
+(CaseNumberSearchResultsPUBLIC now hard-redirects to an ASP.NET 404) and put the
+search step behind Cloudflare Turnstile. The token auto-issues with zero
+interaction in a real headed browser on a RESIDENTIAL IP ("Success!"), but a
+Phase-1 CI probe proved it does NOT issue from the GitHub Actions datacenter IP
+(headless OR headed, warm profile, webdriver masked). So Broward is now a
+LOCAL-RUN county (LOCAL_RUN_COUNTIES) on the autonomous Franklin pattern — the
+cloud cron skips it; `python -m core.dockets.broward` runs it locally.
+
+Only the SEARCH step changed. Detail extraction + the whole classifier below are
+verbatim from the pre-Aug-8 build (live-reconfirmed 2026-08-13).
+
+  1. GET  https://www.browardclerk.org/                             (warm session)
+  2. GET  /Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS          (form + auto-token)
+  3. activate the Case Number tab, fill #CaseNumber, wait for the caseSearchForm's
+     cf-turnstile-response to auto-populate (no human action)
+  4. POST /Web2/CaseSearchECA/CaseNumberSearchResults  (submit caseSearchForm:
+     __RequestVerificationToken, CaseNumber, cf-turnstile-response, AccessLevel)
+  5. → GET /Web2/CaseSearchECA/Results?TYPE=GetCaseSearchByCase_ECA&INPUT=<blob>
+  6. CLICK the case row → /Web2/CaseSearchECA/GetCaseDetail?Viewer=<blob>  (UNCHANGED)
+  7. Docket events table headers: Date | Description | Additional Text | View/Pages
 
 DETECTION — THE KEY FINDING: the kill terms are NOT in the Description column.
 `Description` holds GENERIC clerk labels (Motion for Disbursement, Motion to
@@ -30,24 +42,101 @@ See SURPLUS_VOCAB_FINDINGS.md for the per-string evidence cited inline below.
 """
 
 from __future__ import annotations
+import http.server
+import json
+import os
 import re
+import shutil
+import socketserver
+import subprocess
+import threading
+import time
 import html as _html
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-
-from playwright.async_api import async_playwright, Page, TimeoutError as PWTimeout
 
 from .base import DocketScraper, DocketResult, DocketEvent
 
 
 BASE_URL = "https://www.browardclerk.org/Web2/CaseSearchECA"
 LANDING_URL = f"{BASE_URL}/Index/?AccessLevel=ANONYMOUS"
+HOMEPAGE_URL = "https://www.browardclerk.org/"
 REAL_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/126.0.0.0 Safari/537.36"
 )
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Persistent browser profile — Cloudflare clearance cookies survive between runs,
+# and a warm profile with history reads as far less suspicious than a cold one.
+PROFILE_DIR = PROJECT_ROOT / "data" / "browser_profiles" / "broward-fl"
+
+# Extension-bridge architecture. Turnstile issues its token ONLY to a genuine
+# browser and suppresses its widget under ANY Playwright/CDP automation (proven
+# 2026-08-13/14: window.turnstile loads but the challenge never renders — the CDP
+# Runtime.enable tell, present whether Playwright launches or attaches). So the
+# runner does NOT drive Chrome over CDP. It launches genuine Chrome against a
+# dedicated profile that has the unpacked bridge extension loaded (a one-time
+# manual "Load unpacked" — Chrome 151 removed CLI --load-extension), serves a tiny
+# localhost queue, and the extension's content script does the whole search flow
+# and posts the docket back. The browser is unmodified genuine Chrome — no tell.
+BRIDGE_PORT = int(os.environ.get("BROWARD_BRIDGE_PORT", "8799"))
+EXTENSION_DIR = Path(__file__).resolve().parent / "broward_extension"
+_MAX_ATTEMPTS = 2                       # per-case retries before leaving it unverified
+
+_CHROME_CANDIDATES = [
+    os.environ.get("CHROME_PATH", ""),
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+]
+
+
+def _find_chrome() -> str:
+    """Locate a genuine Chrome/Chromium executable. CHROME_PATH overrides."""
+    for c in _CHROME_CANDIDATES:
+        if c and os.path.exists(c):
+            return c
+    for name in ("google-chrome", "google-chrome-stable", "chromium",
+                 "chromium-browser", "chrome"):
+        found = shutil.which(name)
+        if found:
+            return found
+    raise RuntimeError(
+        "Google Chrome not found. Install it or set CHROME_PATH to the binary "
+        "(Broward is local-run and requires a genuine Chrome for Turnstile).")
+
+
+def _launch_chrome(url: str) -> None:
+    """Open `url` in genuine Chrome on the dedicated broward-fl profile (which has
+    the bridge extension loaded). If a Chrome is already running on that profile,
+    this opens a tab in it; either way the content script starts. Shutdown is by
+    profile path (_kill_chrome), so we don't rely on this process handle."""
+    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(
+        [_find_chrome(),
+         f"--user-data-dir={PROFILE_DIR}",
+         "--no-first-run", "--no-default-browser-check",
+         "--window-size=1400,900", "--lang=en-US",
+         url],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+
+
+def _kill_chrome() -> None:
+    """Terminate the Chrome instance bound to the dedicated broward-fl profile.
+    The unique profile path never matches the user's normal Chrome."""
+    subprocess.run(["pkill", "-f", f"user-data-dir={PROFILE_DIR}"],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def _chrome_running_on_profile() -> bool:
+    return subprocess.run(
+        ["pgrep", "-f", f"user-data-dir={PROFILE_DIR}"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
 
 FORECLOSURE_MORTGAGE = "mortgage_foreclosure"
 
@@ -227,17 +316,31 @@ def collect_party_and_purchaser_names(rows: list) -> tuple:
 # people and rejects multi-word corporates ("...Ministries Inc", "...Mortgage Llc")
 # which lack it. Joint owners concatenate ("Fedele, Michael Defendant Fedele,
 # Rae A.") → the pattern stops at the next role token, taking the first.
-# Trailing middle-initial(s) must be a STANDALONE letter (negative lookahead for a
-# following letter) — otherwise "Michael Defendant ..." captures a spurious "D"
-# from the next role token.
+# The SURNAME may be multiple words ("LEON ALVARADO, PAULINA" — a Hispanic
+# two-word surname): `(?:\s+word)*` before the comma admits it. Without this the
+# name failed to parse, owner_name went blank, and the loader's fallback put the
+# co-defendant HUD ("Secretary of Housing and Urban Development") in the owner
+# column (COCE-25-060300). A no-comma corporate ("...Association No.3, Inc") still
+# won't match — the digit in "No.3" breaks the pre-comma word run, and the only
+# comma sits before a corporate suffix. Trailing middle-initial(s) must be a
+# STANDALONE letter (negative lookahead for a following letter) — otherwise
+# "Michael Defendant ..." captures a spurious "D" from the next role token.
 _BROWARD_DEFENDANT_RE = re.compile(
-    r"\bdefendant\s+([A-Za-z][A-Za-z'’.\-]+,\s+[A-Za-z][A-Za-z'’.\-]+"
+    r"\bdefendant\s+([A-Za-z][A-Za-z'’.\-]+(?:\s+[A-Za-z][A-Za-z'’.\-]+)*,\s+[A-Za-z][A-Za-z'’.\-]+"
     r"(?:\s+[A-Za-z](?![A-Za-z])\.?){0,2})",
     re.I)
+# Government / public-agency parties that co-appear as defendants (HUD, the U.S.,
+# a county treasurer) but are NEVER the residential owner of record. Kept separate
+# from the corporate marker because these carry no LLC/Inc suffix.
+_OWNER_GOVT_MARKER = re.compile(
+    r"\b(secretary|housing and urban|urban development|united states|"
+    r"treasurer|internal revenue|\bhud\b|\birs\b|state of|county of|city of|"
+    r"veterans affairs|comptroller|commissioner)\b", re.I)
 _OWNER_CORP_MARKER = re.compile(
     r"\b(bank|mortgage|trust|funding|servicing|n\.?\s?a\.?|association|assn|"
     r"condominium|condo|homeowners?|l\.?l\.?c|llc|inc\b|incorporated|corp|company|"
     r"\bco\.|ltd|l\.?p\.?|holdings?|capital|\bfund\b|funds\b|department|united states|"
+    r"secretary|housing and urban|urban development|treasurer|veterans affairs|"
     r"ministries|church|realty|properties|\bgroup\b|investments?|enterprises?|"
     r"management|financial|lending|loans?)\b", re.I)
 _OWNER_GENERIC = re.compile(
@@ -500,165 +603,295 @@ class BrowardDocketScraper(DocketScraper):
                 "incomplete or docket partial. Manual review required."
             )
 
-    # ── Phase 1: drive the public path + detail click, return docket rows ────
-
-    async def fetch_docket(self, case_number: str) -> dict:
-        """Return {ok, url, rows, caption, case_present, error}. Rows are the
-        Date|Description|Additional Text entries off the GetCaseDetail page.
-        Never fabricates: on any failure rows=[] and ok=False."""
-        parsed = parse_broward_case_number(case_number)
-        if not parsed:
-            return {"ok": False, "url": "", "rows": [], "caption": "",
-                    "case_present": False,
-                    "error": f"case number not parseable: {case_number}"}
-
-        out = {"ok": False, "url": "", "rows": [], "caption": "",
-               "case_present": False, "error": ""}
-        diag = Path("data/diagnostics/broward-fl")
-        diag.mkdir(parents=True, exist_ok=True)
-
-        async with async_playwright() as pw:
-            browser = await pw.chromium.launch(headless=self.headless)
-            context = await browser.new_context(
-                viewport={"width": 1400, "height": 1000},
-                ignore_https_errors=True, user_agent=REAL_UA,
-            )
-            page = await context.new_page()
-            try:
-                # 1 — landing (session)
-                await page.goto(LANDING_URL, wait_until="domcontentloaded", timeout=45000)
-
-                # 2 — public search
-                search_url = f"{BASE_URL}/CaseNumberSearchResultsPUBLIC?CaseNum={parsed['nodash']}"
-                await page.goto(search_url, wait_until="domcontentloaded", timeout=45000)
-                try:
-                    await page.wait_for_selector('[onclick*="ViewDetails"], button.bc-casedetail-viewer',
-                                                 timeout=15000)
-                except PWTimeout:
-                    pass
-                try:
-                    await page.wait_for_load_state("networkidle", timeout=15000)
-                except PWTimeout:
-                    pass
-
-                # 3 — extract the real Viewer token (NOT the #= placeholder, NOT CaseID)
-                trig = await page.evaluate(
-                    r"""() => {
-                        const links = Array.from(document.querySelectorAll('[onclick*="ViewDetails"]'));
-                        for (const a of links) {
-                            const oc = a.getAttribute('onclick') || '';
-                            const m = oc.match(/ViewDetails\(`([^`]+)`\)/);
-                            if (m && m[1].indexOf('#=') === -1) return m[1];
-                        }
-                        return null;
-                    }"""
-                )
-                if not trig:
-                    out["error"] = "no rendered ViewDetails trigger on results page"
-                    return out
-
-                # 4 — click the real detail button → GetCaseDetail
-                link = page.locator('button.bc-casedetail-viewer, [onclick*="ViewDetails"]').first
-                try:
-                    async with page.expect_navigation(wait_until="domcontentloaded", timeout=30000):
-                        await link.click(timeout=10000)
-                except Exception:
-                    # Fallback: invoke ViewDetails with the extracted token directly.
-                    try:
-                        async with page.expect_navigation(wait_until="domcontentloaded", timeout=30000):
-                            await page.evaluate("(t) => ViewDetails(t)", trig)
-                    except Exception as e2:
-                        out["error"] = f"detail navigation failed: {str(e2)[:140]}"
-                        return out
-                try:
-                    await page.wait_for_load_state("networkidle", timeout=20000)
-                except PWTimeout:
-                    pass
-
-                url = page.url
-                if "aspxerrorpath" in url.lower() or "/web2/error" in url.lower():
-                    out["error"] = f"landed on ASP.NET error page ({url[:80]})"
-                    out["url"] = url
-                    return out
-
-                # 5 — extract docket rows (Date | Description | Additional Text)
-                rows = await page.evaluate(self._EXTRACT_DOCKET_JS)
-                caption = await page.evaluate(
-                    r"""() => {
-                        const t = (document.body.innerText || '');
-                        const m = t.match(/([A-Z][A-Za-z .,&'-]{4,90}\s+vs\.?\s+[A-Z][A-Za-z .,&'-]{3,90})/);
-                        return m ? m[1] : '';
-                    }"""
-                )
-
-                # anti-fabrication: the searched case number MUST appear on the page
-                page_compact = re.sub(r"[^A-Za-z0-9]", "",
-                                      (await page.content())).upper()
-                case_present = parsed["nodash"] in page_compact
-
-                out.update({"ok": bool(rows) and case_present, "url": url,
-                            "rows": rows or [], "caption": _norm(caption),
-                            "case_present": case_present})
-                if not rows:
-                    out["error"] = "detail page reached but docket table not found"
-                elif not case_present:
-                    out["error"] = (f"detail page does not contain searched case "
-                                    f"{parsed['nodash']} — possible wrong/empty result")
-                return out
-            except PWTimeout as e:
-                out["error"] = f"timeout: {str(e)[:140]}"
-                return out
-            except Exception as e:
-                out["error"] = f"{type(e).__name__}: {str(e)[:140]}"
-                return out
-            finally:
-                await browser.close()
-
-    # JS that parses the docket events table(s) — same logic proven in the probe.
-    _EXTRACT_DOCKET_JS = r"""() => {
-        const norm = s => (s||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();
-        const out = [];
-        for (const t of Array.from(document.querySelectorAll('table'))) {
-            const headRow = t.querySelector('thead tr') || t.rows[0];
-            if (!headRow) continue;
-            const cells = Array.from(headRow.cells).map(c => norm(c.innerText).toLowerCase());
-            const de = cells.findIndex(h => h.includes('description'));
-            const ad = cells.findIndex(h => h.includes('additional'));
-            const di = cells.findIndex(h => h.includes('date'));
-            if (de === -1 || ad === -1) continue;
-            const body = t.querySelector('tbody')
-                ? Array.from(t.querySelector('tbody').querySelectorAll('tr'))
-                : Array.from(t.rows).slice(1);
-            for (const r of body) {
-                const c = Array.from(r.cells).map(x => norm(x.innerText));
-                if (!c.length) continue;
-                const desc = de >= 0 ? (c[de]||'') : '';
-                const addl = ad >= 0 ? (c[ad]||'') : '';
-                if (!desc && !addl) continue;
-                out.push({ date: di >= 0 ? (c[di]||'') : '', description: desc, additional: addl });
-            }
-        }
-        return out;
-    }"""
-
-    # ── scrape_case: full pipeline ───────────────────────────────────────────
+    # ── Live docket via the genuine-Chrome bridge extension ──────────────────
+    # Browser-driving lives OUTSIDE the class now (see _run_local + the bridge
+    # extension). scrape_case is kept for the single-case CLI but Broward can no
+    # longer be driven by Playwright/CDP — Turnstile suppresses its widget under
+    # any automation. It points the caller at the local runner.
 
     async def scrape_case(self, case_number: str) -> DocketResult:
         result = DocketResult(
-            county_id=self.county_id,
-            case_number=case_number,
+            county_id=self.county_id, case_number=case_number,
             scraped_at=datetime.now().isoformat(),
             foreclosure_type=FORECLOSURE_MORTGAGE,
         )
-        fetched = await self.fetch_docket(case_number)
-        result.case_url = LANDING_URL          # stable verify link (no per-case URL)
-        if not fetched["ok"]:
-            result.classification = "unknown"
-            result.evidence_level = "auction_only"
-            result.classification_reason = f"docket retrieval failed: {fetched['error']}"
-            return result
-        if fetched.get("caption"):
-            result.case_title = fetched["caption"][:200]
-        self.parse_docket(fetched["rows"], result, case_caption=fetched.get("caption", ""))
-        self._apply_evidence_level(result)
+        result.case_url = LANDING_URL
+        result.classification = "unknown"
+        result.evidence_level = "auction_only"
+        result.classification_reason = (
+            "Broward is extension-driven local-run (Turnstile blocks headless/CDP). "
+            "Run `python -m core.dockets.broward` (needs local Chrome + the bridge "
+            "extension), or one case with `--case <CASE>`.")
         return result
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTONOMOUS LOCAL RUN — genuine-Chrome bridge (Franklin-pattern, LOCAL_RUN).
+# Turnstile issues its token only to a real browser, so the runner does NOT drive
+# Chrome. It serves a tiny localhost queue; the unpacked bridge extension (loaded
+# ONCE into the broward-fl profile) runs the whole search flow in genuine Chrome
+# and posts each docket back. Output matches every other county:
+# data/dockets/broward-fl_<YYYY-MM-DD>.jsonl, one record per case with
+# _auction_data, rewritten after each case (resumable). A case that fails or isn't
+# found is left ABSENT from the JSONL — the loader renders it docket-not-verified.
+
+def _load_broward_cases() -> list[dict]:
+    from .enrich import load_cases_from_raw
+    return load_cases_from_raw("broward-fl")
+
+
+class _Bridge:
+    """Thread-safe shared state for the localhost queue the extension talks to.
+    The classifier (parse_docket/_apply_evidence_level) runs unchanged, in the
+    HTTP handler thread, on the rows the extension posts back."""
+
+    def __init__(self, cases, only_case):
+        from .manual_runner import _progress_paths, _load_progress, _write_outputs
+        self.lock = threading.Lock()
+        self.scraper = BrowardDocketScraper()
+        self._write_outputs = _write_outputs
+        day = datetime.now().strftime("%Y-%m-%d")
+        self.out_file, self.progress_file = _progress_paths("broward-fl", day)
+        self.progress = _load_progress(self.progress_file)   # raw_case -> out_rec
+        self.total = len(cases)
+
+        self.raw_of, self.auction_of, self.order, self.skipped = {}, {}, [], []
+        for rec in cases:
+            raw = rec.get("case_number", "")
+            if only_case and not raw.upper().startswith(only_case.upper()[:8]):
+                continue
+            parsed = parse_broward_case_number(raw)
+            if not parsed:
+                self.skipped.append(raw); continue
+            nd = parsed["nodash"]
+            self.raw_of[nd] = raw
+            self.auction_of[nd] = rec
+            if raw not in self.progress:
+                self.order.append(nd)
+        self.attempts = {}
+        self.done = set()          # nodash resulted (ok) or attempt-capped
+        self.results_ok = 0
+
+    def next_case(self):
+        with self.lock:
+            for nd in self.order:
+                if nd in self.done:
+                    continue
+                if self.attempts.get(nd, 0) >= _MAX_ATTEMPTS:
+                    self.done.add(nd); continue
+                self.attempts[nd] = self.attempts.get(nd, 0) + 1
+                return {"case": nd}
+            return {"done": True}
+
+    def record(self, payload):
+        nd = (payload or {}).get("case", "")
+        raw = self.raw_of.get(nd, nd)
+        ok = bool(payload.get("ok") and payload.get("rows") and payload.get("case_present"))
+        if not ok:
+            with self.lock:
+                capped = self.attempts.get(nd, 0) >= _MAX_ATTEMPTS
+                if capped:
+                    self.done.add(nd)
+            print(f"  · {raw}: not verified — {payload.get('error') or 'no rows'}"
+                  + ("" if capped else " (will retry)"))
+            return {"ok": False}
+
+        result = DocketResult(
+            county_id="broward-fl", case_number=raw,
+            scraped_at=datetime.now().isoformat(),
+            foreclosure_type=FORECLOSURE_MORTGAGE,
+        )
+        result.case_url = LANDING_URL
+        if payload.get("caption"):
+            result.case_title = payload["caption"][:200]
+        self.scraper.parse_docket(payload["rows"], result,
+                                  case_caption=payload.get("caption", ""))
+        self.scraper._apply_evidence_level(result)
+
+        out_rec = result.to_dict()
+        rec = self.auction_of.get(nd, {})
+        out_rec["_auction_data"] = {
+            "final_sale_price": float(rec.get("final_sale_price") or 0.0),
+            "opening_bid":      float(rec.get("opening_bid") or 0.0),
+            "apparent_surplus": float(rec.get("gross_surplus") or 0.0),
+            "address":          rec.get("address", ""),
+            "sale_date":        rec.get("sale_date", ""),
+        }
+        with self.lock:
+            self.progress[raw] = out_rec
+            self.done.add(nd)
+            self.results_ok += 1
+            self._write_outputs(self.out_file, self.progress_file, self.progress)
+        tag = result.classification.upper() or "DOCKET-CHECKED"
+        extra = f"  \U0001F6A8 {', '.join(result.kill_signals)}" if result.kill_signals else ""
+        print(f"  ✓ {raw}: {tag} | owner={result.owner_name or '(none)'} "
+              f"| {len(payload['rows'])} rows{extra}")
+        return {"ok": True, "classification": result.classification}
+
+    def all_done(self):
+        with self.lock:
+            return all(nd in self.done for nd in self.order)
+
+
+def _make_handler(bridge, hits):
+    class _H(http.server.BaseHTTPRequestHandler):
+        def _send(self, obj, code=200):
+            body = json.dumps(obj).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Private-Network", "true")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):
+            hits.append(1)
+            if self.path.startswith("/next"):
+                self._send(bridge.next_case())
+            elif self.path.startswith("/ping"):
+                self._send({"ok": True})
+            else:
+                self._send({"error": "unknown"}, 404)
+
+        def do_POST(self):
+            hits.append(1)
+            n = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(n) if n else b"{}"
+            try:
+                payload = json.loads(raw.decode() or "{}")
+            except Exception:
+                payload = {}
+            if self.path.startswith("/result"):
+                self._send(bridge.record(payload))
+            elif self.path.startswith("/log"):
+                self._send({"ok": True})
+            else:
+                self._send({"error": "unknown"}, 404)
+
+        def log_message(self, *a):
+            pass
+    return _H
+
+
+class _Server(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+def _serve(bridge, hits):
+    httpd = _Server(("127.0.0.1", BRIDGE_PORT), _make_handler(bridge, hits))
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    return httpd
+
+
+def _wait(fn, timeout, step=0.5):
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if fn():
+            return True
+        time.sleep(step)
+    return False
+
+
+def _run_local(cases, only_case=None):
+    bridge = _Bridge(cases, only_case)
+    print("\n" + "=" * 64)
+    print("  LOCAL DOCKET RUN — Broward (broward-fl)  [genuine-Chrome bridge]")
+    print("=" * 64)
+    print(f"  in-window cases : {bridge.total}")
+    print(f"  already scraped : {len(bridge.progress)}")
+    print(f"  to do this run  : {len(bridge.order)}")
+    if bridge.skipped:
+        print(f"  unparseable     : {len(bridge.skipped)} (stay docket-not-verified)")
+    if not bridge.order:
+        print("  ✓ nothing to do — all in-window cases already scraped this cycle.")
+        return {"county_id": "broward-fl", "scraped": len(bridge.progress), "remaining": 0}
+
+    hits = []
+    httpd = _serve(bridge, hits)
+    if _chrome_running_on_profile():
+        print("  ⚠ a Chrome is already running on the broward-fl profile — opening "
+              "a tab in it. Close it first if the run stalls.")
+    print(f"\n  Launching genuine Chrome (profile: {PROFILE_DIR.name}) → the bridge "
+          f"extension drives {len(bridge.order)} case(s)...\n")
+    _launch_chrome(LANDING_URL)
+
+    if not _wait(lambda: bool(hits), 25):
+        _kill_chrome(); httpd.shutdown()
+        print("\n  ✖ The bridge extension never contacted the runner. Confirm it is "
+              "loaded:\n    chrome://extensions → Developer mode → Load unpacked → "
+              f"{EXTENSION_DIR}\n    (loaded INTO the broward-fl profile), then re-run.")
+        return {"county_id": "broward-fl", "scraped": len(bridge.progress),
+                "remaining": len(bridge.order), "error": "extension not detected"}
+
+    deadline = time.time() + max(180, bridge.total * 45 + 60)
+    while not bridge.all_done() and time.time() < deadline:
+        time.sleep(2)
+
+    _kill_chrome()
+    httpd.shutdown()
+    remaining = len(bridge.order) - bridge.results_ok
+    print("\n" + "=" * 64)
+    print(f"  DONE: {bridge.results_ok} verified this run, "
+          f"{len(bridge.progress)}/{bridge.total} total.")
+    if remaining > 0:
+        print(f"  {remaining} case(s) unverified — DOCKET-NOT-VERIFIED. Re-run to finish.")
+    print(f"  Output: {bridge.out_file}")
+    print("=" * 64)
+    return {"county_id": "broward-fl", "scraped": len(bridge.progress), "remaining": remaining}
+
+
+def _selftest():
+    """Validate the bridge channel: launch Chrome and confirm the extension can
+    reach the localhost endpoint (Private Network Access etc.). Runs no cases."""
+    print(f"Bridge self-test on port {BRIDGE_PORT}. Extension dir: {EXTENSION_DIR}")
+
+    class _Empty:
+        total = 0; order = []; progress = {}; skipped = []
+        def next_case(self): return {"done": True}
+        def record(self, p): return {"ok": True}
+        def all_done(self): return True
+
+    hits = []
+    httpd = _serve(_Empty(), hits)
+    _launch_chrome(LANDING_URL)
+    ok = _wait(lambda: bool(hits), 30)
+    _kill_chrome(); httpd.shutdown()
+    if ok:
+        print("✓ Channel OK — the extension reached the runner over localhost. "
+              "Private Network Access is not blocking it.")
+    else:
+        print("✖ No contact. Either the extension isn't loaded in the broward-fl "
+              "profile (chrome://extensions → Load unpacked → "
+              f"{EXTENSION_DIR}), or localhost is gated. If it's loaded and still "
+              "failing, the fallback is chrome.downloads (see README).")
+    return ok
+
+
+def main():
+    import argparse
+    ap = argparse.ArgumentParser(
+        prog="python -m core.dockets.broward",
+        description="Autonomous LOCAL Broward docket run via the genuine-Chrome "
+                    "bridge extension. One-time setup: chrome://extensions → "
+                    "Developer mode → Load unpacked → point at "
+                    "core/dockets/broward_extension (in the broward-fl profile).")
+    ap.add_argument("--selftest", action="store_true",
+                    help="validate the extension⇄runner localhost channel; run no cases")
+    ap.add_argument("--case", help="run one specific case-number prefix only")
+    args = ap.parse_args()
+
+    if args.selftest:
+        _selftest(); return
+
+    cases = _load_broward_cases()
+    if not cases:
+        print("No Broward auction data in data/raw/broward-fl_*.jsonl. "
+              "Run the auction scraper first (or wait for the daily cron).")
+        return
+    _run_local(cases, only_case=args.case)
+
+
+if __name__ == "__main__":
+    main()

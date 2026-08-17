@@ -54,6 +54,18 @@ _PLAINTIFF_ORG = re.compile(
     r"\b(bank|mortgage|homeowner|home\s*owners?|association|assn|condominium|"
     r"savings|credit union|servicing|federal home loan|n\.?a\.?)\b", re.I)
 
+# Government / public-agency co-defendants (HUD, the U.S., a county treasurer/IRS)
+# that legitimately appear in a foreclosure party list but are NEVER a residential
+# owner of record. Matched on single distinctive tokens so it survives Broward's
+# SORTED, SPACE-JOINED token-set defendants ("development housing secretary urban"
+# = "The Secretary of Housing and Urban Development") as well as proper-cased
+# names. This is the guard that keeps a federal agency out of the owner column
+# when the scraper leaves owner_name blank (COCE-25-060300).
+_GOVT_PARTY = re.compile(
+    r"\b(secretary|treasurer|comptroller|commissioner|veterans|revenue|"
+    r"municipal|\bhud\b|\birs\b|internal revenue|united states|"
+    r"housing and urban|urban development|department of)\b", re.I)
+
 
 def derive_owner_from_docket(docket: dict) -> str:
     """Best owner-of-record name from a docket record, or "" if none derivable.
@@ -80,14 +92,16 @@ def derive_owner_from_docket(docket: dict) -> str:
     for cand in docket.get("defendants", []) or []:
         cand = (cand or "").strip()
         if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
-                and not _PLAINTIFF_ORG.search(cand)):
+                and not _PLAINTIFF_ORG.search(cand)
+                and not _GOVT_PARTY.search(cand)):
             return cand
     m = re.search(r"\bvs\.?\s+(.+?)(?:,?\s+et\s+al\b|$)",
                   docket.get("case_title", "") or "", re.I)
     if m:
         cand = re.sub(r"\s+", " ", m.group(1)).strip().strip(",").strip()
         if (len(cand) >= 3 and not _GENERIC_DEFENDANT.search(cand)
-                and not _PLAINTIFF_ORG.search(cand)):
+                and not _PLAINTIFF_ORG.search(cand)
+                and not _GOVT_PARTY.search(cand)):
             return cand
     return ""
 

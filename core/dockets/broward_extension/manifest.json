@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "SurplusIQ Broward Docket Bridge",
+  "version": "1.0.0",
+  "description": "Local-run helper for SurplusIQ. Drives the Broward Clerk case search in genuine Chrome (Turnstile issues its token to a real browser) and hands the docket back to the local runner over 127.0.0.1. Load unpacked into the broward-fl profile; used only by `python -m core.dockets.broward`.",
+  "background": { "service_worker": "bg.js" },
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.browardclerk.org/*"],
+      "run_at": "document_idle",
+      "js": ["content.js"]
+    }
+  ]
+}

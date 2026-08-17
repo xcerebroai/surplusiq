@@ -35,7 +35,7 @@ on:
         default: true
         type: boolean
       docket_county:
-        description: 'Docket scraper(s) to run when run_dockets is on. "auto" = all working docket counties in parallel (cuyahoga-oh, montgomery-oh, summit-oh, miami-dade-fl, broward-fl, duval-fl). A single county-id (e.g. summit-oh) runs ONLY that county. A comma-separated list runs those specific counties.'
+        description: 'Docket scraper(s) to run when run_dockets is on. "auto" = all working docket counties in parallel (cuyahoga-oh, montgomery-oh, summit-oh, miami-dade-fl, duval-fl). A single county-id (e.g. summit-oh) runs ONLY that county. A comma-separated list runs those specific counties. NOTE: broward-fl is LOCAL-RUN (Turnstile, residential-IP only) and is skipped by the cron — run it with `python -m core.dockets.broward`.'
         required: false
         default: 'auto'
         type: string
