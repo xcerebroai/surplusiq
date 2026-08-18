@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T23:54:40",
+  "generated_at": "2026-08-18T18:58:06",
   "total_leads": 43,
   "total_leads_pre_filter": 60,
   "killed_filtered_count": 17,
@@ -120,8 +120,8 @@
     "C": 10
   },
   "local_run_status": {
-    "orange-fl": {
-      "last_scraped": "2026-08-18",
+    "hamilton-oh": {
+      "last_scraped": "2026-08-17",
       "stale": false,
       "uncovered_count": 0
     },
@@ -130,13 +130,13 @@
       "stale": true,
       "uncovered_count": 2
     },
-    "franklin-oh": {
-      "last_scraped": "2026-08-11",
+    "orange-fl": {
+      "last_scraped": "2026-08-18",
       "stale": false,
       "uncovered_count": 0
     },
-    "hamilton-oh": {
-      "last_scraped": "2026-08-17",
+    "franklin-oh": {
+      "last_scraped": "2026-08-11",
       "stale": false,
       "uncovered_count": 0
     }

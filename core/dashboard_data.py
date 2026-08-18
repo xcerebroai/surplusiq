@@ -544,6 +544,13 @@ def export_dashboard_data():
             "taxdeed_verdict":      getattr(l, "taxdeed_verdict", ""),
             "taxdeed_surplus_pool": getattr(l, "taxdeed_surplus_pool", None),
             "taxdeed_claim_deadline_days": getattr(l, "taxdeed_claim_deadline_days", None),
+            # Orange Court Registry Balance lifecycle marker (core.dockets.orange_registry).
+            # Present ⇒ the lead was registry-checked; the dashboard renders the stage
+            # + clerk balance + as-of date (and the HOA caution on distributed CC funds).
+            "registry_status":      getattr(l, "registry_status", ""),
+            "registry_balance":     getattr(l, "registry_balance", None),
+            "registry_as_of":       getattr(l, "registry_as_of", ""),
+            "registry_hoa_caution": getattr(l, "registry_hoa_caution", False),
             "sale_date":        l.sale_date,
             "sale_datetime":    getattr(l, "sale_datetime", ""),
             "sold_to":          l.sold_to,

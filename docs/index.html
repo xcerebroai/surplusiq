@@ -1000,6 +1000,17 @@
       ? '<span class="status-badge dv-positive" title="Real debt from court judgment PDF · positive surplus · not yet disbursement-filed.">📋 Verified</span> '
       : '';
     if (!cls) {
+      // (a0) Orange Court Registry checked. The clerk registry is Orange's cloud
+      //      verification signal — so these leads are NOT portal-gated/unverified.
+      //      Pending = full proceeds on deposit, not yet distributed (auction math
+      //      only, no owner surplus yet). Shows the check date.
+      if (l.registry_status) {
+        const asof = l.registry_as_of ? ' · ' + l.registry_as_of : '';
+        if (l.registry_status === 'pending_distribution') {
+          return dvPrefix + '<span class="status-badge status-checked" title="Court Registry checked' + (l.registry_as_of ? ' (' + l.registry_as_of + ')' : '') + ' — full sale proceeds are on deposit but the court has NOT distributed to the plaintiff yet, so no owner surplus figure exists. Auction math only until the clerk distributes.">📋 Registry-checked' + asof + '</span>';
+        }
+        return dvPrefix + '<span class="status-badge status-checked" title="Court Registry checked' + (l.registry_as_of ? ' (' + l.registry_as_of + ')' : '') + '.">📋 Registry-checked' + asof + '</span>';
+      }
       // (a) Docket WAS checked, no post-sale kill, no debt grade (Franklin
       //     metadata-only: portal exposes no judgment amount). Honest, covered.
       if (l.docket_evidence_level === 'docket_checked' && l.docket_covered !== false) {
