@@ -32,20 +32,18 @@ Object.defineProperty(navigator,'languages',{get:()=>['en-US','en']});
 Object.defineProperty(navigator,'plugins',{get:()=>[1,2,3,4,5]});
 """
 
-# server-accepted response (reCAPTCHA passed) vs a visible challenge (failed).
+# A REAL server response = a dollar balance figure OR the no-registry message
+# (NOT just the "Registry Type / Balance" header template, which is present in the
+# DOM before any lookup and caused a t=0 false positive in v1). A visible bframe =
+# a challenge (failed silent pass).
 POLL_JS = r"""() => {
   const bt = (document.body.innerText || '');
-  const resultTable = !!Array.from(document.querySelectorAll('table'))
-      .find(t => /registry type/i.test(t.innerText) && /balance/i.test(t.innerText));
+  const hasBalance = /registry type/i.test(bt) && /\$[\d,]+\.\d{2}/.test(bt);
   const noRegistry = /does not have an associated registry/i.test(bt);
   const bframe = document.querySelector("iframe[src*='api2/bframe']");
   const challengeVisible = !!(bframe && bframe.offsetParent !== null
       && bframe.getBoundingClientRect().height > 20);
-  let gpop = false;
-  for (const i of document.querySelectorAll('textarea[id*="g-recaptcha-response"],input[id*="g-recaptcha-response"]')) {
-    if ((i.value || '').length > 20) gpop = true;
-  }
-  return { resultTable, noRegistry, challengeVisible, gpop };
+  return { hasBalance, noRegistry, challengeVisible };
 }"""
 
 
@@ -58,8 +56,8 @@ async def attempt(pw, udd, label):
     await ctx.add_init_script(_MASK)
     out = {"label": label, "homepage_ok": False, "registry_ok": False,
            "webdriver_undefined": None, "recaptcha_invisible": None,
-           "submitted": False, "passed_silently": False, "challenge_shown": False,
-           "seconds": None}
+           "submitted": False, "baseline_had_result": None,
+           "passed_silently": False, "challenge_shown": False, "seconds": None}
     try:
         page = ctx.pages[0] if ctx.pages else await ctx.new_page()
         try:
@@ -84,6 +82,13 @@ async def attempt(pw, udd, label):
         except Exception:
             pass
 
+        # baseline BEFORE submit — should have neither a $ balance nor the no-reg msg.
+        try:
+            base = await page.evaluate(POLL_JS)
+            out["baseline_had_result"] = bool(base.get("hasBalance") or base.get("noRegistry"))
+        except Exception:
+            pass
+
         try:
             await page.fill("input[name=caseNumber]", CASE, timeout=8000)
             await page.click("input[value='Request Balance']", timeout=8000)
@@ -93,6 +98,7 @@ async def attempt(pw, udd, label):
 
         start = time.monotonic()
         while time.monotonic() - start < 30:
+            await page.wait_for_timeout(1500)          # min wait first — no t=0 match
             try:
                 st = await page.evaluate(POLL_JS)
             except Exception:
@@ -100,10 +106,9 @@ async def attempt(pw, udd, label):
             if st.get("challengeVisible"):
                 out["challenge_shown"] = True
                 out["seconds"] = round(time.monotonic() - start, 1); break
-            if st.get("resultTable") or st.get("noRegistry") or st.get("gpop"):
+            if st.get("hasBalance") or st.get("noRegistry"):
                 out["passed_silently"] = True
                 out["seconds"] = round(time.monotonic() - start, 1); break
-            await page.wait_for_timeout(1500)
         return out
     finally:
         await ctx.close()
@@ -122,8 +127,8 @@ async def main():
     for r in results:
         print(f"--- {r['label']} ---")
         for k in ("homepage_ok", "registry_ok", "recaptcha_invisible",
-                  "webdriver_undefined", "submitted", "passed_silently",
-                  "challenge_shown", "seconds"):
+                  "webdriver_undefined", "submitted", "baseline_had_result",
+                  "passed_silently", "challenge_shown", "seconds"):
             print(f"  {k:20}: {r.get(k)}")
         if r.get("error"):
             print(f"  error               : {r['error']}")
