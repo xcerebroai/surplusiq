@@ -466,7 +466,7 @@ def export_dashboard_data():
         COUNTY_BY_ID = {}
     # Counties where the docket is not automatable (Cloudflare). Dashboard
     # surfaces these prominently with a manual-verify link.
-    CF_BLOCKED = {"franklin-oh", "hamilton-oh"}
+    CF_BLOCKED = {"franklin-oh"}
 
     # Local-run counties (Franklin, Orange) refresh only on a manual local run,
     # while the auction feed refreshes daily via cron. Compute per-county docket

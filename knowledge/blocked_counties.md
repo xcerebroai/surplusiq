@@ -48,29 +48,45 @@ captcha style). No solver, no proxy is wired today and none is planned.
 
 ---
 
-## Hamilton (hamilton-oh) — PR-FALLBACK (portal-inaccessible, no authorized feed)
+## Hamilton (hamilton-oh) — MISDIAGNOSED → autonomous LOCAL build (2026-08-17)
 
-**Portal:** `courtclerk.org` (Cloudflare).
+**Portal:** `courtclerk.org` (Cloudflare **Turnstile**, not a managed challenge).
 
-**Gate:** genuine Cloudflare **managed challenge** (`cf-mitigated: challenge`,
-`cf-ray` present, "Verifying you are human"). Fires on **every IP** including
-residential; on the datacenter IP even the homepage challenges. Never
-auto-resolves (40s patience loop headless). A real human hit it **6 times**
-before getting through. Homepage loads clean but `/records-search` and the
-case-search page both challenge immediately.
+**The prior "PR-FALLBACK, permanent" call was WRONG** — it was a Playwright
+artifact, exactly like Broward. Every earlier probe drove the page under
+Playwright, whose CDP `Runtime.enable` instrumentation makes Cloudflare withhold
+the Turnstile widget and challenge. In **genuine Chrome** (no automation on the
+page) the homepage and the case-search page both load clean and the Turnstile
+token **auto-issues in ~8s with zero interaction, re-issuing on every page load**
+(sitekey `0x…`). A CI probe (Actions run 32083163234) confirmed the token does
+NOT issue from the datacenter IP — so Hamilton is **residential-only**, same shape
+as Broward.
 
-**No official data route exists** (the cleaner reason it's out of scope):
-- No Clerk API / bulk-data / subscription. Records requests are **capped at 10
-  records/month for commercial requesters** (10¢/page); Ohio Sup.R. 45(C) makes
-  remote access discretionary — which is why the portal is gated.
-- No statewide Ohio public court-records portal (county-by-county).
-- The one open subdomain (`acclaim-web.hamiltoncountyohio.gov`) is the
-  **Recorder's Office** (deeds/property), not court dockets — wrong data.
-- Sheriff auction (`hamilton.sheriffsaleauction.ohio.gov`) is already scraped;
-  for OH it yields only the fake 2/3 opening bid, not the judgment debt.
+**Flow:** search form `#cc_frm` on `/records-search/common-pleas-civil-case-search/`
+→ auto-issued token → inject `sec=history` (a GET form drops the action's
+`?sec=history`) → `GET /data/case_summary.php?sec=history` → the docket-event
+DataTables table (Date | Description | Notes | Amount).
 
-**Decision — PR-FALLBACK, permanent.** PropertyRadar enrichment + the dashboard
-manual-verify clerk link. In `enrich.PR_FALLBACK_COUNTIES`.
+**No debt figure** — the "JUDGMENT AND DECREE IN FORECLOSURE" event carries no
+amount, the Amount column is only the clerk cost-ledger, and documents are gated
+("REDACTION MAY BE NEEDED", zero viewable links). So Hamilton is **Franklin-class**:
+metadata + docket-event kill detection, leads stay `apparent_surplus`,
+`debt_source` empty. Kill vocabulary is Hamilton's OWN — **"EXCESS FUNDS"** (never
+"surplus"): `MOTION/RENEWED MOTION FOR DISTRIBUTION OF EXCESS FUNDS`,
+`NOTIFICATION TO JUDGMENT DEBTOR OF EXCESS FUNDS`; plus bankruptcy stay
+(`SUGGESTION OF BANKRUPTCY` / `NOTIFICATION OF AUTOMATIC STAY`, resolved by
+`… TERMINATION/VACATING … STAY`), Rule-41(A)(2) dismissal, and sale-vacate — all
+anchored on the docket `CONFIRMATION ENTRY OF SALE AND DISTRIBUTION OF PROCEEDS`.
+
+**Decision — LOCAL-RUN, genuine-Chrome bridge extension** (Broward pattern).
+In `LOCAL_RUN_COUNTIES`; removed from `enrich.PR_FALLBACK_COUNTIES`. Runner:
+`python -m core.dockets.hamilton` (one-time Load-unpacked of
+`core/dockets/hamilton_extension`). Classifier + 6-fixture acceptance test:
+`core/dockets/hamilton_classify.py`, `tests/test_hamilton_docket.py`.
+
+The prior no-official-feed notes still hold (no Clerk API/bulk data; records
+capped at 10/month; Recorder subdomain is deeds not dockets) — they just no longer
+matter, because the public case-search portal itself is reachable in genuine Chrome.
 
 ---
 

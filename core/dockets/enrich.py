@@ -155,10 +155,13 @@ async def run_one(county_id: str, case_number: str, headless: bool, final_sale_p
 
 
 async def run_county(county_id: str, headless: bool, only_case: str | None = None) -> dict:
-    # Cloudflare-blocked counties: no docket automation. These are Eric-approved
-    # PR-fallback counties — the docket step skips them and PropertyRadar
-    # enrichment + the dashboard's manual-verify clerk link carry the load.
-    PR_FALLBACK_COUNTIES = {"hamilton-oh"}
+    # Cloudflare-blocked counties with NO authorized data feed: no docket
+    # automation, PropertyRadar enrichment + the dashboard's manual-verify clerk
+    # link carry the load. (Hamilton was here until 2026-08-17: the genuine-Chrome
+    # recon proved its Turnstile auto-issues a token to a real residential browser,
+    # so it moved to LOCAL_RUN_COUNTIES like Broward. This set is now empty but kept
+    # as the hook for any future hard-blocked county.)
+    PR_FALLBACK_COUNTIES = set()
     if county_id in PR_FALLBACK_COUNTIES:
         print(f"⏭  {county_id} is Cloudflare-blocked with no authorized data feed. "
               f"Skipping docket scrape — routed through PropertyRadar enrichment + "

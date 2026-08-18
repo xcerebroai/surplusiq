@@ -89,7 +89,7 @@ The docket step's `docket_county=auto` expands to `WORKING_DOCKET_COUNTIES` (the
 
 ### Local-run counties (cannot run in CI)
 
-Three counties are **local-only** and skipped by the cron (their docket JSONL still merges into the dashboard on the next cloud build):
+Four counties are **local-only** and skipped by the cron (their docket JSONL still merges into the dashboard on the next cloud build):
 
 - **`orange-fl`** — the clerk portal gates every search behind a reCAPTCHA v2 checkbox (per-search; one solve unlocks one lookup). A human solves one checkbox per case. *Currently parked* on time-cost grounds — built and runnable, not in active use.
   ```
@@ -113,7 +113,19 @@ Three counties are **local-only** and skipped by the cron (their docket JSONL st
   ```
   The runner launches Chrome on the `broward-fl` profile, the extension scrapes every in-window case, and results write to `data/dockets/broward-fl_<date>.jsonl` (resumable; a case it can't reach is left docket-not-verified, never written clean).
 
-Orange and Franklin use the reusable `core/dockets/manual_runner.py` loop; Broward uses the bridge extension. All three surface a **last-scraped date** on the dashboard and are marked stale when their docket data doesn't cover the current auction feed (coverage-based, not just age).
+- **`hamilton-oh`** — the clerk portal (courtclerk.org) puts case search behind **Cloudflare Turnstile**, same shape as Broward: the token auto-issues to a genuine residential browser but **not** from the CI datacenter (proven 2026-08-17) or under any Playwright/CDP automation. So Hamilton runs locally through its own **Chrome bridge extension** (`core/dockets/hamilton_extension/`). It is a **Franklin-class** county: metadata + docket-event kill detection, **no debt figure** and **no computed surplus** (the decree carries no amount and documents are gated — leads stay `apparent_surplus`, `debt_source` empty). Kill detection uses Hamilton's own **"EXCESS FUNDS"** vocabulary (it never says "surplus"): a `MOTION FOR DISTRIBUTION OF EXCESS FUNDS` / `NOTIFICATION TO JUDGMENT DEBTOR OF EXCESS FUNDS` kills, plus bankruptcy-stay / Rule-41(A)(2) dismissal / sale-vacate signals, all anchored on the docket `CONFIRMATION ENTRY OF SALE AND DISTRIBUTION OF PROCEEDS`.
+
+  **One-time setup** (Chrome 151 removed CLI `--load-extension`):
+  1. `python3 -m core.dockets.hamilton --selftest` (launches Chrome on the dedicated `data/browser_profiles/hamilton-oh` profile).
+  2. In that Chrome window: `chrome://extensions` → **Developer mode** → **Load unpacked** → select `core/dockets/hamilton_extension`.
+  3. Re-run `--selftest` → "Channel OK".
+
+  **Run it** (residential machine, after setup):
+  ```
+  source .venv/bin/activate && python3 -m core.dockets.hamilton
+  ```
+
+Orange and Franklin use the reusable `core/dockets/manual_runner.py` loop; Broward and Hamilton use their bridge extensions. All surface a **last-scraped date** on the dashboard and are marked stale when their docket data doesn't cover the current auction feed (coverage-based, not just age).
 
 ### Tests
 
@@ -129,7 +141,8 @@ python3 -m tests.test_franklin_docket     # 24 — Franklin temporal kill classi
 python3 -m tests.test_bankruptcy_guard    # 10 — OH bankruptcy resolution guard
 python3 -m tests.test_appraised_sanity    #  9 — OH mispriced-opener flag
 python3 -m tests.test_miami_dade_docket   # 10 — Miami-Dade docket review
-python3 -m tests.test_broward_docket      # 35 — Broward docket + recovery-firm gate
+python3 -m tests.test_broward_docket      # 41 — Broward docket + recovery-firm gate
+python3 -m tests.test_hamilton_docket     # 29 — Hamilton excess-funds/bankruptcy/dismiss classifier
 python3 -m tests.test_duval_docket        # 29 — Duval docket
 python3 -m tests.test_lee_liens           # 35 — Lee PR-first lien classifier
 ```
@@ -154,7 +167,7 @@ Cloud docket cron (`enrich.py:WORKING_DOCKET_COUNTIES`): cuyahoga, montgomery, s
 | Montgomery | OH | Conservative debt (decree PDF) | cloud cron | Summit-family parser |
 | Summit | OH | Conservative debt (decree PDF) | cloud cron | — |
 | Franklin | OH | **Metadata-only** (kill signals + owner; NO debt) | **local only** | portal exposes no judgment amount; residential-IP autonomous |
-| Hamilton | OH | **None** — portal-inaccessible | PR-fallback | see below |
+| Hamilton | OH | **Metadata + excess-funds/bankruptcy kill detection; NO debt** | **local only** (Turnstile; Chrome bridge extension) | Franklin-class; "EXCESS FUNDS" vocabulary; residential-IP autonomous |
 
 ### The two portal-limited counties (evidence in `knowledge/blocked_counties.md`)
 

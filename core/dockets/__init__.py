@@ -16,7 +16,7 @@ from .miami_dade import MiamiDadeDocketScraper, parse_miami_dade_case_number
 from .franklin import FranklinDocketScraper, parse_franklin_case_number
 from .montgomery import MontgomeryDocketScraper, parse_montgomery_case_number
 from .summit import SummitDocketScraper, parse_summit_case_number
-from .hamilton import HamiltonDocketScraper
+from .hamilton import HamiltonDocketScraper, parse_hamilton_case_number
 from .broward import BrowardDocketScraper, parse_broward_case_number
 from .duval import DuvalDocketScraper, parse_duval_case_number
 from .orange import OrangeDocketScraper, parse_orange_case_number
@@ -45,8 +45,12 @@ SCRAPER_REGISTRY = {
 #                   auto-issues a token headed on residential but NOT from the CI
 #                   datacenter — proven by the Phase-1 probe, 2026-08-13); no
 #                   human needed. `python -m core.dockets.broward`.
-MANUAL_COUNTIES = {"orange-fl"}                                   # need a human solve
-LOCAL_RUN_COUNTIES = {"orange-fl", "franklin-oh", "broward-fl"}   # all local-only (cloud-skip)
+#   • hamilton-oh — autonomous, IP-gated to residential (Cloudflare Turnstile,
+#                   same shape as Broward — token auto-issues in genuine Chrome
+#                   but NOT from the CI datacenter, proven 2026-08-17). Metadata +
+#                   docket-event kill detection, NO debt. `python -m core.dockets.hamilton`.
+MANUAL_COUNTIES = {"orange-fl"}                                                 # need a human solve
+LOCAL_RUN_COUNTIES = {"orange-fl", "franklin-oh", "broward-fl", "hamilton-oh"}  # all local-only (cloud-skip)
 
 
 def get_scraper(county_id: str, headless: bool = True) -> DocketScraper:

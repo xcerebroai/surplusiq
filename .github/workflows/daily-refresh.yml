@@ -102,6 +102,7 @@ jobs:
           python -m tests.test_verification
           python -m tests.test_miami_dade_docket
           python -m tests.test_broward_docket
+          python -m tests.test_hamilton_docket
           python -m tests.test_duval_docket
           python -m tests.test_lee_liens
           python -m tests.test_summit_debt

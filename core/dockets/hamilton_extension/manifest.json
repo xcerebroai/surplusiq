@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "SurplusIQ Hamilton Docket Bridge",
+  "version": "1.0.0",
+  "description": "Local-run helper for SurplusIQ. Drives the Hamilton County Clerk (courtclerk.org) case search in genuine Chrome (Cloudflare Turnstile issues its token to a real browser) and hands the docket back to the local runner over 127.0.0.1. Load unpacked into the hamilton-oh profile; used only by `python -m core.dockets.hamilton`.",
+  "background": { "service_worker": "bg.js" },
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.courtclerk.org/*", "https://courtclerk.org/*"],
+      "run_at": "document_idle",
+      "js": ["content.js"]
+    }
+  ]
+}
