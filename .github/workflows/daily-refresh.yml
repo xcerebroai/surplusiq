@@ -114,6 +114,7 @@ jobs:
           python -m tests.test_fl_county_court
           python -m tests.test_fl_tax_deed
           python -m tests.test_miami_dade_taxdeed
+          python -m tests.test_orange_registry
 
       - name: Install Playwright Chromium
         run: |
@@ -196,6 +197,23 @@ jobs:
         run: |
           xvfb-run -a --server-args="-screen 0 1280x800x24" \
             python -m core.dockets.miami_dade_taxdeed
+        continue-on-error: true
+
+      # Orange (FL) Court Registry Balance — CLOUD verification. The registry
+      # page's invisible reCAPTCHA v2 PASSES SILENTLY from the Actions datacenter
+      # IP (proven), so unlike the Orange docket PORTAL (per-search reCAPTCHA,
+      # local-run only) this rides the cron. Lifecycle-staged by balance-vs-bid:
+      # no-registry KILLS, a distributed CA balance confirms the owner surplus, CC
+      # surfaces real-but-clouded held funds, pending stays apparent. FAILS LOUD —
+      # a challenge/timeout leaves the lead registry-not-checked, never fabricated.
+      # If the county-health warning trips (challenges appear), flip the transport
+      # in core/dockets/orange_registry.py to the residential bridge-extension.
+      - name: Run Orange Court Registry Balance lookup
+        id: orange_registry
+        if: steps.params.outputs.run_dockets == 'true' && steps.params.outputs.county == 'all' && github.event.inputs.pr_probe_address == '' && github.event.inputs.pr_probe_criteria == '' && github.event.inputs.pr_probe_radarid == '' && github.event.inputs.pr_probe_chain == ''
+        run: |
+          xvfb-run -a --server-args="-screen 0 1280x800x24" \
+            python -m core.dockets.orange_registry
         continue-on-error: true
 
       - name: PR API probe (Purchase=0, free)

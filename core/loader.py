@@ -277,6 +277,75 @@ def _apply_taxdeed_claim_status(lead, rec: dict) -> None:
     # pool_pending: intentionally no change.
 
 
+def _apply_registry_to_lead(lead, rec: dict) -> None:
+    """Apply an Orange (FL) Court Registry Balance lifecycle record to a lead.
+
+    The clerk registry is Orange's only verification signal. Staged by
+    balance-vs-bid (core.dockets.orange_registry_classify), never by time:
+
+      • no_registry (kill)          → classification='killed' (FP-14 filters it):
+                                       the surplus is disbursed, claimed, or was
+                                       never held — funds are gone.
+      • pending_distribution        → full sale proceeds are on deposit but the
+                                       court hasn't paid the plaintiff yet. This is
+                                       NOT a surplus figure. Record the marker; make
+                                       NO money change — the lead stays apparent.
+      • distributed, CA (circuit)   → the balance IS the clerk-stated held surplus
+                                       and it is a CLEAN owner surplus. Book it as
+                                       proof: true_surplus=balance (clerk figure,
+                                       better than auction math), proof_of_surplus,
+                                       docket_url, classification='green'. Clears
+                                       _has_required_proof → confirmed_surplus.
+      • distributed, CC (HOA/county)→ funds are REAL and held ($194,881 on
+                                       2023-CC-006558-O), but a surviving senior
+                                       mortgage clouds the OWNER's claim. Surface the
+                                       held balance + HOA caution + classification=
+                                       'yellow', but DO NOT set proof_of_surplus /
+                                       override true_surplus — it must NOT be booked
+                                       as confirmed owner surplus. Stays apparent.
+      • balance_found_unstaged      → record the balance only; never promote.
+
+    Never fabricates or infers a balance — the transport already failed loud if the
+    lookup didn't parse, and a failed lookup never reaches this function at all."""
+    status = (rec.get("registry_status") or "").strip()
+    bal = rec.get("registry_balance")
+    lead.registry_status = status
+    lead.registry_balance = float(bal) if bal is not None else None
+    lead.registry_as_of = rec.get("registry_as_of", "") or ""
+    lead.registry_hoa_caution = bool(rec.get("hoa_caution"))
+    reason = rec.get("classification_reason") or ""
+
+    if status == "no_registry":
+        lead.classification = "killed"
+        lead.classification_reason = reason or "clerk registry: no associated account — funds gone"
+        sig = (rec.get("kill_signals") or ["registry_funds_gone"])[0]
+        lead.kill_signals = list(set((lead.kill_signals or []) + [sig]))
+        return
+
+    if status == "distributed":
+        if rec.get("confirmed_eligible"):        # CA — clean owner surplus
+            if lead.registry_balance is not None:
+                lead.true_surplus = lead.registry_balance
+                lead.debt_source = "orange_registry_balance"
+            lead.proof_of_surplus = reason or (
+                f"clerk Court Registry held surplus ${lead.registry_balance:,.0f}"
+                if lead.registry_balance is not None else "clerk Court Registry held surplus")
+            lead.docket_url = lead.docket_url or rec.get("case_url", "")
+            lead.classification = "green"
+            lead.classification_reason = reason
+        else:                                    # CC — real funds, clouded claim
+            lead.classification = "yellow"
+            lead.classification_reason = reason or (
+                "clerk registry holds real funds; surviving senior mortgage may "
+                "cloud owner recovery (HOA/county-court foreclosure)")
+            # Deliberately NO proof_of_surplus / true_surplus override → stays apparent.
+        return
+
+    # pending_distribution / balance_found_unstaged: marker only, no money change.
+    if reason and not lead.classification_reason:
+        lead.classification_reason = reason
+
+
 def _apply_docket_to_lead(lead, docket: dict, county_id: str) -> None:
     """
     Merge a docket result onto a Lead in place.
@@ -448,6 +517,15 @@ class Lead:
     taxdeed_verdict:        str   = ""
     taxdeed_surplus_pool:   Optional[float] = None
     taxdeed_claim_deadline_days: Optional[int] = None
+    # Orange (FL) Court Registry Balance lifecycle (core.dockets.orange_registry).
+    # registry_status: no_registry (KILL) / pending_distribution (funds deposited,
+    # not yet distributed — NOT a surplus) / distributed (clerk-stated held surplus)
+    # / balance_found_unstaged. registry_balance is the clerk figure on `distributed`
+    # (owner surplus for CA; real-but-clouded held funds for CC → registry_hoa_caution).
+    registry_status:  str   = ""
+    registry_balance: Optional[float] = None
+    registry_as_of:   str   = ""
+    registry_hoa_caution: bool = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -962,6 +1040,10 @@ def load_all_leads(
                     # route it to the dedicated handler, NOT the foreclosure merge.
                     if "taxdeed_verdict" in _docket:
                         _apply_taxdeed_claim_status(lead, _docket)
+                    elif "registry_status" in _docket:
+                        # Orange (FL) Court Registry Balance lifecycle record — its
+                        # own shape, routed to the dedicated handler.
+                        _apply_registry_to_lead(lead, _docket)
                     else:
                         _apply_docket_to_lead(lead, _docket, lead.county_id)
                 # Assign the verification status model (FP-6 gate)

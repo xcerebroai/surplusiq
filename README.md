@@ -87,14 +87,30 @@ gh workflow run daily-refresh.yml -f county=summit-oh -f commit_results=false   
 
 The docket step's `docket_county=auto` expands to `WORKING_DOCKET_COUNTIES` (the verified scrapers) and runs them in parallel.
 
+Two extra **cloud** verification steps run on the full-pipeline path (`county=all`): the Miami-Dade tax-deed claim-status layer (`core.dockets.miami_dade_taxdeed`) and the **Orange Court Registry Balance** lookup (`core.dockets.orange_registry`). Orange's registry page uses an *invisible* reCAPTCHA v2 that passes silently from the Actions datacenter IP (proven) — so, unlike the reCAPTCHA-checkbox docket portal above, the registry step rides the cron. It reads each in-window Orange lead's clerk registry balance and stages it by **balance-vs-bid** (never by elapsed time):
+
+| registry state | meaning | effect on the lead |
+|---|---|---|
+| no registry account | funds disbursed/claimed/never held | **killed** (filtered out — FP-14) |
+| balance ≈ winning bid | proceeds deposited, not yet distributed | `pending_distribution` marker — **not** a surplus, stays apparent |
+| balance well below bid, **CA** | plaintiff paid; balance IS the held surplus | **confirmed_surplus** at the clerk figure (green, proof set) |
+| balance well below bid, **CC** | HOA/county-court: real funds, senior mortgage may cloud the claim | held funds + HOA caution surfaced, **not** booked as confirmed |
+
+It **fails loud**: a reCAPTCHA challenge, timeout, or unparseable page leaves the lead exactly as it was, marked registry-not-checked — no balance is ever fabricated or inferred. A run whose lookups start failing/challenging emits a prominent **COUNTY HEALTH** warning (and a CI `::warning::`) so a silent multi-day degradation can't recur; if that trips, flip the transport in `core/dockets/orange_registry.py` to the residential bridge-extension (the lookup and classify logic are deliberately kept separate for exactly this). Run it standalone (residential or CI) with:
+```
+source .venv/bin/activate && python3 -m core.dockets.orange_registry           # headless
+source .venv/bin/activate && python3 -m core.dockets.orange_registry --headed  # watch it
+```
+
 ### Local-run counties (cannot run in CI)
 
 Four counties are **local-only** and skipped by the cron (their docket JSONL still merges into the dashboard on the next cloud build):
 
-- **`orange-fl`** — the clerk portal gates every search behind a reCAPTCHA v2 checkbox (per-search; one solve unlocks one lookup). A human solves one checkbox per case. *Currently parked* on time-cost grounds — built and runnable, not in active use.
+- **`orange-fl` docket portal** — the case-search portal gates every search behind a reCAPTCHA v2 checkbox (per-search; one solve unlocks one lookup). A human solves one checkbox per case. *Currently parked* on time-cost grounds — built and runnable, not in active use.
   ```
   source .venv/bin/activate && python3 -m core.dockets.orange
   ```
+  Orange's **active** verification is the separate **Court Registry Balance** cloud step below — not this portal.
 - **`franklin-oh`** — Cloudflare challenges the datacenter IP but the portal is fully open from a **residential** IP with no CAPTCHA and no human. Runs autonomously — just not from GitHub Actions.
   ```
   source .venv/bin/activate && python3 -m core.dockets.franklin
@@ -162,7 +178,7 @@ Cloud docket cron (`enrich.py:WORKING_DOCKET_COUNTIES`): cuyahoga, montgomery, s
 | Broward | FL | Docket (recovery-firm kill gate) | **local only** (Turnstile; Chrome bridge extension) | local firm list |
 | Duval | FL | Docket (3-signal cross-confirm) | cloud cron | own firm list, distinct from Broward |
 | Lee | FL | PR-first lien classifier | cloud cron | no docket portal; lien-based |
-| Orange | FL | Manual-solve docket | **local only** | reCAPTCHA v2 per-search; parked (time cost) |
+| Orange | FL | Court Registry Balance (lifecycle) | **cloud cron** | invisible reCAPTCHA v2 passes from datacenter; docket portal (reCAPTCHA-checkbox) stays local/parked |
 | Cuyahoga | OH | Conservative debt (structured prayer + decree) | cloud cron | $10K prayer floor |
 | Montgomery | OH | Conservative debt (decree PDF) | cloud cron | Summit-family parser |
 | Summit | OH | Conservative debt (decree PDF) | cloud cron | — |
