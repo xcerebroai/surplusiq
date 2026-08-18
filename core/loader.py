@@ -277,6 +277,12 @@ def _apply_taxdeed_claim_status(lead, rec: dict) -> None:
     # pool_pending: intentionally no change.
 
 
+# A parenthetical suffix on an Orange case number ("… (Ct I)", "… (COUNT II)")
+# marks a multi-count foreclosure the auction split into separate leads that share
+# ONE case-level registry account. See the multi-count guard in _apply_registry_to_lead.
+_ORANGE_MULTICOUNT = re.compile(r"\((?:ct|count|parcel|tract)\b[^)]*\)\s*$", re.I)
+
+
 def _apply_registry_to_lead(lead, rec: dict) -> None:
     """Apply an Orange (FL) Court Registry Balance lifecycle record to a lead.
 
@@ -320,6 +326,24 @@ def _apply_registry_to_lead(lead, rec: dict) -> None:
         lead.classification_reason = reason or "clerk registry: no associated account — funds gone"
         sig = (rec.get("kill_signals") or ["registry_funds_gone"])[0]
         lead.kill_signals = list(set((lead.kill_signals or []) + [sig]))
+        return
+
+    # Multi-count guard. When one case is foreclosed as several counts, the auction
+    # splits it into separate leads ("… (Ct I)", "… (COUNT I)") that SHARE ONE
+    # case-level registry account. Balance-vs-bid staging then compares a case-level
+    # balance against a per-count bid (apples-to-oranges), and the loader's suffix-
+    # stripping collapses the counts to one docket key. Either way, the balance
+    # cannot be cleanly attributed to a single count as an owner surplus — so surface
+    # it as a real held figure but NEVER promote it to confirmed_surplus.
+    if status == "distributed" and _ORANGE_MULTICOUNT.search(lead.case_number or ""):
+        lead.classification = "yellow"
+        lead.classification_reason = (
+            f"multi-count case: clerk registry balance "
+            f"${lead.registry_balance:,.0f} is CASE-LEVEL (this lead is one count); "
+            f"per-count owner attribution unresolved — not booked as confirmed"
+            if lead.registry_balance is not None else
+            "multi-count case: registry balance is case-level — not booked as confirmed")
+        lead.registry_hoa_caution = True   # flag the attribution caveat in the UI
         return
 
     if status == "distributed":

@@ -172,6 +172,36 @@ def main() -> int:
             _check("registry_funds_gone" in (lead.kill_signals or []),
                    f"{case} kill signal recorded")
 
+    print("\n8. multi-count guard — a case-level balance never confirms one count")
+    # 2025-CA-000239-O (Ct I): per-count bid $15,100, but the $10,567 balance is the
+    # WHOLE case's registry account. Classifier stages it 'distributed' off the small
+    # per-count bid; the loader guard must refuse the confirmed promotion.
+    v = classify_registry({"found": True, "balance": 10567.00, "as_of": "8/16/2026"},
+                          15100.0, 15100.0, "2025-CA-000239-O")
+    _check(v["registry_status"] == "distributed",
+           "Ct I stages distributed off the per-count bid (pre-guard)")
+    rec = _registry_record("2025-CA-000239-O (Ct I)", v,
+                           {"found": True, "balance": 10567.00}, {"final_sale_price": 15100.0})
+    lead = _lead("2025-CA-000239-O (Ct I)", 15100.0, 4533.0, 10567.0)
+    lead.true_surplus = 15100.0 - 4533.0
+    _apply_registry_to_lead(lead, rec)
+    assign_status_fields(lead)
+    _check(lead.money_status != "confirmed_surplus",
+           f"(Ct I) NOT promoted to confirmed_surplus (got {lead.money_status})")
+    _check(lead.classification == "yellow" and not lead.proof_of_surplus,
+           "(Ct I) surfaced as caution, proof_of_surplus left unset")
+    _check("case-level" in (lead.classification_reason or "").lower(),
+           "(Ct I) reason flags the case-level attribution caveat")
+    # a single-count case with the SAME numbers still confirms — guard is suffix-gated
+    lead2 = _lead("2025-CA-003157-O", 491200.0, 322491.0, 168709.0)
+    lead2.true_surplus = 168709.0
+    _apply_registry_to_lead(lead2, _registry_record("2025-CA-003157-O",
+        classify_registry({"found": True, "balance": 168709.0, "as_of": "x"}, 491200.0, 0, "2025-CA-003157-O"),
+        {"found": True, "balance": 168709.0}, {"final_sale_price": 491200.0}))
+    assign_status_fields(lead2)
+    _check(lead2.money_status == "confirmed_surplus",
+           "single-count CA still confirms (guard is suffix-gated, not global)")
+
     print("\n" + "=" * 70)
     print(f"  RESULT: {_PASS}/{_PASS + _FAIL} checks passed")
     print("=" * 70)
