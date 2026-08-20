@@ -69,23 +69,6 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
-    "county_id": "duval-fl",
-    "county_name": "Duval",
-    "state": "FL",
-    "case_number": "16-2025-CA-001678-AXXX-MA",
-    "address": "6716 BUTTONTREE CT",
-    "sale_date": "2026-08-10",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 154518.47999999998,
-    "kill_label": "Surplus claim filed",
-    "kill_signals": [
-      "surplus_claim_filed"
-    ],
-    "kill_detail": "Docket checked. Surplus claim activity found: docket 'OWNER'S CLAIM FOR MORTGAGE FORECLOSURE SURPLUS'. Lead already being pursued.",
-    "docket_url": "https://core.duvalclerk.com/CoreCms.aspx?mode=PublicAccess",
-    "source_url": "https://www.duval.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/10/2026"
-  },
-  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -96,12 +79,12 @@
     "former_surplus": 150333.0,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "sale_vacated",
+      "motion_to_vacate",
       "bankruptcy",
-      "motion_to_vacate"
+      "sale_vacated"
     ],
-    "kill_detail": "kill signal: sale_vacated",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_XJDeFcmDbQEUnYDdtAVdeeha8Wh2NYDC81",
+    "kill_detail": "kill signal: motion_to_vacate",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_XJDeFcmDbQEXK5N-rvbFQRg9eXW_5k9tg1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -140,23 +123,6 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/10/2026"
   },
   {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2026 CV 02014 (0)",
-    "address": "134 SOUTH SPERLING AVE",
-    "sale_date": "2026-08-07",
-    "sold_to": "Plaintiff",
-    "former_surplus": 92075.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $92,075.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
-  },
-  {
     "county_id": "duval-fl",
     "county_name": "Duval",
     "state": "FL",
@@ -172,41 +138,6 @@
     "kill_detail": "Docket checked. Surplus claim activity found: docket 'MOTION FOR DISBURSEMENT OF REGISTRY FUNDS (DEFT DEVIN LAMAR WILSON'S ASSIGNEE'S) INTERVENE'. Lead already being pursued.",
     "docket_url": "https://core.duvalclerk.com/CoreCms.aspx?mode=PublicAccess",
     "source_url": "https://www.duval.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/10/2026"
-  },
-  {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
-    "state": "OH",
-    "case_number": "CV25122629 (64326)",
-    "address": "Property Address:\t13211 WEST 130TH STREET",
-    "sale_date": "2026-07-27",
-    "sold_to": "Plaintiff",
-    "former_surplus": 80153.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate"
-    ],
-    "kill_detail": "conservative debt $485,276 \u2265 sale $246,820 \u2014 NO surplus (principal $410,741 + interest $33,461 + junior $0 + buffer $41,074)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=j6hFAUpbICm_PZfpyVl7COtS8oplcNavmPwvpO_0KwA1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/27/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2024 CV 05927-2 (0)",
-    "address": "4563 CURUNDU AVE",
-    "sale_date": "2026-08-14",
-    "sold_to": "Plaintiff",
-    "former_surplus": 70300.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $70,300.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
   },
   {
     "county_id": "summit-oh",
@@ -244,16 +175,18 @@
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
-    "case_number": "CV25116551 (64561)",
-    "address": "4422 WOODWAY AVENUE",
-    "sale_date": "2026-07-27",
+    "case_number": "CV23975399 (64624)",
+    "address": "2912 CLINTON AVENUE",
+    "sale_date": "2026-08-03",
     "sold_to": "3rd Party Bidder",
-    "former_surplus": 55433.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "conservative debt $168,249 \u2265 sale $152,100 \u2014 NO surplus (principal $132,189 + interest $22,841 + junior $0 + buffer $13,219)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=eRsMXwp9uwyXgKyy0rHUyL_5jtkoadpsq5y6EPsLuFI1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/27/2026"
+    "former_surplus": 61333.0,
+    "kill_label": "Sale vacated",
+    "kill_signals": [
+      "sale_vacated"
+    ],
+    "kill_detail": "kill signal: sale_vacated",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=I46_G_8JEtqlyxxqPxZixsHZ4eh7d-Wb7CesTB6A3N41",
+    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/03/2026"
   },
   {
     "county_id": "duval-fl",
@@ -273,40 +206,6 @@
     "source_url": "https://www.duval.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/23/2026"
   },
   {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2024 CV 05927-3 (0)",
-    "address": "314 ELMHURST ROAD",
-    "sale_date": "2026-08-14",
-    "sold_to": "Plaintiff",
-    "former_surplus": 52980.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $52,980.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2024 CV 05927-1 (0)",
-    "address": "2325 RUSTIC ROAD",
-    "sale_date": "2026-08-14",
-    "sold_to": "Plaintiff",
-    "former_surplus": 51800.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $51,800.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
-  },
-  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -317,11 +216,11 @@
     "former_surplus": 50435.66,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "sale_vacated",
-      "motion_to_vacate"
+      "motion_to_vacate",
+      "sale_vacated"
     ],
-    "kill_detail": "kill signal: sale_vacated",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp1_-NcgQ3sqW6q7v3kUx61626VZv6O68II1",
+    "kill_detail": "kill signal: motion_to_vacate",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp1_-NcgQ3sqW2tG5CK3E4a0LMLCdCpv2CY1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -335,28 +234,13 @@
     "former_surplus": 46522.57999999999,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "sale_vacated",
+      "motion_to_vacate",
       "bankruptcy",
-      "motion_to_vacate"
+      "sale_vacated"
     ],
-    "kill_detail": "kill signal: sale_vacated",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Cbp3ndF9AmDOptfr6TWaG_YqGiVGHYIOy3aab1x3qcs1",
+    "kill_detail": "kill signal: motion_to_vacate",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Cbp3ndF9AmDOptfr6TWaG2qkYnWETxDGpWdQkzSLDvY1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/03/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2025 CV 06699 (0)",
-    "address": "471 WYOMING ST",
-    "sale_date": "2026-07-31",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 44800.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "conservative debt $220,511 \u2265 sale $80,800 \u2014 NO surplus (principal $189,443 + interest $12,124 + junior $0 + buffer $18,944)",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/31/2026"
   },
   {
     "county_id": "duval-fl",
@@ -393,59 +277,6 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/27/2026"
   },
   {
-    "county_id": "broward-fl",
-    "county_name": "Broward",
-    "state": "FL",
-    "case_number": "CACE-25-013698",
-    "address": "9420 NW 24 PL",
-    "sale_date": "2026-07-22",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 35604.75,
-    "kill_label": "Surplus claim filed",
-    "kill_signals": [
-      "surplus_firm_appearance"
-    ],
-    "kill_detail": "Docket checked. Notice of Appearance found from AMERIFUND EQUITY GROUP/ ATTORNEY KEVIN J LOFTUS ESQUIRE FBN:495506. Lead already being pursued.",
-    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
-    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/22/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2025 CV 02260 (0)",
-    "address": "Property Address:\t2081 FOXKNOLL DRIVE",
-    "sale_date": "2026-07-31",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 32100.0,
-    "kill_label": "Sale vacated",
-    "kill_signals": [
-      "sale_vacated",
-      "motion_to_vacate"
-    ],
-    "kill_detail": "kill signal: sale_vacated",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/31/2026"
-  },
-  {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
-    "state": "OH",
-    "case_number": "CV19916706 (64620)",
-    "address": "Property Address:\t19611 RIDGEWOOD AVENUE",
-    "sale_date": "2026-08-03",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 25100.0,
-    "kill_label": "Bankruptcy filed",
-    "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate"
-    ],
-    "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=UbTDYRmc3W8UeRn9JFJJDzKdFtEYANps25DuZU-T1vM1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/03/2026"
-  },
-  {
     "county_id": "summit-oh",
     "county_name": "Summit",
     "state": "OH",
@@ -459,71 +290,6 @@
     "kill_detail": "conservative debt $102,014 \u2265 sale $77,100 \u2014 NO surplus (principal $83,678 + interest $9,969 + junior $0 + buffer $8,368)",
     "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2023 CV 01451 (0)",
-    "address": "Property Address:\t735 CARLISLE AVE",
-    "sale_date": "2026-08-07",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 22800.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "conservative debt $112,371 \u2265 sale $82,800 \u2014 NO surplus (principal $83,571 + interest $20,443 + junior $0 + buffer $8,357)",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
-  },
-  {
-    "county_id": "broward-fl",
-    "county_name": "Broward",
-    "state": "FL",
-    "case_number": "CACE-24-016354",
-    "address": "3051 S PALM AIRE DR",
-    "sale_date": "2026-07-22",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 19978.490000000005,
-    "kill_label": "Surplus claim filed",
-    "kill_signals": [
-      "surplus_claim_filed"
-    ],
-    "kill_detail": "Docket checked. Surplus claim activity found: 'Motion for Disbursement REQUEST FOR SURPLUS AND SURPLUS FUNDS Party: Defendant Palm-Aire Country Club Condominium Association No.3, I",
-    "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
-    "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/22/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2026 CV 01226 (0)",
-    "address": "Property Address:\t1206 ARBOR AVENUE",
-    "sale_date": "2026-08-07",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 19800.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "conservative debt $137,881 \u2265 sale $99,800 \u2014 NO surplus (principal $121,433 + interest $4,305 + junior $0 + buffer $12,143)",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
-  },
-  {
-    "county_id": "miami-dade-fl",
-    "county_name": "Miami-Dade",
-    "state": "FL",
-    "case_number": "2023-002616-CA-01",
-    "address": "14808 SW 124 CT",
-    "sale_date": "2026-07-21",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 18304.140000000014,
-    "kill_label": "Sale cancelled/vacated",
-    "kill_signals": [
-      "sale_issue",
-      "bankruptcy_resolved"
-    ],
-    "kill_detail": "sale vacated/cancelled (hard kill): 'Motion to Cancel Sale'",
-    "docket_url": "https://www2.miamidadeclerk.gov/ocs/",
-    "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/21/2026"
   },
   {
     "county_id": "summit-oh",
@@ -541,24 +307,6 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/31/2026"
   },
   {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2025 CV 04109-2 (0)",
-    "address": "Property Address:\t1337 DANNER AVENUE",
-    "sale_date": "2026-08-07",
-    "sold_to": "Plaintiff",
-    "former_surplus": 14870.379999999997,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [
-      "sale_vacated",
-      "motion_to_vacate"
-    ],
-    "kill_detail": "conservative debt $585,105 \u2265 sale $48,870 \u2014 NO surplus (principal $453,658 + interest $86,081 + junior $0 + buffer $45,366)",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/07/2026"
-  },
-  {
     "county_id": "broward-fl",
     "county_name": "Broward",
     "state": "FL",
@@ -574,20 +322,5 @@
     "kill_detail": "Docket checked. Notice of Appearance found from Get Liquid Funding, LLC. Lead already being pursued.",
     "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
     "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/12/2026"
-  },
-  {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
-    "state": "OH",
-    "case_number": "CV25121712 (64563)",
-    "address": "Property Address:\t12017 SOIKA AVENUE",
-    "sale_date": "2026-07-27",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 11133.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "true surplus only $-48,903 after debt verification",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=3ao-tZbhEFA7c378qYobNp33ZAGPPKS1pEG8NcKyxkQ1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=07/27/2026"
   }
 ]
