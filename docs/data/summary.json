@@ -1,25 +1,25 @@
 {
-  "generated_at": "2026-08-22T11:30:49",
-  "total_leads": 41,
-  "total_leads_pre_filter": 56,
-  "killed_filtered_count": 14,
-  "killed_shown_count": 26,
+  "generated_at": "2026-08-23T11:33:52",
+  "total_leads": 44,
+  "total_leads_pre_filter": 58,
+  "killed_filtered_count": 13,
+  "killed_shown_count": 24,
   "below_floor_filtered_count": 2,
   "confirmed_retained_count": 1,
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 403335.83999999997,
   "estimated_surplus_total": 137445.0,
-  "apparent_surplus_total": 1565425.7200000002,
+  "apparent_surplus_total": 1549502.6300000001,
   "docket_verified_positive_count": 9,
-  "docket_verified_positive_total": 322878.83,
+  "docket_verified_positive_total": 306955.74,
   "confirmed_surplus_count": 4,
   "estimated_surplus_count": 1,
   "apparent_surplus_count": 23,
-  "unverified_count": 13,
+  "unverified_count": 16,
   "killed_count": 0,
-  "red_count": 0,
+  "red_count": 1,
   "pipeline_ready_count": 4,
-  "pr_matched_count": 16,
+  "pr_matched_count": 15,
   "docket_matched_count": 42,
   "by_state": {
     "FL": {
@@ -27,8 +27,8 @@
       "surplus": 2871275.170000001
     },
     "OH": {
-      "leads": 15,
-      "surplus": 724489.39
+      "leads": 17,
+      "surplus": 893394.63
     }
   },
   "by_county": [
@@ -57,20 +57,20 @@
       "top_lead": 205511.11
     },
     {
+      "county_id": "cuyahoga-oh",
+      "county_name": "Cuyahoga",
+      "state": "OH",
+      "leads": 9,
+      "surplus": 433210.87000000005,
+      "top_lead": 150333.0
+    },
+    {
       "county_id": "duval-fl",
       "county_name": "Duval",
       "state": "FL",
       "leads": 9,
       "surplus": 427867.79000000004,
       "top_lead": 154518.47999999998
-    },
-    {
-      "county_id": "cuyahoga-oh",
-      "county_name": "Cuyahoga",
-      "state": "OH",
-      "leads": 6,
-      "surplus": 288734.66000000003,
-      "top_lead": 150333.0
     },
     {
       "county_id": "franklin-oh",
@@ -81,12 +81,12 @@
       "top_lead": 171638.2
     },
     {
-      "county_id": "montgomery-oh",
-      "county_name": "Montgomery",
+      "county_id": "hamilton-oh",
+      "county_name": "Hamilton",
       "state": "OH",
-      "leads": 3,
-      "surplus": 142000.0,
-      "top_lead": 51100.0
+      "leads": 2,
+      "surplus": 166429.03,
+      "top_lead": 122329.03
     },
     {
       "county_id": "summit-oh",
@@ -106,31 +106,31 @@
     }
   ],
   "by_score": {
-    "A+": 16,
-    "A": 16,
+    "A+": 17,
+    "A": 17,
     "B": 12,
     "C": 10
   },
   "local_run_status": {
     "orange-fl": {
-      "last_scraped": "2026-08-22",
+      "last_scraped": "2026-08-23",
       "stale": false,
       "uncovered_count": 0
     },
-    "hamilton-oh": {
+    "broward-fl": {
       "last_scraped": "2026-08-17",
-      "stale": false,
-      "uncovered_count": 0
+      "stale": true,
+      "uncovered_count": 3
     },
     "franklin-oh": {
       "last_scraped": "2026-08-11",
       "stale": true,
       "uncovered_count": 1
     },
-    "broward-fl": {
+    "hamilton-oh": {
       "last_scraped": "2026-08-17",
-      "stale": true,
-      "uncovered_count": 3
+      "stale": false,
+      "uncovered_count": 0
     }
   },
   "top_5_confirmed_leads": [
