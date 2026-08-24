@@ -1,9 +1,10 @@
 {
- "generated_at": "2026-08-24T13:10:11",
+ "generated_at": "2026-08-24T18:39:36",
  "run_date": "2026-08-24",
  "overall": "WARN",
  "critical": [],
  "warn": [
+  "broward-fl",
   "franklin-oh"
  ],
  "counties": {
@@ -17,9 +18,9 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 6,
-     "rows": 6,
-     "content_rows": 6,
+     "attempted": 7,
+     "rows": 7,
+     "content_rows": 7,
      "failed_rows": 0,
      "skipped_rows": 2,
      "content_rate": 1.0,
@@ -63,26 +64,28 @@
    "local_run_county": false
   },
   "broward-fl": {
-   "status": "OK",
+   "status": "WARN",
    "reasons": [
-    "healthy"
+    "local run: 3 published lead(s) not covered by the last local run (shown docket-not-verified)",
+    "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
    ],
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-17",
     "age_days": 7,
-    "uncovered_count": 0,
-    "stale": false,
-    "status": "OK",
+    "uncovered_count": 3,
+    "stale": true,
+    "status": "WARN",
     "reasons": [
-     "no in-window sales \u2014 expected empty"
+     "3 published lead(s) not covered by the last local run (shown docket-not-verified)",
+     "not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
     ]
    },
    "chip": {
-    "label": "Healthy",
-    "level": "ok"
+    "label": "Needs local run",
+    "level": "warn"
    },
-   "reason": "healthy",
+   "reason": "local run: 3 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
    "local_run_county": true
   },
   "duval-fl": {
@@ -188,16 +191,16 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 19,
-     "rows": 19,
-     "content_rows": 16,
-     "failed_rows": 3,
+     "attempted": 26,
+     "rows": 26,
+     "content_rows": 17,
+     "failed_rows": 9,
      "skipped_rows": 0,
-     "content_rate": 0.8421,
-     "coverage": 0.8421,
+     "content_rate": 0.6538,
+     "coverage": 0.6538,
      "baseline": 0.921,
      "baseline_runs": 10,
-     "effective_rate": 0.8421,
+     "effective_rate": 0.6538,
      "low_streak": 0,
      "status": "OK",
      "reasons": [
@@ -250,9 +253,9 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 15,
-     "rows": 15,
-     "content_rows": 15,
+     "attempted": 3,
+     "rows": 3,
+     "content_rows": 3,
      "failed_rows": 0,
      "skipped_rows": 0,
      "content_rate": 1.0,
