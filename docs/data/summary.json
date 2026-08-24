@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24T11:32:21",
+  "generated_at": "2026-08-24T13:10:11",
   "total_leads": 35,
   "total_leads_pre_filter": 48,
   "killed_filtered_count": 12,
@@ -112,6 +112,11 @@
     "C": 8
   },
   "local_run_status": {
+    "hamilton-oh": {
+      "last_scraped": "2026-08-17",
+      "stale": false,
+      "uncovered_count": 0
+    },
     "broward-fl": {
       "last_scraped": "2026-08-17",
       "stale": false,
@@ -122,16 +127,102 @@
       "stale": false,
       "uncovered_count": 0
     },
-    "hamilton-oh": {
-      "last_scraped": "2026-08-17",
-      "stale": false,
-      "uncovered_count": 0
-    },
     "franklin-oh": {
       "last_scraped": "2026-08-11",
       "stale": true,
       "uncovered_count": 1
     }
+  },
+  "health": {
+    "overall": "WARN",
+    "run_date": "2026-08-24",
+    "critical": [],
+    "warn": [
+      "franklin-oh"
+    ],
+    "counties": {
+      "miami-dade-fl": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "broward-fl": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "duval-fl": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "lee-fl": {
+        "status": "NOT_MONITORED",
+        "reason": "no docket layer",
+        "chip": {
+          "label": "No docket layer",
+          "level": "none"
+        }
+      },
+      "orange-fl": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "cuyahoga-oh": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "franklin-oh": {
+        "status": "WARN",
+        "reason": "local run: last local run 2026-08-11 is 13d old (> 7d); local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
+        "chip": {
+          "label": "Needs local run",
+          "level": "warn"
+        }
+      },
+      "montgomery-oh": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "summit-oh": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      },
+      "hamilton-oh": {
+        "status": "OK",
+        "reason": "healthy",
+        "chip": {
+          "label": "Healthy",
+          "level": "ok"
+        }
+      }
+    },
+    "summary_stale_hours": 36
   },
   "top_5_confirmed_leads": [
     {

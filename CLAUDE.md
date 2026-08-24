@@ -53,17 +53,21 @@ An OH prayer/debt equal to the opening bid is the 2/3-appraised trap — reject 
 All 9 cloud/local docket scrapers are BUILT (`SCRAPER_REGISTRY` in `core/dockets/__init__.py`: cuyahoga, miami-dade, franklin, montgomery, summit, hamilton, broward, duval, orange).
 
 **Cloud cron** (`WORKING_DOCKET_COUNTIES` in `core/dockets/enrich.py`, run by `docket_county=auto`):
-cuyahoga-oh, montgomery-oh, summit-oh (OH conservative debt) + miami-dade-fl, broward-fl, duval-fl (FL docket review).
+cuyahoga-oh, montgomery-oh, summit-oh (OH conservative debt) + miami-dade-fl, duval-fl (FL docket review); plus the Miami-Dade RealTDM tax-deed step and the Orange registry step (separate workflow steps).
 
 **Local-run only** (`LOCAL_RUN_COUNTIES`, skipped by the cron — cannot run in CI):
 - `franklin-oh` — autonomous, residential-IP only (Cloudflare blocks the datacenter). Metadata-only: kill signals + owner, NO debt. `python -m core.dockets.franklin`.
-- `orange-fl` — per-search reCAPTCHA v2, human solves one checkbox per case. Parked on time-cost grounds. `python -m core.dockets.orange`.
+- `broward-fl` — since 2026-08-13 (clerk put search behind Cloudflare Turnstile; token issues only to genuine Chrome on a residential IP). Genuine-Chrome bridge extension. `python -m core.dockets.broward`.
+- `hamilton-oh` — since 2026-08-17, same Turnstile shape as Broward. Metadata + kill detection, NO debt. `python -m core.dockets.hamilton`.
+- `orange-fl` — docket portal: per-search reCAPTCHA v2, parked on time-cost grounds (`python -m core.dockets.orange`). Its verification layer is the **Court Registry Balance** lookup, which rides the cloud cron (`core.dockets.orange_registry`; invisible reCAPTCHA passes from the Actions IP).
 
-**PR-fallback** (`PR_FALLBACK_COUNTIES`): `hamilton-oh` — Cloudflare managed challenge on every IP AND no authorized data feed. Permanent. See `knowledge/blocked_counties.md`.
+**PR-fallback** (`PR_FALLBACK_COUNTIES`): empty since 2026-08-17 (Hamilton moved to local-run). Kept as the hook for a future hard-blocked county. See `knowledge/blocked_counties.md`.
 
 OH conservative debt = `core/dockets/oh_debt.py` (principal + accrued interest on the correct base + junior liens + buffer), used by Cuyahoga/Summit/Montgomery. Miami-Dade joined the cron June 2026 after reCAPTCHA v3 was proven to pass headless from the Actions IP — it is NOT blocked.
 
-Test suite: 11 files, 255 checks, all green, wired into the CI test gate (runs before every scrape).
+Test suite: 17 files, all green, wired into the CI test gate (runs before every scrape). `tests.test_health` includes the frozen historical backtest (must fire on Broward 2026-08-08; zero alarms on the checked healthy days).
+
+**Data-health monitor** (`core/health.py`, v1.1.0): per county/source/run, rows with REAL parsed content vs the county's own trailing-10-run median. Surfaces: dashboard chip + banner (`docs/data/health.json`, `summary.health`), the cron "Data health gate" (publishes healthy counties FIRST, then fails red on CRITICAL), a de-duped auto-issue, and the healthchecks.io ping (withheld unless overall OK; no-op without `HEALTHCHECKS_URL`). History: `data/health/history.jsonl` (git-tracked, upserted per county per run date).
 
 ## ENTRY POINTS
 
@@ -93,6 +97,9 @@ A sub-$10K OH prayer/principal is fee-noise, not a judgment — reject it (Cuyah
 
 ### Local-run staleness = coverage, not just age
 `dashboard_data` marks a local-run county (Franklin/Orange) stale when the auction feed has cases its docket JSONL doesn't cover. A case ABSENT from the local docket renders docket-not-verified (`stale_uncovered`), NEVER checked-and-clean, regardless of other flags. `summary.local_run_status` surfaces last-scraped + stale per county.
+
+### Data health = content, not existence (`core/health.py`)
+Broward 2026-08-08: rows ROSE 4→6 while every row was a `classification=unknown` shell — published for nine days. Health measures `content_rows` (green/yellow/red/killed, owner, events/kill_signals, prayer>0, registry_status, taxdeed_status, docket_checked) per county per run. `attempted==0` can NEVER alarm; `attempted≥1 ∧ content==0` is CRITICAL on the first run; otherwise WARN `<0.6×` / CRITICAL `<0.3×` baseline for 2 runs. Two ground-truthed refinements: Miami-Dade's `tax_deed (RealTDM routing not implemented)` rows are a structural SKIP (the taxdeed source owns them), and local-run coverage is judged against the loader's qualifying leads (one standard with `_local_status`). A local-run county's staleness reads "needs a manual run: <command>" — an action item, never a system fault. Cuyahoga's lettered-suffix blanket case (`CV24108733-A…`) WARNs are kept on purpose: an unresolved case shape IS a verification gap (follow-up in `knowledge/follow_ups.md`). `HEALTH_CRON_DAY=1` (set by the full-pipeline path only) makes a MISSING cron docket file a failed run; otherwise the last known run is carried so a local `dashboard_data` regen never paints phantom collapses.
 
 ### Killed-leads handling & display
 Killed leads are filtered OUT of `leads.json` (FP-14) and written to `killed_leads.json` for the QA trail. Dashboard status badges distinguish: `📋 Verified` (docket-PDF-backed positive), `📋 Docket-checked · no kill` (Franklin metadata-only), `⚠ docket stale` (local-run uncovered), `docket-not-verified · portal-gated` (Orange), `🔒 docket-not-verified · portal-inaccessible` (Hamilton). The FP-18 $5K display floor filters near-zero surpluses (exempts OH-unverified).

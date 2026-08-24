@@ -41,3 +41,5 @@ jobs:
           python -m tests.test_fl_county_court
           python -m tests.test_fl_tax_deed
           python -m tests.test_miami_dade_taxdeed
+          python -m tests.test_orange_registry
+          python -m tests.test_health

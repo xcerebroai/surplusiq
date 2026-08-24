@@ -30,6 +30,7 @@ from core.loader import (
     _POSITIVE_CLASSIFICATIONS, _NEGATIVE_CLASSIFICATIONS,
     _load_docket_data, _normalize_case_for_lookup, derive_owner_from_docket,
 )
+from core import health as _health
 
 
 _RAW_DIR = PROJECT_ROOT / "data" / "raw"
@@ -473,39 +474,17 @@ def export_dashboard_data():
     # freshness so stale/uncovered cases are labeled honestly and never shown as
     # verified. A county is STALE if the auction feed contains cases its docket
     # JSONL doesn't cover, or the last scrape is older than the refresh window.
-    try:
-        from core.dockets import LOCAL_RUN_COUNTIES
-    except Exception:
-        LOCAL_RUN_COUNTIES = set()
-    _dockets_dir = PROJECT_ROOT / "data" / "dockets"
-    _stale_cutoff = (date.today() - timedelta(days=LEAD_WINDOW_DAYS)).isoformat()
-    _local_status = {}
-    for _cid in LOCAL_RUN_COUNTIES:
-        _covered, _last = set(), ""
-        for _f in sorted(_dockets_dir.glob(f"{_cid}_*.jsonl")):
-            try:
-                for _line in _f.open():
-                    try:
-                        _r = json.loads(_line)
-                    except Exception:
-                        continue
-                    _cn = _r.get("case_number", "")
-                    if _cn:
-                        _covered.add(_normalize_case_for_lookup(_cn))
-                    _sa = _r.get("scraped_at", "") or ""
-                    if _sa > _last:
-                        _last = _sa
-            except Exception:
-                continue
-        _auction = {_normalize_case_for_lookup(l.case_number) for l in leads if l.county_id == _cid}
-        _uncovered = _auction - _covered
-        _last_day = _last[:10]
-        _local_status[_cid] = {
-            "covered": _covered,
-            "last_scraped": _last_day,
-            "uncovered_count": len(_uncovered),
-            "stale": bool(_uncovered) or (not _last_day) or (_last_day < _stale_cutoff),
-        }
+    # Coverage + last-run date per local-run county come from core.health
+    # (one standard for the dashboard badges AND the health monitor): a county
+    # is STALE if the published feed has cases its docket JSONL doesn't cover,
+    # or the last local run is older than the lead window.
+    _feed_by_county: dict[str, list[str]] = {}
+    for _l in leads:
+        _feed_by_county.setdefault(_l.county_id, []).append(_l.case_number)
+    _local_status = {
+        _cid: _health.local_run_coverage(_cid, _feed_by_county.get(_cid, []))
+        for _cid in _health.LOCAL_RUN_COUNTIES
+    }
 
     for l in leads:
         cc = COUNTY_BY_ID.get(l.county_id)
@@ -941,6 +920,18 @@ def export_dashboard_data():
     print(f"   ✓ 📋 Docket-checked (real prayer, positive sale−prayer, non-killed): {len(docket_verified_positive)} leads / ${docket_verified_positive_total:,.0f}")
     print(f"   ✓ Killed: {len(killed)} | Red: {len(red)} (excluded from confirmed)")
 
+    # ── Data health (core.health): silent docket-layer degradation monitor.
+    # Evaluated on the same committed inputs the cron gate reads; the gate
+    # step persists history.jsonl and re-emits health.json identically.
+    _hreport = _health.build_report(auction_cases_by_county=_feed_by_county,
+                                    cron_day=_health.is_cron_day())["report"]
+    _health_file = docs_data / "health.json"
+    with open(_health_file, "w") as f:
+        json.dump(_hreport, f, indent=1)
+    print(f"   ✓ Data health: {_hreport['overall']}"
+          + (f" — CRITICAL: {', '.join(_hreport['critical'])}" if _hreport['critical'] else "")
+          + (f" — WARN: {', '.join(_hreport['warn'])}" if _hreport['warn'] else ""))
+
     summary_file = docs_data / "summary.json"
     # FP-19 Item 3: total_leads is the POST-FILTER (visible) count.
     # The raw pre-filter count + per-filter breakdown stays in the
@@ -991,6 +982,10 @@ def export_dashboard_data():
                   "uncovered_count": s["uncovered_count"]}
             for cid, s in _local_status.items()
         },
+
+        # Data-health verdict (core.health) — chip + banner source for the
+        # dashboard; full per-source metrics live in docs/data/health.json.
+        "health": _health.summary_block(_hreport),
 
         "top_5_confirmed_leads": _top5(confirmed),
         "top_5_estimated_leads": _top5(estimated),

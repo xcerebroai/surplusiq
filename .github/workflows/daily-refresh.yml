@@ -44,6 +44,11 @@ on:
         required: false
         default: true
         type: boolean
+      health_drill:
+        description: 'DRILL: after the real data-health evaluation, force a CRITICAL verdict (exit 2). Proves the publish-then-fail ordering and the auto-issue path on a real run. Data + health.json stay real.'
+        required: false
+        default: false
+        type: boolean
       pr_probe_address:
         description: 'PR API smoke test address (Purchase=0, free). Pipe-separated STREET|CITY|STATE|ZIP. When set, skips lead enrichment and runs only the probe.'
         required: false
@@ -67,6 +72,7 @@ on:
 
 permissions:
   contents: write
+  issues: write     # data-health auto-issue (de-duped, GITHUB_TOKEN)
 
 jobs:
   refresh:
@@ -115,6 +121,7 @@ jobs:
           python -m tests.test_fl_tax_deed
           python -m tests.test_miami_dade_taxdeed
           python -m tests.test_orange_registry
+          python -m tests.test_health
 
       - name: Install Playwright Chromium
         run: |
@@ -134,6 +141,7 @@ jobs:
           RUN_PR="${{ github.event.inputs.run_pr }}"
           DOCKET_COUNTY="${{ github.event.inputs.docket_county }}"
           COMMIT="${{ github.event.inputs.commit_results }}"
+          DRILL="${{ github.event.inputs.health_drill }}"
 
           # Empty inputs => scheduled run => full pipeline defaults.
           [ -z "$COUNTY" ]        && COUNTY="all"
@@ -141,6 +149,7 @@ jobs:
           [ -z "$RUN_PR" ]        && RUN_PR="true"
           [ -z "$DOCKET_COUNTY" ] && DOCKET_COUNTY="auto"
           [ -z "$COMMIT" ]        && COMMIT="true"
+          [ -z "$DRILL" ]         && DRILL="false"
 
           # docket_county "auto" resolves to "all_working", the literal value
           # that core/dockets/enrich.py expands to every verified scraper
@@ -153,12 +162,21 @@ jobs:
           echo "run_pr=$RUN_PR"                >> "$GITHUB_OUTPUT"
           echo "docket_county=$DOCKET_COUNTY"  >> "$GITHUB_OUTPUT"
           echo "commit=$COMMIT"                >> "$GITHUB_OUTPUT"
+          echo "health_drill=$DRILL"           >> "$GITHUB_OUTPUT"
+          # The data-health gate scores a MISSING cron docket file as a run that
+          # wrote nothing ONLY on the full daily pipeline (county=all + dockets).
+          if [ "$COUNTY" = "all" ] && [ "$RUN_DOCKETS" = "true" ]; then
+            echo "health_cron_day=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "health_cron_day=" >> "$GITHUB_OUTPUT"
+          fi
 
           echo "===== RESOLVED RUN PARAMETERS ====="
           echo "  county scrape target : $COUNTY"
           echo "  run docket step      : $RUN_DOCKETS (county: $DOCKET_COUNTY)"
           echo "  run PR step          : $RUN_PR"
           echo "  commit results       : $COMMIT"
+          echo "  health drill         : $DRILL"
 
       - name: Run auction scrapers
         id: scrapers
@@ -260,9 +278,33 @@ jobs:
 
       - name: Regenerate dashboard data
         id: dashboard
+        env:
+          HEALTH_CRON_DAY: ${{ steps.params.outputs.health_cron_day }}
         run: |
           python -m core.dashboard_data
         continue-on-error: false
+
+      # ── DATA HEALTH GATE (core.health) ──────────────────────────────────
+      # Silent-degradation monitor: per county, rows with REAL parsed content
+      # vs the county's own trailing baseline (the Broward 2026-08-08 shape —
+      # rows present, content gone — is what this catches). Runs AFTER the
+      # dashboard regen (so health.json + history.jsonl are part of the
+      # publish) and BEFORE the commit. continue-on-error keeps the job alive
+      # so the HEALTHY counties still publish; the final step below then
+      # fails the run red on CRITICAL. Exit 2 = CRITICAL, 0 = OK/WARN.
+      # Full-pipeline path only — a partial run must not pollute the baseline.
+      - name: Data health gate (silent-degradation monitor)
+        id: health
+        if: steps.params.outputs.health_cron_day == '1' && github.event.inputs.pr_probe_address == '' && github.event.inputs.pr_probe_criteria == '' && github.event.inputs.pr_probe_radarid == '' && github.event.inputs.pr_probe_chain == ''
+        env:
+          HEALTH_CRON_DAY: '1'
+        continue-on-error: true
+        run: |
+          if [ "${{ steps.params.outputs.health_drill }}" = "true" ]; then
+            python -m core.health --drill
+          else
+            python -m core.health
+          fi
 
       # MUST run AFTER dashboard regen — otherwise this artifact captures
       # the git-committed (stale) docs/data/* files, not the freshly built
@@ -295,7 +337,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add docs/data/ data/dockets/ data/enriched/ data/raw/ 2>/dev/null || true
+          git add docs/data/ data/dockets/ data/enriched/ data/raw/ data/health/ 2>/dev/null || true
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -329,6 +371,60 @@ jobs:
         run: |
           echo "::notice::commit_results was false — this was a TEST run. No data committed."
 
+      # ── OUT-OF-BAND SURFACES (the failure mode is "nobody is looking") ──
+      # 1. De-duped auto-issue: stable title; an open one gets a comment, not
+      #    a duplicate. Runs after the commit so the issue links published data.
+      - name: Auto-issue on CRITICAL data health (de-duped)
+        if: steps.health.outcome == 'failure' && steps.params.outputs.commit == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TITLE="[data-health] CRITICAL: docket layer degraded"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          CRIT="${{ steps.health.outputs.critical }}"
+          WARN="${{ steps.health.outputs.warn }}"
+          DRILL="${{ steps.health.outputs.drill }}"
+          STAMP=$(date -u +'%Y-%m-%d %H:%M UTC')
+          BODY="**Data health gate: CRITICAL** — ${STAMP}"$'\n\n'
+          [ "$DRILL" = "true" ] && BODY="${BODY}> DRILL run (\`health_drill=true\`): the verdict was forced to prove the alerting path. The published health.json is real."$'\n\n'
+          BODY="${BODY}- CRITICAL counties: \`${CRIT:-none}\`"$'\n'
+          BODY="${BODY}- WARN counties: \`${WARN:-none}\`"$'\n'
+          BODY="${BODY}- Run: ${RUN_URL} (see the *Data health gate* step summary for per-source metrics)"$'\n'
+          BODY="${BODY}- Live: https://xcerebroai.github.io/surplusiq/ · \`docs/data/health.json\` · \`data/health/history.jsonl\`"$'\n\n'
+          BODY="${BODY}Healthy counties were published before this verdict; the affected counties' leads render docket-not-verified. Investigate the docket scraper for the listed counties (\`gh run view ${{ github.run_id }} --log\`), then close this issue once a green run publishes."
+          gh label create data-health --color B60205 --description "core.health CRITICAL verdict" 2>/dev/null || true
+          EXISTING=$(gh issue list --state open --label data-health --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Open issue #$EXISTING exists — adding a comment (no duplicate)."
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --label data-health --body "$BODY"
+          fi
+
+      # 2. healthchecks.io dead-man's-switch: pinged ONLY on a clean publish
+      #    (commit succeeded AND health overall == OK). A red/degraded run
+      #    withholds the ping so the check fires on its own. No-op when the
+      #    HEALTHCHECKS_URL secret is absent.
+      - name: healthchecks.io ping (clean publish only)
+        if: steps.params.outputs.commit == 'true' && steps.health.outcome == 'success' && steps.health.outputs.overall == 'OK'
+        env:
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+        run: |
+          if [ -z "$HEALTHCHECKS_URL" ]; then
+            echo "HEALTHCHECKS_URL secret not set — dead-man's-switch ping skipped (no-op)."
+            exit 0
+          fi
+          curl -fsS -m 10 --retry 3 "$HEALTHCHECKS_URL" > /dev/null && echo "healthchecks.io pinged."
+
+      # 3. Run-failure backstop: everything above already ran (healthy counties
+      #    published, issue filed). Now make the scheduled run red.
+      - name: Fail the run on CRITICAL data health (data already published)
+        if: steps.health.outcome == 'failure'
+        run: |
+          echo "::error::Data health gate returned CRITICAL (${{ steps.health.outputs.critical }}). Healthy counties were published above; this run is red on purpose."
+          exit 1
+
       - name: Report failure summary
         if: failure()
         run: |
@@ -337,3 +433,4 @@ jobs:
           echo "Docket step outcome:     ${{ steps.dockets.outcome }}"
           echo "PR enrich step outcome:  ${{ steps.pr_enrich.outcome }}"
           echo "Dashboard step outcome:  ${{ steps.dashboard.outcome }}"
+          echo "Health gate outcome:     ${{ steps.health.outcome }} (overall=${{ steps.health.outputs.overall }})"

@@ -143,6 +143,17 @@ Four counties are **local-only** and skipped by the cron (their docket JSONL sti
 
 Orange and Franklin use the reusable `core/dockets/manual_runner.py` loop; Broward and Hamilton use their bridge extensions. All surface a **last-scraped date** on the dashboard and are marked stale when their docket data doesn't cover the current auction feed (coverage-based, not just age).
 
+### Data health (silent-degradation monitor)
+
+`core/health.py` scores every county's docket layer per run on **content** (rows with real parsed data) against the county's own trailing baseline — the Broward 2026-08-08 failure (row count up, content gone, published nine days) is the shape it exists to catch. Surfaces: the per-county chip + top banner on the dashboard (`docs/data/health.json`, `summary.health`), the cron **Data health gate** step (healthy counties publish first, then the run goes red on CRITICAL), a de-duped auto-issue (`[data-health] CRITICAL: …`), and a healthchecks.io dead-man's-switch ping sent only on a clean publish (set the `HEALTHCHECKS_URL` secret; no-op otherwise). History lives in `data/health/history.jsonl`.
+
+```
+python -m core.health --backtest            # replay the committed history, print every alarm
+python -m core.health --no-persist          # today's verdict without writing anything
+python -m core.health --backfill --since 2026-08-04
+```
+Drill the alerting path on a real run: `gh workflow run daily-refresh.yml -f health_drill=true`.
+
 ### Tests
 
 Standalone scripts (not pytest); each prints `RESULT: N/N` and exits non-zero on failure. The CI test gate runs all of them.

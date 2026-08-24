@@ -1,0 +1,347 @@
+{
+ "generated_at": "2026-08-24T13:10:11",
+ "run_date": "2026-08-24",
+ "overall": "WARN",
+ "critical": [],
+ "warn": [
+  "franklin-oh"
+ ],
+ "counties": {
+  "miami-dade-fl": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "docket": {
+     "source": "docket",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 6,
+     "rows": 6,
+     "content_rows": 6,
+     "failed_rows": 0,
+     "skipped_rows": 2,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 10,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    },
+    "taxdeed": {
+     "source": "taxdeed",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 2,
+     "rows": 2,
+     "content_rows": 2,
+     "failed_rows": 0,
+     "skipped_rows": 0,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 10,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": null,
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": false
+  },
+  "broward-fl": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {},
+   "local_run": {
+    "last_scraped": "2026-08-17",
+    "age_days": 7,
+    "uncovered_count": 0,
+    "stale": false,
+    "status": "OK",
+    "reasons": [
+     "no in-window sales \u2014 expected empty"
+    ]
+   },
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": true
+  },
+  "duval-fl": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "docket": {
+     "source": "docket",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 13,
+     "rows": 13,
+     "content_rows": 13,
+     "failed_rows": 0,
+     "skipped_rows": 0,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 10,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": null,
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": false
+  },
+  "lee-fl": {
+   "status": "NOT_MONITORED",
+   "reasons": [
+    "no docket layer"
+   ],
+   "sources": {},
+   "local_run": null,
+   "chip": {
+    "label": "No docket layer",
+    "level": "none"
+   },
+   "reason": "no docket layer",
+   "local_run_county": false
+  },
+  "orange-fl": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "registry": {
+     "source": "registry",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 17,
+     "rows": 17,
+     "content_rows": 17,
+     "failed_rows": 0,
+     "skipped_rows": 0,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 5,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": {
+    "last_scraped": "2026-08-24",
+    "age_days": 0,
+    "uncovered_count": 0,
+    "stale": false,
+    "status": "OK",
+    "reasons": [
+     "covered \u2014 last local run 2026-08-24"
+    ]
+   },
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": true
+  },
+  "cuyahoga-oh": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "docket": {
+     "source": "docket",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 19,
+     "rows": 19,
+     "content_rows": 16,
+     "failed_rows": 3,
+     "skipped_rows": 0,
+     "content_rate": 0.8421,
+     "coverage": 0.8421,
+     "baseline": 0.921,
+     "baseline_runs": 10,
+     "effective_rate": 0.8421,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": null,
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": false
+  },
+  "franklin-oh": {
+   "status": "WARN",
+   "reasons": [
+    "local run: last local run 2026-08-11 is 13d old (> 7d)",
+    "local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified)",
+    "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)"
+   ],
+   "sources": {},
+   "local_run": {
+    "last_scraped": "2026-08-11",
+    "age_days": 13,
+    "uncovered_count": 1,
+    "stale": true,
+    "status": "WARN",
+    "reasons": [
+     "last local run 2026-08-11 is 13d old (> 7d)",
+     "1 published lead(s) not covered by the last local run (shown docket-not-verified)",
+     "not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)"
+    ]
+   },
+   "chip": {
+    "label": "Needs local run",
+    "level": "warn"
+   },
+   "reason": "local run: last local run 2026-08-11 is 13d old (> 7d); local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
+   "local_run_county": true
+  },
+  "montgomery-oh": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "docket": {
+     "source": "docket",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 15,
+     "rows": 15,
+     "content_rows": 15,
+     "failed_rows": 0,
+     "skipped_rows": 0,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 10,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": null,
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": false
+  },
+  "summit-oh": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {
+    "docket": {
+     "source": "docket",
+     "kind": "cron",
+     "file_present": true,
+     "attempted": 20,
+     "rows": 20,
+     "content_rows": 20,
+     "failed_rows": 0,
+     "skipped_rows": 0,
+     "content_rate": 1.0,
+     "coverage": 1.0,
+     "baseline": 1.0,
+     "baseline_runs": 10,
+     "effective_rate": 1.0,
+     "low_streak": 0,
+     "status": "OK",
+     "reasons": [
+      "within normal band"
+     ]
+    }
+   },
+   "local_run": null,
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": false
+  },
+  "hamilton-oh": {
+   "status": "OK",
+   "reasons": [
+    "healthy"
+   ],
+   "sources": {},
+   "local_run": {
+    "last_scraped": "2026-08-17",
+    "age_days": 7,
+    "uncovered_count": 0,
+    "stale": false,
+    "status": "OK",
+    "reasons": [
+     "covered \u2014 last local run 2026-08-17"
+    ]
+   },
+   "chip": {
+    "label": "Healthy",
+    "level": "ok"
+   },
+   "reason": "healthy",
+   "local_run_county": true
+  }
+ },
+ "thresholds": {
+  "baseline_runs": 10,
+  "min_baseline_runs": 3,
+  "warn_fraction": 0.6,
+  "critical_fraction": 0.3,
+  "critical_streak": 2,
+  "stale_soft_days": 7,
+  "stale_hard_days": 28,
+  "summary_stale_hours": 36
+ }
+}

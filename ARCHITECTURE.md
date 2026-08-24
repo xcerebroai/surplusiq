@@ -59,7 +59,7 @@ docs/
   index.html              # dashboard (vanilla JS)
   data/leads.json         # the published deliverable
   data/summary.json       # headline totals + per-county + local_run_status
-tests/                     # 11 acceptance suites, 255 checks (one per county/capability)
+tests/                     # 17 acceptance suites (one per county/capability + test_health backtest)
 knowledge/blocked_counties.md   # investigation record for portal-limited counties
 .github/workflows/
   daily-refresh.yml       # the cron (test gate → scrape → docket → PR → dashboard → commit)

@@ -317,6 +317,39 @@
   .dot-checked  { background: #3B82F6; }
   .dot-unverified { background: #5C6679; }
 
+  /* ─── Data-health chip (core.health) — beside the composition bar ───── */
+  .county-health-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .county-health {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid transparent; cursor: help;
+  }
+  .county-health .hdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .county-health.h-ok       { color: var(--green); background: var(--green-bg); border-color: rgba(16,185,129,0.35); }
+  .county-health.h-ok .hdot { background: var(--green); }
+  .county-health.h-warn     { color: var(--amber); background: var(--amber-bg); border-color: rgba(245,158,11,0.35); }
+  .county-health.h-warn .hdot { background: var(--amber); }
+  .county-health.h-critical { color: var(--red); background: var(--red-bg); border-color: rgba(239,68,68,0.4); }
+  .county-health.h-critical .hdot { background: var(--red); }
+  .county-health.h-none     { color: var(--text-muted); background: transparent; border-color: var(--border); }
+  .county-health.h-none .hdot { background: var(--text-muted); }
+  .county-health-run { font-size: 10.5px; color: var(--text-muted); }
+
+  /* ─── Top-of-board health banner: any CRITICAL county, or stale data ──── */
+  .health-banner {
+    display: none; align-items: flex-start; gap: 12px;
+    padding: 12px 16px; margin-bottom: 18px; border-radius: 10px;
+    border: 1px solid rgba(239,68,68,0.45); background: var(--red-bg); color: var(--text);
+    font-size: 13px; line-height: 1.5;
+  }
+  .health-banner.show { display: flex; }
+  .health-banner.stale { border-color: rgba(245,158,11,0.45); background: var(--amber-bg); }
+  .health-banner .hb-icon { font-size: 18px; line-height: 1.2; }
+  .health-banner strong { display: block; margin-bottom: 2px; }
+  .health-banner ul { margin: 4px 0 0 16px; padding: 0; }
+  .health-banner li { margin: 2px 0; color: var(--text-dim); }
+  .health-banner code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--text); }
+
   /* ─── Filters ──────────────────────────────────────────── */
   .filter-row {
     display: flex;
@@ -689,6 +722,10 @@
   <!-- FP-23: Verified Surplus headlines; Apparent center; Estimated /
        Disbursement Filed secondary (both structurally lag freshness window).
        Pipeline Ready dropped (was always 0 by definition on a 14-day product). -->
+  <!-- Data-health banner (core.health): shown when any county is CRITICAL or the
+       data is older than the stale bound. Hidden otherwise. -->
+  <div class="health-banner" id="health-banner" role="alert"></div>
+
   <div class="kpi-grid" id="kpi-grid">
     <div class="kpi kpi-highlight">
       <div class="kpi-label">📋 Verified Surplus</div>
@@ -1132,6 +1169,7 @@
   }[score] || "");
 
   // ─── Load Data ────────────────────────────────────────
+  let HEALTH = null;   // docs/data/health.json (core.health) — optional, non-fatal
   async function loadData() {
     try {
       const [leadsResp, summaryResp] = await Promise.all([
@@ -1140,6 +1178,10 @@
       ]);
       LEADS   = await leadsResp.json();
       SUMMARY = await summaryResp.json();
+      try {
+        const healthResp = await fetch("data/health.json");
+        if (healthResp.ok) HEALTH = await healthResp.json();
+      } catch (_e) { HEALTH = null; }
       renderAll();
     } catch (err) {
       console.error(err);
@@ -1192,6 +1234,7 @@
 
   // ─── Render ───────────────────────────────────────────
   function renderAll() {
+    renderHealthBanner();
     renderKPIs();
     renderCounties();
     populateCountyFilter();
@@ -1278,6 +1321,7 @@
         <div class="county-surplus">${fmtMoney(c.surplus)}</div>
         <div class="county-top">apparent surplus · top lead ${fmtMoney(c.top_lead)}</div>
         ${renderCountyComposition(comp)}
+        ${renderHealthChip(c.county_id)}
       `;
       card.style.cursor = "pointer";
       card.addEventListener("click", () => {
@@ -1317,6 +1361,59 @@
     return `<div class="county-compbar" title="${comp.verified} court-verified · ${comp.checked} docket-checked · ${comp.unverified} unverified/portal-gated">`
          + seg(comp.verified, 'seg-verified') + seg(comp.checked, 'seg-checked') + seg(comp.unverified, 'seg-unverified')
          + `</div><div class="county-complegend">${legend.join('')}</div>`;
+  }
+
+  // ─── Data health (core.health) ─────────────────────────
+  // Per-county verdict: Healthy / Degraded / Collapsed for the docket layer's
+  // CONTENT (rows with real parsed data vs the county's own baseline), or
+  // "Needs local run" when a local-run county's only issue is staleness —
+  // an action item for the operator, not a system fault.
+  function healthFor(countyId) {
+    const h = HEALTH || (SUMMARY && SUMMARY.health);
+    if (!h || !h.counties) return null;
+    return h.counties[countyId] || null;
+  }
+  function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function renderHealthChip(countyId) {
+    const c = healthFor(countyId);
+    if (!c || !c.chip || c.chip.level === 'none') return '';
+    const reason = c.reason || (c.reasons || []).join('; ');
+    let last = '';
+    if (c.local_run && c.local_run.last_scraped) {
+      // Orange's docket coverage comes from the cloud registry lookup, not a manual run.
+      const what = (c.sources && c.sources.registry) ? 'registry' : 'local run';
+      last = `<span class="county-health-run">${what} ${c.local_run.last_scraped}</span>`;
+    }
+    else if (c.sources) {
+      const dates = Object.values(c.sources).map(m => m.carried_from).filter(Boolean);
+      if (dates.length) last = `<span class="county-health-run">last run ${dates[0]}</span>`;
+    }
+    return `<div class="county-health-row"><span class="county-health h-${c.chip.level}" title="${esc(reason)}">`
+         + `<span class="hdot"></span>${esc(c.chip.label)}</span>${last}</div>`;
+  }
+  function renderHealthBanner() {
+    const el = $("health-banner");
+    if (!el) return;
+    const h = HEALTH || (SUMMARY && SUMMARY.health) || null;
+    const staleHours = (h && h.thresholds && h.thresholds.summary_stale_hours) || (h && h.summary_stale_hours) || 36;
+    const gen = SUMMARY && SUMMARY.generated_at ? new Date(SUMMARY.generated_at) : null;
+    const ageH = gen && !isNaN(gen) ? (Date.now() - gen.getTime()) / 36e5 : null;
+    const stale = ageH !== null && ageH > staleHours;
+    const critical = h && h.critical && h.critical.length ? h.critical : [];
+    if (!critical.length && !stale) { el.className = "health-banner"; el.innerHTML = ""; return; }
+    const parts = [];
+    if (critical.length) {
+      const items = critical.map(cid => {
+        const c = h.counties[cid] || {};
+        return `<li><code>${esc(cid)}</code> — ${esc(c.reason || (c.reasons || []).join('; '))}</li>`;
+      }).join('');
+      parts.push(`<div><strong>⚠ Docket layer collapsed for ${critical.length} count${critical.length === 1 ? 'y' : 'ies'} — their leads are shown docket-not-verified, not verified.</strong><ul>${items}</ul></div>`);
+    }
+    if (stale) {
+      parts.push(`<div><strong>Data is ${Math.round(ageH)}h old (last refresh ${gen.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}).</strong>The daily refresh has not published for over ${staleHours}h — check the Daily Refresh workflow before acting on these leads.</div>`);
+    }
+    el.className = "health-banner show" + (critical.length ? "" : " stale");
+    el.innerHTML = `<div class="hb-icon">${critical.length ? '🔴' : '🟠'}</div><div>${parts.join('')}</div>`;
   }
 
   function populateCountyFilter() {
