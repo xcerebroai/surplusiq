@@ -61,12 +61,12 @@
     "former_surplus": 150333.0,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "motion_to_vacate",
       "sale_vacated",
+      "motion_to_vacate",
       "bankruptcy"
     ],
-    "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_XJDeFcmDbQEbIEcTsg-p4vREkrInaIT9U1",
+    "kill_detail": "kill signal: sale_vacated",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_XJDeFcmDbQEXgU-ocV-kojn6kQgiz0Txw1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -86,24 +86,6 @@
     "kill_detail": "sale vacated/cancelled (hard kill): 'Order Vacating Sale'",
     "docket_url": "https://www2.miamidadeclerk.gov/ocs/",
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/24/2026"
-  },
-  {
-    "county_id": "miami-dade-fl",
-    "county_name": "Miami-Dade",
-    "state": "FL",
-    "case_number": "2016-021227-CA-01",
-    "address": "",
-    "sale_date": "2026-08-10",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 95464.53,
-    "kill_label": "Sale cancelled/vacated",
-    "kill_signals": [
-      "sale_issue",
-      "bankruptcy_resolved"
-    ],
-    "kill_detail": "sale vacated/cancelled (hard kill): 'Order to Cancel Sale Date'",
-    "docket_url": "https://www2.miamidadeclerk.gov/ocs/",
-    "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/10/2026"
   },
   {
     "county_id": "montgomery-oh",
@@ -185,7 +167,7 @@
       "sale_vacated"
     ],
     "kill_detail": "kill signal: sale_vacated",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=I46_G_8JEtqlyxxqPxZixkWrNk4WIg62mBRX35fvPK01",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=I46_G_8JEtqlyxxqPxZixt9HTClWiuqRkS9a4yOsjgo1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/03/2026"
   },
   {
@@ -248,11 +230,11 @@
     "former_surplus": 50435.66,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "motion_to_vacate",
-      "sale_vacated"
+      "sale_vacated",
+      "motion_to_vacate"
     ],
-    "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp1_-NcgQ3sqW2FNnmqS8q0DJCZsAhc2ay01",
+    "kill_detail": "kill signal: sale_vacated",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp1_-NcgQ3sqWxv2qikMbvA-6AOzOtJd7NU1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -266,12 +248,12 @@
     "former_surplus": 46522.57999999999,
     "kill_label": "Sale vacated",
     "kill_signals": [
-      "motion_to_vacate",
       "sale_vacated",
+      "motion_to_vacate",
       "bankruptcy"
     ],
-    "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Cbp3ndF9AmDOptfr6TWaG8nNwM9VrCb86yrX27hbCog1",
+    "kill_detail": "kill signal: sale_vacated",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Cbp3ndF9AmDOptfr6TWaG_nkMkX00IPwtnGez96rdUs1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/03/2026"
   },
   {
@@ -285,8 +267,8 @@
     "former_surplus": 46100.0,
     "kill_label": "Debt exceeds sale",
     "kill_signals": [
-      "motion_to_vacate",
-      "sale_vacated"
+      "sale_vacated",
+      "motion_to_vacate"
     ],
     "kill_detail": "conservative debt $587,321 \u2265 sale $142,970 \u2014 NO surplus (principal $453,658 + interest $88,296 + junior $0 + buffer $45,366)",
     "docket_url": "https://pro.mcohio.org/",
@@ -416,8 +398,8 @@
     "former_surplus": 14870.379999999997,
     "kill_label": "Debt exceeds sale",
     "kill_signals": [
-      "motion_to_vacate",
-      "sale_vacated"
+      "sale_vacated",
+      "motion_to_vacate"
     ],
     "kill_detail": "conservative debt $587,321 \u2265 sale $142,970 \u2014 NO surplus (principal $453,658 + interest $88,296 + junior $0 + buffer $45,366)",
     "docket_url": "https://pro.mcohio.org/",
