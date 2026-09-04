@@ -84,7 +84,7 @@
       "sale_vacated"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_UAOszuJAB-vFWNJmRCGA7BPnNIj0JTkU81",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_UAOszuJAB-vKJBfLwbIBicjfSeAo3fBbE1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -141,23 +141,6 @@
     "source_url": "https://www.duval.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/10/2026"
   },
   {
-    "county_id": "orange-fl",
-    "county_name": "Orange",
-    "state": "FL",
-    "case_number": "2015-CA-009186-O",
-    "address": "2310 DEVON CT",
-    "sale_date": "2026-08-31",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 70757.54999999999,
-    "kill_label": "Killed",
-    "kill_signals": [
-      "registry_funds_gone"
-    ],
-    "kill_detail": "clerk registry: no associated account \u2014 surplus disbursed, claimed, or never held",
-    "docket_url": "",
-    "source_url": "https://myorangeclerk.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
-  },
-  {
     "county_id": "summit-oh",
     "county_name": "Summit",
     "state": "OH",
@@ -187,7 +170,7 @@
       "sale_vacated"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp0JbBwL6CQE2zy5I0LU_jqZBDhjEd4MXR81",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp0JbBwL6CQE27p71gHa-fZYr2bvVqg3d_c1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -202,7 +185,7 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $235,562 \u2265 sale $149,900 \u2014 NO surplus (principal $186,000 + interest $30,962 + junior $0 + buffer $18,600)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=q-Sm_2rUQPRjDeIDKIy-y3Lzx--ebsa3zBC4pdmp0HE1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=q-Sm_2rUQPRjDeIDKIy-y7zjTDm465h57-3M2z3Mq7g1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
   },
   {
@@ -223,23 +206,6 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/28/2026"
   },
   {
-    "county_id": "duval-fl",
-    "county_name": "Duval",
-    "state": "FL",
-    "case_number": "16-2024-CC-010262-AXXX-MA",
-    "address": "2661 E DALMATION LN",
-    "sale_date": "2026-08-06",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 43839.63,
-    "kill_label": "Surplus claim filed",
-    "kill_signals": [
-      "surplus_claim_filed"
-    ],
-    "kill_detail": "Docket checked. Surplus claim activity found: docket 'MOTION TO INTERVENE AND DISBURSE SURPLUS FUNDS'. Lead already being pursued.",
-    "docket_url": "https://core.duvalclerk.com/CoreCms.aspx?mode=PublicAccess",
-    "source_url": "https://www.duval.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/06/2026"
-  },
-  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -253,7 +219,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $39,000.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=8B7XkfGe3ziRFGLPBrEMv51eVWvQC9FLu8caiTbK64Y1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=8B7XkfGe3ziRFGLPBrEMvzL3XRMFR5ZJ0GWVh8BPAGs1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
   },
   {
@@ -287,7 +253,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $36,933.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=XMqxqIX4f8whv-bKMvrlTRdkg7lAXmtDmBwKpPdtJIQ1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=XMqxqIX4f8whv-bKMvrlTRjmgABJCnbtOx0QpqagX4Y1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
   },
   {
@@ -354,24 +320,7 @@
       "bankruptcy"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yde1c89o34hx6V-nWQ4RYmaVVtgbO24ihUx3686lYgU1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/02/2026"
-  },
-  {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
-    "state": "OH",
-    "case_number": "CV19923091 (65073)",
-    "address": "Property Address:\t5702 GARFIELD AVENUE",
-    "sale_date": "2026-09-02",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 14111.379999999997,
-    "kill_label": "Bankruptcy filed",
-    "kill_signals": [
-      "bankruptcy"
-    ],
-    "kill_detail": "kill signal: bankruptcy",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=cgNGmd2PlvAOMpAQrPZpufi2G1AT3eUZSwtmYPfe64U1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yde1c89o34hx6V-nWQ4RYkPn_xTHvwZ5xg5PU6O90A81",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/02/2026"
   },
   {
@@ -390,22 +339,5 @@
     "kill_detail": "Docket checked. Notice of Appearance found from Get Liquid Funding, LLC. Lead already being pursued.",
     "docket_url": "https://www.browardclerk.org/Web2/CaseSearchECA/Index/?AccessLevel=ANONYMOUS",
     "source_url": "https://broward.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/12/2026"
-  },
-  {
-    "county_id": "orange-fl",
-    "county_name": "Orange",
-    "state": "FL",
-    "case_number": "2025-CC-012105-O",
-    "address": "2862 N POWERS DR APT 145",
-    "sale_date": "2026-09-02",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 10477.220000000001,
-    "kill_label": "Killed",
-    "kill_signals": [
-      "registry_funds_gone"
-    ],
-    "kill_detail": "clerk registry: no associated account \u2014 surplus disbursed, claimed, or never held",
-    "docket_url": "",
-    "source_url": "https://myorangeclerk.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/02/2026"
   }
 ]
