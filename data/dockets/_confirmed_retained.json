@@ -324,7 +324,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 10677.07,
-   "registry_as_of": "9/3/2026",
+   "registry_as_of": "9/4/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-08-11",
    "sale_datetime": "Aug 11, 2026 11:11 AM ET",
@@ -335,12 +335,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $10,677 as of 9/3/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $10,677 as of 9/4/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 10677.07,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $10,677 as of 9/3/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $10,677 as of 9/4/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -356,7 +356,7 @@
    "pipeline_ready": true,
    "pr_match": true,
    "local_run_county": true,
-   "docket_last_scraped": "2026-09-04",
+   "docket_last_scraped": "2026-09-05",
    "docket_stale": false,
    "docket_covered": true,
    "pr_radar_id": "PF19D70B",
@@ -395,11 +395,11 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-09-04"
+   "confirmed_last_verified": "2026-09-05"
   },
   "sale_date": "2026-08-11",
   "confirmed_first_seen": "2026-08-26",
-  "last_verified": "2026-09-04"
+  "last_verified": "2026-09-05"
  },
  "miami-dade-fl|2025-022885-CA-01": {
   "payload": {
@@ -463,10 +463,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-09-04"
+   "confirmed_last_verified": "2026-09-05"
   },
   "sale_date": "2026-08-12",
   "confirmed_first_seen": "2026-09-04",
-  "last_verified": "2026-09-04"
+  "last_verified": "2026-09-05"
  }
 }
