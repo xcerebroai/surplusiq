@@ -463,10 +463,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-09-08"
+   "confirmed_last_verified": "2026-09-09"
   },
   "sale_date": "2026-08-12",
   "confirmed_first_seen": "2026-09-04",
-  "last_verified": "2026-09-08"
+  "last_verified": "2026-09-09"
  }
 }
