@@ -1,34 +1,34 @@
 {
-  "generated_at": "2026-09-11T11:40:28",
-  "total_leads": 42,
-  "total_leads_pre_filter": 46,
+  "generated_at": "2026-09-12T12:01:19",
+  "total_leads": 44,
+  "total_leads_pre_filter": 48,
   "killed_filtered_count": 10,
-  "killed_shown_count": 28,
+  "killed_shown_count": 32,
   "below_floor_filtered_count": 0,
   "confirmed_retained_count": 6,
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 532390.95,
   "estimated_surplus_total": 10797.11,
-  "apparent_surplus_total": 1392020.32,
-  "docket_verified_positive_count": 8,
-  "docket_verified_positive_total": 147899.51,
+  "apparent_surplus_total": 1353543.1400000001,
+  "docket_verified_positive_count": 7,
+  "docket_verified_positive_total": 109422.33,
   "confirmed_surplus_count": 6,
   "estimated_surplus_count": 1,
-  "apparent_surplus_count": 13,
-  "unverified_count": 22,
+  "apparent_surplus_count": 12,
+  "unverified_count": 25,
   "killed_count": 0,
   "red_count": 0,
   "pipeline_ready_count": 6,
-  "pr_matched_count": 17,
-  "docket_matched_count": 28,
+  "pr_matched_count": 19,
+  "docket_matched_count": 25,
   "by_state": {
     "FL": {
-      "leads": 21,
+      "leads": 22,
       "surplus": 2189321.8200000003
     },
     "OH": {
-      "leads": 25,
-      "surplus": 1442387.2599999995
+      "leads": 26,
+      "surplus": 1495338.0999999996
     }
   },
   "by_county": [
@@ -36,7 +36,7 @@
       "county_id": "miami-dade-fl",
       "county_name": "Miami-Dade",
       "state": "FL",
-      "leads": 7,
+      "leads": 6,
       "surplus": 1165552.2,
       "top_lead": 373083.28
     },
@@ -44,7 +44,7 @@
       "county_id": "broward-fl",
       "county_name": "Broward",
       "state": "FL",
-      "leads": 10,
+      "leads": 12,
       "surplus": 995052.4,
       "top_lead": 471732.59
     },
@@ -60,16 +60,16 @@
       "county_id": "franklin-oh",
       "county_name": "Franklin",
       "state": "OH",
-      "leads": 2,
-      "surplus": 226879.01,
+      "leads": 3,
+      "surplus": 268929.85,
       "top_lead": 171638.2
     },
     {
       "county_id": "summit-oh",
       "county_name": "Summit",
       "state": "OH",
-      "leads": 5,
-      "surplus": 138754.89,
+      "leads": 4,
+      "surplus": 126254.89,
       "top_lead": 55400.0
     },
     {
@@ -84,8 +84,8 @@
       "county_id": "montgomery-oh",
       "county_name": "Montgomery",
       "state": "OH",
-      "leads": 3,
-      "surplus": 81211.72,
+      "leads": 4,
+      "surplus": 104611.72,
       "top_lead": 46100.0
     },
     {
@@ -106,37 +106,38 @@
     }
   ],
   "by_score": {
-    "A+": 16,
-    "A": 8,
-    "B": 11,
+    "A+": 15,
+    "A": 9,
+    "B": 13,
     "C": 10
   },
   "local_run_status": {
     "broward-fl": {
       "last_scraped": "2026-08-17",
       "stale": true,
-      "uncovered_count": 9
+      "uncovered_count": 12
     },
-    "franklin-oh": {
-      "last_scraped": "2026-08-11",
-      "stale": true,
-      "uncovered_count": 2
+    "orange-fl": {
+      "last_scraped": "2026-09-12",
+      "stale": false,
+      "uncovered_count": 0
     },
     "hamilton-oh": {
       "last_scraped": "2026-08-17",
       "stale": true,
       "uncovered_count": 1
     },
-    "orange-fl": {
-      "last_scraped": "2026-09-11",
-      "stale": false,
-      "uncovered_count": 0
+    "franklin-oh": {
+      "last_scraped": "2026-08-11",
+      "stale": true,
+      "uncovered_count": 3
     }
   },
   "health": {
     "overall": "CRITICAL",
-    "run_date": "2026-09-11",
+    "run_date": "2026-09-12",
     "critical": [
+      "duval-fl",
       "franklin-oh"
     ],
     "warn": [
@@ -154,18 +155,18 @@
       },
       "broward-fl": {
         "status": "WARN",
-        "reason": "local run: last local run 2026-08-17 is 25d old (> 7d); local run: 9 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 26d old (> 7d); local run: 12 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Needs local run",
           "level": "warn"
         }
       },
       "duval-fl": {
-        "status": "OK",
-        "reason": "healthy",
+        "status": "CRITICAL",
+        "reason": "docket: 5 case(s) attempted, 5 rows, 0 with content (5 retrieval failures)",
         "chip": {
-          "label": "Healthy",
-          "level": "ok"
+          "label": "Collapsed",
+          "level": "critical"
         }
       },
       "lee-fl": {
@@ -194,7 +195,7 @@
       },
       "franklin-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-11 is 31d old \u2014 past the 28d lead window; local run: 2 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
+        "reason": "local run: last local run 2026-08-11 is 32d old \u2014 past the 28d lead window; local run: 3 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -218,7 +219,7 @@
       },
       "hamilton-oh": {
         "status": "WARN",
-        "reason": "local run: last local run 2026-08-17 is 25d old (> 7d); local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 26d old (> 7d); local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Needs local run",
           "level": "warn"

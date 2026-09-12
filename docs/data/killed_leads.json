@@ -49,7 +49,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $235,050.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=1x6ZGxfpE3dD2PE5B5NmTUK0KpE_sMpZrGBPsh3v9R41",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=1x6ZGxfpE3dD2PE5B5NmTTIxviDQ-WEQEgC-akkqokU1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/08/2026"
   },
   {
@@ -70,6 +70,23 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020543 (10970)",
+    "address": "982 YOUNG AVENUE",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 152374.26,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $152,374.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
+  },
+  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -78,32 +95,15 @@
     "sale_date": "2026-08-17",
     "sold_to": "3rd Party Bidder",
     "former_surplus": 150333.0,
-    "kill_label": "Bankruptcy filed",
+    "kill_label": "Sale vacated",
     "kill_signals": [
-      "bankruptcy",
       "motion_to_vacate",
+      "bankruptcy",
       "sale_vacated"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_UAOszuJAB-vKPE1P19QD5StEJ25wuUzig1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=p815iiVwT_UAOszuJAB-vDPajakTGMjKl4GgRGwh64Q1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
-  },
-  {
-    "county_id": "miami-dade-fl",
-    "county_name": "Miami-Dade",
-    "state": "FL",
-    "case_number": "2026-047636-CC-25",
-    "address": "5420 NW 104 CT",
-    "sale_date": "2026-09-09",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 116054.76,
-    "kill_label": "Sale cancelled/vacated",
-    "kill_signals": [
-      "sale_issue"
-    ],
-    "kill_detail": "sale vacated/cancelled (hard kill): 'Order Cancelling Foreclosure Sale'",
-    "docket_url": "https://www2.miamidadeclerk.gov/ocs/",
-    "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/09/2026"
   },
   {
     "county_id": "miami-dade-fl",
@@ -124,21 +124,21 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/24/2026"
   },
   {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
+    "county_id": "summit-oh",
+    "county_name": "Summit",
     "state": "OH",
-    "case_number": "2024 CV 05927-2 (0)",
-    "address": "4563 CURUNDU AVE",
-    "sale_date": "2026-08-14",
+    "case_number": "CV2025020548A (10966)",
+    "address": "1253 MCINTOSH AVENUE",
+    "sale_date": "2026-09-11",
     "sold_to": "Plaintiff",
-    "former_surplus": 70300.0,
+    "former_surplus": 74200.0,
     "kill_label": "Sold to plaintiff",
     "kill_signals": [
       "sold_to_plaintiff"
     ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $70,300.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $74,200.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
   },
   {
     "county_id": "cuyahoga-oh",
@@ -152,42 +152,8 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $264,046 \u2265 sale $215,100 \u2014 NO surplus (principal $212,087 + interest $30,750 + junior $0 + buffer $21,209)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=E6YzOg81hdojmDYrh-j9hMG_QnPWX3ewLp_yW07zROk1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=E6YzOg81hdojmDYrh-j9hKroacZ0sxlu-WtX97IK1EE1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/08/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2024 CV 05927-3 (0)",
-    "address": "314 ELMHURST ROAD",
-    "sale_date": "2026-08-14",
-    "sold_to": "Plaintiff",
-    "former_surplus": 52980.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $52,980.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
-  },
-  {
-    "county_id": "montgomery-oh",
-    "county_name": "Montgomery",
-    "state": "OH",
-    "case_number": "2024 CV 05927-1 (0)",
-    "address": "2325 RUSTIC ROAD",
-    "sale_date": "2026-08-14",
-    "sold_to": "Plaintiff",
-    "former_surplus": 51800.0,
-    "kill_label": "Sold to plaintiff",
-    "kill_signals": [
-      "sold_to_plaintiff"
-    ],
-    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $51,800.",
-    "docket_url": "https://pro.mcohio.org/",
-    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
   },
   {
     "county_id": "montgomery-oh",
@@ -219,7 +185,7 @@
       "sale_vacated"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp0JbBwL6CQE23cnXOYDcszsA4iNx5iFSqI1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=Mc9MeuJlWp0JbBwL6CQE2wmTzH3aM9tfpL_FYfNOZvk1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/17/2026"
   },
   {
@@ -234,7 +200,7 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $235,562 \u2265 sale $149,900 \u2014 NO surplus (principal $186,000 + interest $30,962 + junior $0 + buffer $18,600)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=q-Sm_2rUQPRjDeIDKIy-y22LpyEvLdPdWRE--5wzIIY1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=q-Sm_2rUQPRjDeIDKIy-y04KRIpi7CXvT-teEne6noY1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
   },
   {
@@ -251,7 +217,7 @@
       "motion_to_vacate",
       "sale_vacated"
     ],
-    "kill_detail": "conservative debt $587,321 \u2265 sale $94,100 \u2014 NO surplus (principal $453,658 + interest $88,296 + junior $0 + buffer $45,366)",
+    "kill_detail": "conservative debt $590,644 \u2265 sale $135,500 \u2014 NO surplus (principal $453,658 + interest $91,619 + junior $0 + buffer $45,366)",
     "docket_url": "https://pro.mcohio.org/",
     "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/21/2026"
   },
@@ -273,6 +239,40 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/28/2026"
   },
   {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020548E (10957)",
+    "address": "384 CELTIC STREET",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 42100.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $42,100.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
+  },
+  {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020548C (10955)",
+    "address": "2066 16TH STREET SW",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 39100.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $39,100.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
+  },
+  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -286,7 +286,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $39,000.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=8B7XkfGe3ziRFGLPBrEMv8_EbWIsjqZfZ37mWuBuoHE1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=8B7XkfGe3ziRFGLPBrEMv3MeGdLWvSomAPpq-B3SYk81",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
   },
   {
@@ -320,8 +320,25 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $36,933.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=XMqxqIX4f8whv-bKMvrlTS9g4-DCIxzkuNJtaPVYZtA1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=XMqxqIX4f8whv-bKMvrlTTxeQRNAXdxkXylmsI2KIgQ1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/31/2026"
+  },
+  {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020548B (10967)",
+    "address": "",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 36600.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $36,600.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
   },
   {
     "county_id": "broward-fl",
@@ -361,16 +378,36 @@
     "county_id": "summit-oh",
     "county_name": "Summit",
     "state": "OH",
-    "case_number": "CV2025062857 (10828)",
-    "address": "Property Address:\t625 CHARLES AVENUE",
-    "sale_date": "2026-08-14",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 23100.0,
-    "kill_label": "Debt exceeds sale",
-    "kill_signals": [],
-    "kill_detail": "conservative debt $102,014 \u2265 sale $77,100 \u2014 NO surplus (principal $83,678 + interest $9,969 + junior $0 + buffer $8,368)",
+    "case_number": "CV2025020548G (10959)",
+    "address": "515 FLORA AVENUE",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 24100.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $24,100.",
     "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
-    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=08/14/2026"
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
+  },
+  {
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
+    "state": "OH",
+    "case_number": "2025 CV 04109-3 (0)",
+    "address": "605 NORTH GETTYSBURG AVE",
+    "sale_date": "2026-09-11",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 23400.0,
+    "kill_label": "Debt exceeds sale",
+    "kill_signals": [
+      "motion_to_vacate",
+      "sale_vacated"
+    ],
+    "kill_detail": "conservative debt $590,644 \u2265 sale $135,500 \u2014 NO surplus (principal $453,658 + interest $91,619 + junior $0 + buffer $45,366)",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
   },
   {
     "county_id": "cuyahoga-oh",
@@ -381,13 +418,13 @@
     "sale_date": "2026-09-02",
     "sold_to": "3rd Party Bidder",
     "former_surplus": 22707.46,
-    "kill_label": "Bankruptcy filed",
+    "kill_label": "Sale vacated",
     "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate"
+      "motion_to_vacate",
+      "bankruptcy"
     ],
     "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yde1c89o34hx6V-nWQ4RYlNmA67sbgPi5s5JhjWPEz01",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yde1c89o34hx6V-nWQ4RYv2Re2g_AVlwf0KGv-wi9Kw1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/02/2026"
   },
   {
@@ -404,8 +441,42 @@
       "bankruptcy"
     ],
     "kill_detail": "conservative debt $153,833 \u2265 sale $87,100 \u2014 NO surplus (principal $117,357 + interest $24,741 + junior $0 + buffer $11,736)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=SMoyixMqiUVpaWdwi7npW2S7iyn8Ny_zNwTLi3LazgE1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=SMoyixMqiUVpaWdwi7npW8qicOPaTHZer_cVacVYQQA1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/08/2026"
+  },
+  {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020548F (10958)",
+    "address": "1316 HARPSTER AVENUE",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 20100.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $20,100.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
+  },
+  {
+    "county_id": "summit-oh",
+    "county_name": "Summit",
+    "state": "OH",
+    "case_number": "CV2025020548D (10956)",
+    "address": "727 MONTANA AVENUE",
+    "sale_date": "2026-09-11",
+    "sold_to": "Plaintiff",
+    "former_surplus": 19300.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $19,300.",
+    "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
+    "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/11/2026"
   },
   {
     "county_id": "cuyahoga-oh",
@@ -416,13 +487,13 @@
     "sale_date": "2026-09-09",
     "sold_to": "3rd Party Bidder",
     "former_surplus": 18316.879999999997,
-    "kill_label": "Bankruptcy filed",
+    "kill_label": "Sale vacated",
     "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate"
+      "motion_to_vacate",
+      "bankruptcy"
     ],
-    "kill_detail": "kill signal: bankruptcy",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=EQxCRxapmqo_O-kcXKxmkfsKN-Cn0K5lDPN173N9LUE1",
+    "kill_detail": "kill signal: motion_to_vacate",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=EQxCRxapmqo_O-kcXKxmkWOr1FgOaIM9YWHJXQbtHx01",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/09/2026"
   },
   {
@@ -467,7 +538,7 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $72,168 \u2265 sale $70,200 \u2014 NO surplus (principal $59,003 + interest $7,265 + junior $0 + buffer $5,900)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yiaFYied6rZLuWiNZywjmIxYDJYY2fUZAqhsYGCl_ps1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=yiaFYied6rZLuWiNZywjmLDZXcKrQ9sg-_xtuMcPahc1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=09/08/2026"
   }
 ]
