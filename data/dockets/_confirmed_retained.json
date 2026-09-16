@@ -494,7 +494,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 24986.04,
-   "registry_as_of": "9/14/2026",
+   "registry_as_of": "9/15/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-08-20",
    "sale_datetime": "Aug 20, 2026 11:08 AM ET",
@@ -505,12 +505,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $24,986 as of 9/14/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $24,986 as of 9/15/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 24986.04,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $24,986 as of 9/14/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $24,986 as of 9/15/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -526,17 +526,17 @@
    "pipeline_ready": true,
    "pr_match": false,
    "local_run_county": true,
-   "docket_last_scraped": "2026-09-15",
+   "docket_last_scraped": "2026-09-16",
    "docket_stale": false,
    "docket_covered": true,
    "best_real_surplus": 24986.04,
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-09-15"
+   "confirmed_last_verified": "2026-09-16"
   },
   "sale_date": "2026-08-20",
   "confirmed_first_seen": "2026-09-15",
-  "last_verified": "2026-09-15"
+  "last_verified": "2026-09-16"
  }
 }
