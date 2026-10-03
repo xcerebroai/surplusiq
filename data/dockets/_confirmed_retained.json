@@ -603,10 +603,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-10-02"
+   "confirmed_last_verified": "2026-10-03"
   },
   "sale_date": "2026-09-08",
   "confirmed_first_seen": "2026-10-02",
-  "last_verified": "2026-10-02"
+  "last_verified": "2026-10-03"
  }
 }
