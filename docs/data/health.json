@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-10-22T16:16:32",
- "run_date": "2026-10-22",
+ "generated_at": "2026-10-23T16:15:34",
+ "run_date": "2026-10-23",
  "overall": "CRITICAL",
  "critical": [
   "broward-fl",
@@ -66,19 +66,19 @@
   "broward-fl": {
    "status": "CRITICAL",
    "reasons": [
-    "local run: last local run 2026-08-17 is 66d old \u2014 past the 28d lead window",
+    "local run: last local run 2026-08-17 is 67d old \u2014 past the 28d lead window",
     "local run: 10 published lead(s) not covered by the last local run (shown docket-not-verified)",
     "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
    ],
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-17",
-    "age_days": 66,
+    "age_days": 67,
     "uncovered_count": 10,
     "stale": true,
     "status": "CRITICAL",
     "reasons": [
-     "last local run 2026-08-17 is 66d old \u2014 past the 28d lead window",
+     "last local run 2026-08-17 is 67d old \u2014 past the 28d lead window",
      "10 published lead(s) not covered by the last local run (shown docket-not-verified)",
      "not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
     ]
@@ -87,7 +87,7 @@
     "label": "Local run overdue",
     "level": "critical"
    },
-   "reason": "local run: last local run 2026-08-17 is 66d old \u2014 past the 28d lead window; local run: 10 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+   "reason": "local run: last local run 2026-08-17 is 67d old \u2014 past the 28d lead window; local run: 10 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
    "local_run_county": true
   },
   "duval-fl": {
@@ -167,13 +167,13 @@
     }
    },
    "local_run": {
-    "last_scraped": "2026-10-22",
+    "last_scraped": "2026-10-23",
     "age_days": 0,
     "uncovered_count": 0,
     "stale": false,
     "status": "OK",
     "reasons": [
-     "covered \u2014 last local run 2026-10-22"
+     "covered \u2014 last local run 2026-10-23"
     ]
    },
    "chip": {
@@ -193,16 +193,16 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 36,
-     "rows": 36,
-     "content_rows": 34,
+     "attempted": 40,
+     "rows": 40,
+     "content_rows": 38,
      "failed_rows": 2,
      "skipped_rows": 0,
-     "content_rate": 0.9444,
-     "coverage": 0.9444,
-     "baseline": 0.9512,
+     "content_rate": 0.95,
+     "coverage": 0.95,
+     "baseline": 0.95,
      "baseline_runs": 10,
-     "effective_rate": 0.9444,
+     "effective_rate": 0.95,
      "low_streak": 0,
      "status": "OK",
      "reasons": [
@@ -226,7 +226,7 @@
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-11",
-    "age_days": 72,
+    "age_days": 73,
     "uncovered_count": 0,
     "stale": true,
     "status": "OK",
@@ -251,9 +251,9 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 12,
-     "rows": 12,
-     "content_rows": 12,
+     "attempted": 1,
+     "rows": 1,
+     "content_rows": 1,
      "failed_rows": 0,
      "skipped_rows": 0,
      "content_rate": 1.0,
@@ -286,16 +286,16 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 40,
-     "rows": 40,
-     "content_rows": 38,
+     "attempted": 44,
+     "rows": 44,
+     "content_rows": 42,
      "failed_rows": 2,
      "skipped_rows": 0,
-     "content_rate": 0.95,
-     "coverage": 0.95,
-     "baseline": 0.9542,
+     "content_rate": 0.9545,
+     "coverage": 0.9545,
+     "baseline": 0.95,
      "baseline_runs": 10,
-     "effective_rate": 0.95,
+     "effective_rate": 0.9545,
      "low_streak": 0,
      "status": "OK",
      "reasons": [
@@ -314,19 +314,19 @@
   "hamilton-oh": {
    "status": "CRITICAL",
    "reasons": [
-    "local run: last local run 2026-08-17 is 66d old \u2014 past the 28d lead window",
+    "local run: last local run 2026-08-17 is 67d old \u2014 past the 28d lead window",
     "local run: 2 published lead(s) not covered by the last local run (shown docket-not-verified)",
     "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)"
    ],
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-17",
-    "age_days": 66,
+    "age_days": 67,
     "uncovered_count": 2,
     "stale": true,
     "status": "CRITICAL",
     "reasons": [
-     "last local run 2026-08-17 is 66d old \u2014 past the 28d lead window",
+     "last local run 2026-08-17 is 67d old \u2014 past the 28d lead window",
      "2 published lead(s) not covered by the last local run (shown docket-not-verified)",
      "not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)"
     ]
@@ -335,7 +335,7 @@
     "label": "Local run overdue",
     "level": "critical"
    },
-   "reason": "local run: last local run 2026-08-17 is 66d old \u2014 past the 28d lead window; local run: 2 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+   "reason": "local run: last local run 2026-08-17 is 67d old \u2014 past the 28d lead window; local run: 2 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
    "local_run_county": true
   }
  },
