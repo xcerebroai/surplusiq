@@ -545,11 +545,11 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-10-26"
+   "confirmed_last_verified": "2026-10-27"
   },
   "sale_date": "2026-09-30",
   "confirmed_first_seen": "2026-10-23",
-  "last_verified": "2026-10-26"
+  "last_verified": "2026-10-27"
  },
  "miami-dade-fl|2021-021632-CA-01": {
   "payload": {
@@ -647,10 +647,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-10-26"
+   "confirmed_last_verified": "2026-10-27"
   },
   "sale_date": "2026-10-05",
   "confirmed_first_seen": "2026-10-26",
-  "last_verified": "2026-10-26"
+  "last_verified": "2026-10-27"
  }
 }
