@@ -13,7 +13,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $1,200,200.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=BQ6jOHhxCx5MvgvVAlVc94GAGdI8BfA-wBfjifAmNT41",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=BQ6jOHhxCx5MvgvVAlVc9xSu1Tg8J86Ms_BwSHOsoWk1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/19/2026"
   },
   {
@@ -47,7 +47,7 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $610,000.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=TNPDhGjD0Dc19mCUY9PhSD4wg_FDqzBLuiILWONy8fo1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=TNPDhGjD0Dc19mCUY9PhSHeS7ZvBF8h48-zQBu5SePU1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/13/2026"
   },
   {
@@ -86,39 +86,34 @@
     "source_url": "https://www.miamidade.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=11/02/2026"
   },
   {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
     "state": "OH",
-    "case_number": "CV24104250 (66364)",
-    "address": "4910 GLEETEN ROAD",
-    "sale_date": "2026-10-07",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 92845.97,
-    "kill_label": "Bankruptcy filed",
-    "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate"
-    ],
-    "kill_detail": "kill signal: motion_to_vacate",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=wznnoQNcTUDbnXh7klEHUFHIiNKJ61AynfygftjUg7M1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/07/2026"
+    "case_number": "2023 CV 05861-8 (0)",
+    "address": "Property Address:\t1221 OAKWOOD AVENUE",
+    "sale_date": "2026-10-30",
+    "sold_to": "Plaintiff",
+    "former_surplus": 75100.0,
+    "kill_label": "Debt exceeds sale",
+    "kill_signals": [],
+    "kill_detail": "conservative debt $2,021,250 \u2265 sale $725,300 \u2014 NO surplus (principal $1,837,500 + interest $0 + junior $0 + buffer $183,750)",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/30/2026"
   },
   {
-    "county_id": "orange-fl",
-    "county_name": "Orange",
-    "state": "FL",
-    "case_number": "2025-CA-011224-O",
-    "address": "7716 TERN DR",
-    "sale_date": "2026-11-03",
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
+    "state": "OH",
+    "case_number": "2023 CV 05861-4 (0)",
+    "address": "126 VOLKENAND AVENUE",
+    "sale_date": "2026-10-30",
     "sold_to": "3rd Party Bidder",
-    "former_surplus": 68678.62,
-    "kill_label": "Killed",
-    "kill_signals": [
-      "registry_funds_gone"
-    ],
-    "kill_detail": "clerk registry: no associated account \u2014 surplus disbursed, claimed, or never held",
-    "docket_url": "",
-    "source_url": "https://myorangeclerk.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=11/03/2026"
+    "former_surplus": 72100.0,
+    "kill_label": "Debt exceeds sale",
+    "kill_signals": [],
+    "kill_detail": "conservative debt $2,021,250 \u2265 sale $725,300 \u2014 NO surplus (principal $1,837,500 + interest $0 + junior $0 + buffer $183,750)",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/30/2026"
   },
   {
     "county_id": "summit-oh",
@@ -153,6 +148,38 @@
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/23/2026"
   },
   {
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
+    "state": "OH",
+    "case_number": "2023 CV 05861-3 (0)",
+    "address": "4724 VANGUARD AVENUE",
+    "sale_date": "2026-10-30",
+    "sold_to": "3rd Party Bidder",
+    "former_surplus": 56100.0,
+    "kill_label": "Debt exceeds sale",
+    "kill_signals": [],
+    "kill_detail": "conservative debt $2,021,250 \u2265 sale $725,300 \u2014 NO surplus (principal $1,837,500 + interest $0 + junior $0 + buffer $183,750)",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/30/2026"
+  },
+  {
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
+    "state": "OH",
+    "case_number": "2025 CV 04109-8 (0)",
+    "address": "518 OXFORD AVENUE",
+    "sale_date": "2026-10-16",
+    "sold_to": "Plaintiff",
+    "former_surplus": 51700.0,
+    "kill_label": "Sold to plaintiff",
+    "kill_signals": [
+      "sold_to_plaintiff"
+    ],
+    "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $51,700.",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/16/2026"
+  },
+  {
     "county_id": "cuyahoga-oh",
     "county_name": "Cuyahoga",
     "state": "OH",
@@ -166,27 +193,8 @@
       "sold_to_plaintiff"
     ],
     "kill_detail": "Sold to plaintiff \u2014 no recoverable surplus for homeowner (SOP step 11). Apparent surplus was $51,666.",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=X2r8iRFlvnOYGDRnbNBKNHcYyA1xOsD-95mkjb01unQ1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=X2r8iRFlvnOYGDRnbNBKNK_-za42Y7bHv6zvo__iUPU1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/26/2026"
-  },
-  {
-    "county_id": "cuyahoga-oh",
-    "county_name": "Cuyahoga",
-    "state": "OH",
-    "case_number": "CV22972317 (66363)",
-    "address": "18750 NITRA AVE",
-    "sale_date": "2026-10-07",
-    "sold_to": "3rd Party Bidder",
-    "former_surplus": 48759.35,
-    "kill_label": "Bankruptcy filed",
-    "kill_signals": [
-      "bankruptcy",
-      "motion_to_vacate",
-      "sale_vacated"
-    ],
-    "kill_detail": "kill signal: bankruptcy",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=QQP7H4n1qa4RwKiT0tWjiM50sgLtDX0cpVIuS59Ut_E1",
-    "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/07/2026"
   },
   {
     "county_id": "summit-oh",
@@ -230,7 +238,7 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $219,605 \u2265 sale $184,700 \u2014 NO surplus (principal $172,898 + interest $29,416 + junior $0 + buffer $17,290)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=bPuRxy5i_0JKxxvhznDaar7nNMaPJTG51KRzKLUZtqY1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=bPuRxy5i_0JKxxvhznDaarxk4FquEGUjZCpx2fE-X6g1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/26/2026"
   },
   {
@@ -247,6 +255,21 @@
     "kill_detail": "conservative debt $167,525 \u2265 sale $160,100 \u2014 NO surplus (principal $133,543 + interest $20,628 + junior $0 + buffer $13,354)",
     "docket_url": "https://clerk.summitoh.net/PublicSite/CaseDetail.aspx",
     "source_url": "https://summit.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/16/2026"
+  },
+  {
+    "county_id": "montgomery-oh",
+    "county_name": "Montgomery",
+    "state": "OH",
+    "case_number": "2025 CV 06072 (0)",
+    "address": "Property Address:\t11507 PREBLE COUNTY LINE RD",
+    "sale_date": "2026-10-30",
+    "sold_to": "Plaintiff",
+    "former_surplus": 25990.0,
+    "kill_label": "Debt exceeds sale",
+    "kill_signals": [],
+    "kill_detail": "conservative debt $161,875 \u2265 sale $143,990 \u2014 NO surplus (principal $141,324 + interest $6,419 + junior $0 + buffer $14,132)",
+    "docket_url": "https://pro.mcohio.org/",
+    "source_url": "https://montgomery.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/30/2026"
   },
   {
     "county_id": "summit-oh",
@@ -279,7 +302,7 @@
       "motion_to_vacate"
     ],
     "kill_detail": "conservative debt $86,691 \u2265 sale $23,100 \u2014 NO surplus (principal $69,472 + interest $10,271 + junior $0 + buffer $6,947)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=xEVajoRmOWFr055qMW5zL1l5f3UW03GzmeJp8E_MriA1",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=xEVajoRmOWFr055qMW5zL424CYBuqdMGanXYqzBMiO41",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/13/2026"
   },
   {
@@ -294,7 +317,7 @@
     "kill_label": "Debt exceeds sale",
     "kill_signals": [],
     "kill_detail": "conservative debt $78,497 \u2265 sale $76,600 \u2014 NO surplus (principal $62,234 + interest $10,040 + junior $0 + buffer $6,223)",
-    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=ZtlsZjPhJKPJQJsnWpdoYQqBtA-u3HW_b9oE8LtjEp41",
+    "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=ZtlsZjPhJKPJQJsnWpdoYYX96ZY3Y09Va3ozxNPvZ-c1",
     "source_url": "https://cuyahoga.sheriffsaleauction.ohio.gov/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE=10/26/2026"
   },
   {
