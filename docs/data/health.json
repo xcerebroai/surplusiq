@@ -1,10 +1,9 @@
 {
- "generated_at": "2026-11-06T18:17:51",
- "run_date": "2026-11-06",
+ "generated_at": "2026-11-07T17:13:27",
+ "run_date": "2026-11-07",
  "overall": "CRITICAL",
  "critical": [
-  "broward-fl",
-  "hamilton-oh"
+  "broward-fl"
  ],
  "warn": [],
  "counties": {
@@ -66,20 +65,20 @@
   "broward-fl": {
    "status": "CRITICAL",
    "reasons": [
-    "local run: last local run 2026-08-17 is 81d old \u2014 past the 28d lead window",
-    "local run: 12 published lead(s) not covered by the last local run (shown docket-not-verified)",
+    "local run: last local run 2026-08-17 is 82d old \u2014 past the 28d lead window",
+    "local run: 11 published lead(s) not covered by the last local run (shown docket-not-verified)",
     "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
    ],
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-17",
-    "age_days": 81,
-    "uncovered_count": 12,
+    "age_days": 82,
+    "uncovered_count": 11,
     "stale": true,
     "status": "CRITICAL",
     "reasons": [
-     "last local run 2026-08-17 is 81d old \u2014 past the 28d lead window",
-     "12 published lead(s) not covered by the last local run (shown docket-not-verified)",
+     "last local run 2026-08-17 is 82d old \u2014 past the 28d lead window",
+     "11 published lead(s) not covered by the last local run (shown docket-not-verified)",
      "not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)"
     ]
    },
@@ -87,7 +86,7 @@
     "label": "Local run overdue",
     "level": "critical"
    },
-   "reason": "local run: last local run 2026-08-17 is 81d old \u2014 past the 28d lead window; local run: 12 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+   "reason": "local run: last local run 2026-08-17 is 82d old \u2014 past the 28d lead window; local run: 11 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
    "local_run_county": true
   },
   "duval-fl": {
@@ -167,13 +166,13 @@
     }
    },
    "local_run": {
-    "last_scraped": "2026-11-06",
+    "last_scraped": "2026-11-07",
     "age_days": 0,
     "uncovered_count": 0,
     "stale": false,
     "status": "OK",
     "reasons": [
-     "covered \u2014 last local run 2026-11-06"
+     "covered \u2014 last local run 2026-11-07"
     ]
    },
    "chip": {
@@ -193,9 +192,9 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 34,
-     "rows": 34,
-     "content_rows": 34,
+     "attempted": 28,
+     "rows": 28,
+     "content_rows": 28,
      "failed_rows": 0,
      "skipped_rows": 0,
      "content_rate": 1.0,
@@ -226,7 +225,7 @@
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-11",
-    "age_days": 87,
+    "age_days": 88,
     "uncovered_count": 0,
     "stale": true,
     "status": "OK",
@@ -286,16 +285,16 @@
      "source": "docket",
      "kind": "cron",
      "file_present": true,
-     "attempted": 38,
-     "rows": 38,
-     "content_rows": 37,
+     "attempted": 28,
+     "rows": 28,
+     "content_rows": 27,
      "failed_rows": 1,
      "skipped_rows": 0,
-     "content_rate": 0.9737,
-     "coverage": 0.9737,
-     "baseline": 0.9702,
+     "content_rate": 0.9643,
+     "coverage": 0.9643,
+     "baseline": 0.9706,
      "baseline_runs": 10,
-     "effective_rate": 0.9737,
+     "effective_rate": 0.9643,
      "low_streak": 0,
      "status": "OK",
      "reasons": [
@@ -312,30 +311,26 @@
    "local_run_county": false
   },
   "hamilton-oh": {
-   "status": "CRITICAL",
+   "status": "OK",
    "reasons": [
-    "local run: last local run 2026-08-17 is 81d old \u2014 past the 28d lead window",
-    "local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified)",
-    "local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)"
+    "healthy"
    ],
    "sources": {},
    "local_run": {
     "last_scraped": "2026-08-17",
-    "age_days": 81,
-    "uncovered_count": 1,
+    "age_days": 82,
+    "uncovered_count": 0,
     "stale": true,
-    "status": "CRITICAL",
+    "status": "OK",
     "reasons": [
-     "last local run 2026-08-17 is 81d old \u2014 past the 28d lead window",
-     "1 published lead(s) not covered by the last local run (shown docket-not-verified)",
-     "not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)"
+     "no in-window sales \u2014 expected empty"
     ]
    },
    "chip": {
-    "label": "Local run overdue",
-    "level": "critical"
+    "label": "Healthy",
+    "level": "ok"
    },
-   "reason": "local run: last local run 2026-08-17 is 81d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+   "reason": "healthy",
    "local_run_county": true
   }
  },
