@@ -1,37 +1,45 @@
 {
-  "generated_at": "2026-11-11T19:01:26",
-  "total_leads": 49,
-  "total_leads_pre_filter": 46,
+  "generated_at": "2026-11-12T19:11:59",
+  "total_leads": 52,
+  "total_leads_pre_filter": 49,
   "killed_filtered_count": 1,
   "killed_shown_count": 14,
-  "below_floor_filtered_count": 0,
-  "confirmed_retained_count": 4,
+  "below_floor_filtered_count": 1,
+  "confirmed_retained_count": 5,
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 457241.32,
   "estimated_surplus_total": 0,
-  "apparent_surplus_total": 2042123.83,
-  "docket_verified_positive_count": 5,
-  "docket_verified_positive_total": 159143.16999999998,
+  "apparent_surplus_total": 2080810.1500000001,
+  "docket_verified_positive_count": 7,
+  "docket_verified_positive_total": 69252.83,
   "confirmed_surplus_count": 6,
   "estimated_surplus_count": 0,
   "apparent_surplus_count": 30,
-  "unverified_count": 13,
+  "unverified_count": 16,
   "killed_count": 0,
   "red_count": 0,
   "pipeline_ready_count": 6,
   "pr_matched_count": 15,
-  "docket_matched_count": 18,
+  "docket_matched_count": 25,
   "by_state": {
     "FL": {
-      "leads": 35,
-      "surplus": 2137386.2700000005
+      "leads": 36,
+      "surplus": 2208718.0900000003
     },
     "OH": {
-      "leads": 11,
-      "surplus": 401775.23
+      "leads": 13,
+      "surplus": 412509.23
     }
   },
   "by_county": [
+    {
+      "county_id": "broward-fl",
+      "county_name": "Broward",
+      "state": "FL",
+      "leads": 12,
+      "surplus": 666523.93,
+      "top_lead": 190830.65
+    },
     {
       "county_id": "miami-dade-fl",
       "county_name": "Miami-Dade",
@@ -41,19 +49,11 @@
       "top_lead": 245917.19
     },
     {
-      "county_id": "broward-fl",
-      "county_name": "Broward",
-      "state": "FL",
-      "leads": 11,
-      "surplus": 537947.27,
-      "top_lead": 190830.65
-    },
-    {
       "county_id": "orange-fl",
       "county_name": "Orange",
       "state": "FL",
       "leads": 8,
-      "surplus": 517503.93,
+      "surplus": 460259.0899999999,
       "top_lead": 190472.46
     },
     {
@@ -68,8 +68,8 @@
       "county_id": "summit-oh",
       "county_name": "Summit",
       "state": "OH",
-      "leads": 5,
-      "surplus": 215976.22999999998,
+      "leads": 9,
+      "surplus": 319476.23,
       "top_lead": 67100.0
     },
     {
@@ -84,9 +84,9 @@
       "county_id": "cuyahoga-oh",
       "county_name": "Cuyahoga",
       "state": "OH",
-      "leads": 5,
-      "surplus": 160599.0,
-      "top_lead": 92766.0
+      "leads": 3,
+      "surplus": 67833.0,
+      "top_lead": 33633.0
     },
     {
       "county_id": "hamilton-oh",
@@ -98,14 +98,14 @@
     }
   ],
   "by_score": {
-    "A+": 7,
-    "A": 11,
-    "B": 20,
-    "C": 6
+    "A+": 8,
+    "A": 10,
+    "B": 21,
+    "C": 8
   },
   "local_run_status": {
     "orange-fl": {
-      "last_scraped": "2026-11-11",
+      "last_scraped": "2026-11-12",
       "stale": false,
       "uncovered_count": 0
     },
@@ -122,16 +122,15 @@
     "broward-fl": {
       "last_scraped": "2026-08-17",
       "stale": true,
-      "uncovered_count": 11
+      "uncovered_count": 12
     }
   },
   "health": {
     "overall": "CRITICAL",
-    "run_date": "2026-11-11",
+    "run_date": "2026-11-12",
     "critical": [
       "broward-fl",
-      "hamilton-oh",
-      "summit-oh"
+      "hamilton-oh"
     ],
     "warn": [],
     "counties": {
@@ -145,7 +144,7 @@
       },
       "broward-fl": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 86d old \u2014 past the 28d lead window; local run: 11 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 87d old \u2014 past the 28d lead window; local run: 12 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -200,16 +199,16 @@
         }
       },
       "summit-oh": {
-        "status": "CRITICAL",
-        "reason": "docket: 32 case(s) attempted, 32 rows, 0 with content (32 retrieval failures)",
+        "status": "OK",
+        "reason": "healthy",
         "chip": {
-          "label": "Collapsed",
-          "level": "critical"
+          "label": "Healthy",
+          "level": "ok"
         }
       },
       "hamilton-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 86d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 87d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -295,6 +294,15 @@
       "evidence_level": "auction_only"
     },
     {
+      "county": "Broward",
+      "state": "FL",
+      "case_number": "CACE-24-012210",
+      "address": "8671 NW 28 PL",
+      "surplus": 128576.66,
+      "money_status": "apparent_surplus",
+      "evidence_level": "auction_only"
+    },
+    {
       "county": "Duval",
       "state": "FL",
       "case_number": "16-2025-CA-001932-AXXX-MA",
@@ -302,15 +310,6 @@
       "surplus": 114958.24,
       "money_status": "apparent_surplus",
       "evidence_level": "docket_reviewed"
-    },
-    {
-      "county": "Broward",
-      "state": "FL",
-      "case_number": "CACE-25-017217",
-      "address": "10472 COBALT CT",
-      "surplus": 111393.72999999998,
-      "money_status": "apparent_surplus",
-      "evidence_level": "auction_only"
     }
   ],
   "coverage": {
