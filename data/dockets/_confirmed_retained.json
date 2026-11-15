@@ -527,7 +527,7 @@
    "proof_of_surplus": "excess_proceeds",
    "competing_filers": [],
    "additional_parties": [],
-   "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=i0nv09XK8EMPIgMyOyKw0b4P8FLAiuYv5izvdC67MZ81",
+   "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=i0nv09XK8EMPIgMyOyKw0c6KsJuf1gosXwL_j3WwR4s1",
    "foreclosure_type": "",
    "docket_evidence_level": "",
    "lead_status": "",
@@ -577,10 +577,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-13"
+   "confirmed_last_verified": "2026-11-15"
   },
   "sale_date": "2026-10-26",
   "confirmed_first_seen": "2026-11-13",
-  "last_verified": "2026-11-13"
+  "last_verified": "2026-11-15"
  }
 }
