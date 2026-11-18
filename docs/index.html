@@ -835,9 +835,7 @@
   </section>
 
   <!-- ── KILLED LEADS SECTION ──────────────────────────────────── -->
-  <!-- Proof-of-work: leads that had real apparent surplus and were  -->
-  <!-- killed by a verified signal. Not actionable — demonstration  -->
-  <!-- that the verification layer actually fires.                   -->
+  <!-- Leads excluded by documented disqualifying signals. -->
   <section class="kills-section" id="kills-section" style="display:none">
     <div class="kills-header" onclick="toggleKills()">
       <span class="kills-toggle-icon" id="kills-toggle-icon">▶</span>
@@ -849,7 +847,7 @@
       <p class="kills-note">
         These leads had apparent surplus but were disqualified by a verified signal (sale vacated, bankruptcy,
         surplus claim filed, sold to plaintiff, debt exceeds sale). They are <strong>not actionable</strong>.
-        Shown here so you can see the verification layer working.
+        Keep these records out of your outreach and claim pipeline.
       </p>
       <table class="kills-table">
         <thead>
@@ -1057,17 +1055,17 @@
       //     NOT docket-verified — the local run lags the daily auction feed.
       if (l.local_run_county && l.docket_covered === false) {
         if (l.docket_last_scraped) {
-          return dvPrefix + '<span class="status-badge status-red" title="This county is scraped by a LOCAL manual run, not the daily cron. This case is NOT covered by the last run (' + l.docket_last_scraped + '), so the docket layer is stale for it — NOT docket-verified. Re-run the local scraper, or use the Clerk Docket link.">⚠ Stale</span>';
+          return dvPrefix + '<span class="status-badge status-red" title="This case is not covered by the docket records dated ' + l.docket_last_scraped + '. Current docket status is unverified. Use the Clerk Docket link to review the case before acting.">⚠ Review required</span>';
         }
-        return dvPrefix + '<span class="status-badge status-unverified" title="Portal requires a per-search CAPTCHA solve — parked, not scraped. Docket NOT verified; this is auction math only. Use the Clerk Docket link to check manually.">Portal-gated</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="Docket status requires review through the county portal. This figure uses auction data only. Use the Clerk Docket link to review the case before acting.">Review required</span>';
       }
       // (c) Portal-inaccessible county (Cloudflare, no authorized data feed:
       //     Hamilton). Not docket-verified — manual-verify link only.
       if (l.requires_manual_docket_verify) {
-        return dvPrefix + '<span class="status-badge status-unverified" title="Portal-inaccessible (Cloudflare, no authorized data feed). Docket NOT verified — use the Verify ⚠ link in the Clerk Docket column to check manually.">🔒 No portal</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="Current docket status is unverified. Use the Verify ⚠ link in the Clerk Docket column to review the case directly.">Review required</span>';
       }
       if (l.state === 'FL') {
-        return dvPrefix + '<span class="status-badge status-unverified" title="No FL docket scraper yet. Surplus number is FL opening-bid math (judgment amount). Use the Clerk Docket link to verify kill signals before acting.">Unverified</span>';
+        return dvPrefix + '<span class="status-badge status-unverified" title="Docket status is unverified. This figure uses auction opening-bid data. Use the Clerk Docket link to check judgment amounts and disqualifying events before acting.">Unverified</span>';
       }
       return dvPrefix + '<span class="status-badge status-unverified" title="Docket not yet checked for this lead. Use the Clerk Docket link to verify.">Unverified</span>';
     }
@@ -1094,7 +1092,7 @@
     if (ft === 'mortgage_foreclosure')
       return '<span class="status-badge" style="background:#15324f;color:#cfe3ff" title="Mortgage foreclosure — validated via Miami-Dade Local Case Search docket">📄 Mortgage FC</span>';
     if (ft === 'tax_deed')
-      return '<span class="status-badge" style="background:#4a3b1e;color:#ffe9c2" title="Tax deed sale — routes to RealTDM (separate task); not docket-checked yet">🏛 Tax Deed</span>';
+      return '<span class="status-badge" style="background:#4a3b1e;color:#ffe9c2" title="Tax deed sale — review the sale and claim status through RealTDM.">🏛 Tax Deed</span>';
     return '';
   }
   function renderLeadStatusBadge(l) {
@@ -1186,7 +1184,7 @@
     } catch (err) {
       console.error(err);
       $("leads-body").innerHTML =
-        `<tr><td colspan="15"><div class="error">Failed to load lead data: ${err.message}</div></td></tr>`;
+        '<tr><td colspan="15"><div class="error">Lead data is unavailable. Reload this page to try again.</div></td></tr>';
     }
     // Killed leads load independently — failure is non-fatal
     try {
@@ -1279,7 +1277,7 @@
     if (killedFiltered) filterParts.push(`${killedFiltered} killed`);
     if (floorFiltered)  filterParts.push(`${floorFiltered} below $${(s.min_display_surplus || 5000).toLocaleString()}`);
     const auditLine = (preFilter > visible)
-      ? `(${preFilter} raw scraped → ${filterParts.join(" + ")} filtered → ${visible} visible)`
+      ? `(${preFilter} source records → ${filterParts.join(" + ")} excluded → ${visible} visible)`
       : '';
     const noteCounts = [
       `${visible} visible leads`,
@@ -1377,19 +1375,23 @@
   function renderHealthChip(countyId) {
     const c = healthFor(countyId);
     if (!c || !c.chip || c.chip.level === 'none') return '';
-    const reason = c.reason || (c.reasons || []).join('; ');
+    const needsReview = c.chip.level !== 'ok';
+    const label = needsReview ? 'Docket review required' : 'Records available';
+    const reason = needsReview
+      ? 'Current docket coverage is incomplete. Review individual leads through the Clerk Docket links before acting.'
+      : 'Source records are available. Review the evidence shown for each lead before acting.';
     let last = '';
     if (c.local_run && c.local_run.last_scraped) {
       // Orange's docket coverage comes from the cloud registry lookup, not a manual run.
-      const what = (c.sources && c.sources.registry) ? 'registry' : 'local run';
+      const what = (c.sources && c.sources.registry) ? 'Registry as of' : 'Records as of';
       last = `<span class="county-health-run">${what} ${c.local_run.last_scraped}</span>`;
     }
     else if (c.sources) {
       const dates = Object.values(c.sources).map(m => m.carried_from).filter(Boolean);
-      if (dates.length) last = `<span class="county-health-run">last run ${dates[0]}</span>`;
+      if (dates.length) last = `<span class="county-health-run">Records as of ${dates[0]}</span>`;
     }
     return `<div class="county-health-row"><span class="county-health h-${c.chip.level}" title="${esc(reason)}">`
-         + `<span class="hdot"></span>${esc(c.chip.label)}</span>${last}</div>`;
+         + `<span class="hdot"></span>${label}</span>${last}</div>`;
   }
   function renderHealthBanner() {
     const el = $("health-banner");
@@ -1404,13 +1406,14 @@
     const parts = [];
     if (critical.length) {
       const items = critical.map(cid => {
-        const c = h.counties[cid] || {};
-        return `<li><code>${esc(cid)}</code> — ${esc(c.reason || (c.reasons || []).join('; '))}</li>`;
+        const county = ((SUMMARY.coverage && SUMMARY.coverage.counties) || []).find(c => c.id === cid);
+        const name = county ? `${county.name}, ${county.state}` : cid;
+        return `<li>${esc(name)} — review current case status through the Clerk Docket links.</li>`;
       }).join('');
-      parts.push(`<div><strong>⚠ Docket layer collapsed for ${critical.length} count${critical.length === 1 ? 'y' : 'ies'} — their leads are shown docket-not-verified, not verified.</strong><ul>${items}</ul></div>`);
+      parts.push(`<div><strong>⚠ Current docket confirmation is unavailable for some leads in ${critical.length} count${critical.length === 1 ? 'y' : 'ies'}. These leads remain unverified.</strong><ul>${items}</ul></div>`);
     }
     if (stale) {
-      parts.push(`<div><strong>Data is ${Math.round(ageH)}h old (last refresh ${gen.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}).</strong>The daily refresh has not published for over ${staleHours}h — check the Daily Refresh workflow before acting on these leads.</div>`);
+      parts.push(`<div><strong>Records were last updated ${gen.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} (${Math.round(ageH)}h ago).</strong>Review current case and claim status through the Clerk Docket links before acting on these leads.</div>`);
     }
     el.className = "health-banner show" + (critical.length ? "" : " stale");
     el.innerHTML = `<div class="hb-icon">${critical.length ? '🔴' : '🟠'}</div><div>${parts.join('')}</div>`;
