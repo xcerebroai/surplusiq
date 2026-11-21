@@ -1,34 +1,34 @@
 {
-  "generated_at": "2026-11-20T19:27:10",
-  "total_leads": 56,
-  "total_leads_pre_filter": 55,
-  "killed_filtered_count": 4,
-  "killed_shown_count": 35,
+  "generated_at": "2026-11-21T18:23:35",
+  "total_leads": 49,
+  "total_leads_pre_filter": 46,
+  "killed_filtered_count": 2,
+  "killed_shown_count": 18,
   "below_floor_filtered_count": 0,
   "confirmed_retained_count": 5,
   "min_display_surplus": 5000.0,
-  "confirmed_surplus_total": 490499.44,
+  "confirmed_surplus_total": 602396.69,
   "estimated_surplus_total": 47056.0,
-  "apparent_surplus_total": 1993106.46,
-  "docket_verified_positive_count": 12,
-  "docket_verified_positive_total": 286672.44,
-  "confirmed_surplus_count": 7,
+  "apparent_surplus_total": 1632017.35,
+  "docket_verified_positive_count": 8,
+  "docket_verified_positive_total": 230855.37,
+  "confirmed_surplus_count": 9,
   "estimated_surplus_count": 1,
-  "apparent_surplus_count": 29,
-  "unverified_count": 19,
+  "apparent_surplus_count": 24,
+  "unverified_count": 15,
   "killed_count": 0,
   "red_count": 0,
-  "pipeline_ready_count": 7,
-  "pr_matched_count": 16,
-  "docket_matched_count": 31,
+  "pipeline_ready_count": 9,
+  "pr_matched_count": 18,
+  "docket_matched_count": 26,
   "by_state": {
     "FL": {
-      "leads": 32,
-      "surplus": 1935424.8800000001
+      "leads": 30,
+      "surplus": 1744952.4200000002
     },
     "OH": {
-      "leads": 23,
-      "surplus": 850573.2300000001
+      "leads": 16,
+      "surplus": 563573.23
     }
   },
   "by_county": [
@@ -36,7 +36,7 @@
       "county_id": "broward-fl",
       "county_name": "Broward",
       "state": "FL",
-      "leads": 14,
+      "leads": 13,
       "surplus": 676156.6900000002,
       "top_lead": 190830.65
     },
@@ -44,9 +44,9 @@
       "county_id": "orange-fl",
       "county_name": "Orange",
       "state": "FL",
-      "leads": 8,
-      "surplus": 616185.6199999999,
-      "top_lead": 190472.46
+      "leads": 7,
+      "surplus": 425713.16,
+      "top_lead": 187887.81
     },
     {
       "county_id": "miami-dade-fl",
@@ -68,17 +68,9 @@
       "county_id": "summit-oh",
       "county_name": "Summit",
       "state": "OH",
-      "leads": 10,
-      "surplus": 268476.23,
+      "leads": 7,
+      "surplus": 219076.22999999998,
       "top_lead": 67100.0
-    },
-    {
-      "county_id": "montgomery-oh",
-      "county_name": "Montgomery",
-      "state": "OH",
-      "leads": 4,
-      "surplus": 237600.0,
-      "top_lead": 74800.0
     },
     {
       "county_id": "cuyahoga-oh",
@@ -114,26 +106,26 @@
     }
   ],
   "by_score": {
-    "A+": 7,
-    "A": 15,
-    "B": 15,
-    "C": 12
+    "A+": 6,
+    "A": 12,
+    "B": 12,
+    "C": 11
   },
   "local_run_status": {
     "orange-fl": {
-      "last_scraped": "2026-11-20",
+      "last_scraped": "2026-11-21",
       "stale": false,
       "uncovered_count": 0
-    },
-    "broward-fl": {
-      "last_scraped": "2026-08-17",
-      "stale": true,
-      "uncovered_count": 14
     },
     "hamilton-oh": {
       "last_scraped": "2026-08-17",
       "stale": true,
       "uncovered_count": 1
+    },
+    "broward-fl": {
+      "last_scraped": "2026-08-17",
+      "stale": true,
+      "uncovered_count": 13
     },
     "franklin-oh": {
       "last_scraped": "2026-08-11",
@@ -143,25 +135,26 @@
   },
   "health": {
     "overall": "CRITICAL",
-    "run_date": "2026-11-20",
+    "run_date": "2026-11-21",
     "critical": [
       "broward-fl",
       "franklin-oh",
-      "hamilton-oh"
+      "hamilton-oh",
+      "miami-dade-fl"
     ],
     "warn": [],
     "counties": {
       "miami-dade-fl": {
-        "status": "OK",
-        "reason": "healthy",
+        "status": "CRITICAL",
+        "reason": "taxdeed: 1 case(s) attempted, 1 rows, 0 with content (1 retrieval failures)",
         "chip": {
-          "label": "Healthy",
-          "level": "ok"
+          "label": "Collapsed",
+          "level": "critical"
         }
       },
       "broward-fl": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 95d old \u2014 past the 28d lead window; local run: 14 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 96d old \u2014 past the 28d lead window; local run: 13 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -201,7 +194,7 @@
       },
       "franklin-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-11 is 101d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
+        "reason": "local run: last local run 2026-08-11 is 102d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -225,7 +218,7 @@
       },
       "hamilton-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 95d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 96d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -263,20 +256,20 @@
       "evidence_level": "docket_confirmed"
     },
     {
-      "county": "Cuyahoga",
-      "state": "OH",
-      "case_number": "CV25118905 (66526)",
-      "address": "21213 WATSON ROAD",
-      "surplus": 38690.97,
+      "county": "Orange",
+      "state": "FL",
+      "case_number": "2025-CA-011224-O",
+      "address": "7716 TERN DR",
+      "surplus": 63198.48,
       "money_status": "confirmed_surplus",
       "evidence_level": "docket_confirmed"
     },
     {
       "county": "Orange",
       "state": "FL",
-      "case_number": "2025-CA-009230-O",
-      "address": "14668 BRADDOCK OAK DR",
-      "surplus": 19553.19,
+      "case_number": "2023-CA-014557-O",
+      "address": "311 W 17TH ST",
+      "surplus": 48698.77,
       "money_status": "confirmed_surplus",
       "evidence_level": "docket_confirmed"
     }
@@ -314,15 +307,6 @@
     {
       "county": "Orange",
       "state": "FL",
-      "case_number": "2025-CA-003413-O",
-      "address": "16950 DEER OAK LN",
-      "surplus": 190472.46,
-      "money_status": "apparent_surplus",
-      "evidence_level": "auction_only"
-    },
-    {
-      "county": "Orange",
-      "state": "FL",
       "case_number": "2024-CA-003117-O",
       "address": "11606 BRICKYARD POND LN",
       "surplus": 187887.81,
@@ -337,6 +321,15 @@
       "surplus": 177401.0,
       "money_status": "apparent_surplus",
       "evidence_level": "property_enriched"
+    },
+    {
+      "county": "Broward",
+      "state": "FL",
+      "case_number": "CACE-25-017217",
+      "address": "10472 COBALT CT",
+      "surplus": 111393.72999999998,
+      "money_status": "apparent_surplus",
+      "evidence_level": "auction_only"
     }
   ],
   "coverage": {
