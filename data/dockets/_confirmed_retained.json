@@ -457,7 +457,7 @@
    "proof_of_surplus": "excess_proceeds",
    "competing_filers": [],
    "additional_parties": [],
-   "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=i0nv09XK8EMPIgMyOyKw0b-A3-aK_U42PGdVkrDqz341",
+   "docket_url": "https://cpdocket.cp.cuyahogacounty.gov/CV_CaseInformation_Summary.aspx?q=i0nv09XK8EMPIgMyOyKw0V28DO20LosLJEs9po6Nxdo1",
    "foreclosure_type": "",
    "docket_evidence_level": "",
    "lead_status": "",
@@ -507,11 +507,11 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-21"
+   "confirmed_last_verified": "2026-11-23"
   },
   "sale_date": "2026-10-26",
   "confirmed_first_seen": "2026-11-13",
-  "last_verified": "2026-11-21"
+  "last_verified": "2026-11-23"
  },
  "orange-fl|2025-CA-009230-O": {
   "payload": {
@@ -538,7 +538,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 19553.19,
-   "registry_as_of": "11/21/2026",
+   "registry_as_of": "11/22/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-10-28",
    "sale_datetime": "Oct 28, 2026 11:08 AM ET",
@@ -549,12 +549,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $19,553 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $19,553 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 19553.19,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $19,553 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $19,553 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -570,18 +570,18 @@
    "pipeline_ready": true,
    "pr_match": false,
    "local_run_county": true,
-   "docket_last_scraped": "2026-11-22",
+   "docket_last_scraped": "2026-11-23",
    "docket_stale": false,
    "docket_covered": true,
    "best_real_surplus": 19553.19,
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-22"
+   "confirmed_last_verified": "2026-11-23"
   },
   "sale_date": "2026-10-28",
   "confirmed_first_seen": "2026-11-17",
-  "last_verified": "2026-11-22"
+  "last_verified": "2026-11-23"
  },
  "orange-fl|2025-CA-011224-O": {
   "payload": {
@@ -608,7 +608,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 63198.48,
-   "registry_as_of": "11/21/2026",
+   "registry_as_of": "11/22/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-11-03",
    "sale_datetime": "Nov 3, 2026 11:36 AM ET",
@@ -619,12 +619,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $63,198 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $63,198 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 63198.48,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $63,198 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $63,198 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -640,18 +640,18 @@
    "pipeline_ready": true,
    "pr_match": false,
    "local_run_county": true,
-   "docket_last_scraped": "2026-11-22",
+   "docket_last_scraped": "2026-11-23",
    "docket_stale": false,
    "docket_covered": true,
    "best_real_surplus": 63198.48,
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-22"
+   "confirmed_last_verified": "2026-11-23"
   },
   "sale_date": "2026-11-03",
   "confirmed_first_seen": "2026-11-21",
-  "last_verified": "2026-11-22"
+  "last_verified": "2026-11-23"
  },
  "orange-fl|2023-CA-014557-O": {
   "payload": {
@@ -678,7 +678,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 48698.77,
-   "registry_as_of": "11/21/2026",
+   "registry_as_of": "11/22/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-11-03",
    "sale_datetime": "Nov 3, 2026 11:03 AM ET",
@@ -689,12 +689,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $48,699 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $48,699 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 48698.77,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $48,699 as of 11/21/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $48,699 as of 11/22/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -710,7 +710,7 @@
    "pipeline_ready": true,
    "pr_match": true,
    "local_run_county": true,
-   "docket_last_scraped": "2026-11-22",
+   "docket_last_scraped": "2026-11-23",
    "docket_stale": false,
    "docket_covered": true,
    "pr_radar_id": "P7A42061",
@@ -720,7 +720,7 @@
    "pr_mailing_state": null,
    "pr_mailing_zip": null,
    "pr_estimated_value": 153658.0,
-   "pr_total_loan_balance": 159737.0,
+   "pr_total_loan_balance": 159555.0,
    "pr_available_equity": 0.0,
    "pr_first_loan_amount": 0.0,
    "pr_first_loan_type": null,
@@ -735,7 +735,7 @@
    "pr_bedrooms": 12,
    "pr_bathrooms": 10.0,
    "real_surplus_estimate": 0,
-   "debt_coverage_ratio": 1.2231010719754978,
+   "debt_coverage_ratio": 1.221707503828484,
    "is_clean_surplus": true,
    "enrichment_status": "matched",
    "lee_lien_classification": "",
@@ -749,10 +749,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-22"
+   "confirmed_last_verified": "2026-11-23"
   },
   "sale_date": "2026-11-03",
   "confirmed_first_seen": "2026-11-21",
-  "last_verified": "2026-11-22"
+  "last_verified": "2026-11-23"
  }
 }
