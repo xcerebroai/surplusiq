@@ -1,34 +1,34 @@
 {
-  "generated_at": "2026-11-26T20:26:50",
-  "total_leads": 47,
-  "total_leads_pre_filter": 44,
-  "killed_filtered_count": 4,
-  "killed_shown_count": 29,
+  "generated_at": "2026-11-27T20:21:41",
+  "total_leads": 43,
+  "total_leads_pre_filter": 37,
+  "killed_filtered_count": 1,
+  "killed_shown_count": 15,
   "below_floor_filtered_count": 0,
   "confirmed_retained_count": 7,
   "min_display_surplus": 5000.0,
   "confirmed_surplus_total": 602396.69,
   "estimated_surplus_total": 47056.0,
-  "apparent_surplus_total": 1340265.1400000001,
-  "docket_verified_positive_count": 12,
-  "docket_verified_positive_total": 454828.57,
+  "apparent_surplus_total": 1209122.44,
+  "docket_verified_positive_count": 10,
+  "docket_verified_positive_total": 341628.13,
   "confirmed_surplus_count": 9,
   "estimated_surplus_count": 1,
-  "apparent_surplus_count": 21,
-  "unverified_count": 16,
+  "apparent_surplus_count": 18,
+  "unverified_count": 15,
   "killed_count": 0,
   "red_count": 0,
   "pipeline_ready_count": 9,
-  "pr_matched_count": 18,
-  "docket_matched_count": 29,
+  "pr_matched_count": 16,
+  "docket_matched_count": 23,
   "by_state": {
     "FL": {
-      "leads": 23,
-      "surplus": 1140514.7299999997
+      "leads": 22,
+      "surplus": 1122572.4699999997
     },
     "OH": {
-      "leads": 21,
-      "surplus": 921040.2300000001
+      "leads": 15,
+      "surplus": 521574.23
     }
   },
   "by_county": [
@@ -49,28 +49,12 @@
       "top_lead": 245917.19
     },
     {
-      "county_id": "montgomery-oh",
-      "county_name": "Montgomery",
-      "state": "OH",
-      "leads": 5,
-      "surplus": 306700.0,
-      "top_lead": 74800.0
-    },
-    {
       "county_id": "broward-fl",
       "county_name": "Broward",
       "state": "FL",
-      "leads": 9,
-      "surplus": 291362.66000000003,
+      "leads": 8,
+      "surplus": 273420.4,
       "top_lead": 177401.0
-    },
-    {
-      "county_id": "cuyahoga-oh",
-      "county_name": "Cuyahoga",
-      "state": "OH",
-      "leads": 6,
-      "surplus": 227966.0,
-      "top_lead": 92766.0
     },
     {
       "county_id": "summit-oh",
@@ -87,6 +71,14 @@
       "leads": 6,
       "surplus": 173860.95,
       "top_lead": 80654.33
+    },
+    {
+      "county_id": "cuyahoga-oh",
+      "county_name": "Cuyahoga",
+      "state": "OH",
+      "leads": 5,
+      "surplus": 135200.0,
+      "top_lead": 80100.0
     },
     {
       "county_id": "hamilton-oh",
@@ -107,25 +99,25 @@
   ],
   "by_score": {
     "A+": 3,
-    "A": 14,
-    "B": 13,
-    "C": 9
+    "A": 9,
+    "B": 12,
+    "C": 8
   },
   "local_run_status": {
-    "broward-fl": {
-      "last_scraped": "2026-08-17",
-      "stale": true,
-      "uncovered_count": 9
+    "orange-fl": {
+      "last_scraped": "2026-11-27",
+      "stale": false,
+      "uncovered_count": 0
     },
     "franklin-oh": {
       "last_scraped": "2026-08-11",
       "stale": true,
       "uncovered_count": 1
     },
-    "orange-fl": {
-      "last_scraped": "2026-11-26",
-      "stale": false,
-      "uncovered_count": 0
+    "broward-fl": {
+      "last_scraped": "2026-08-17",
+      "stale": true,
+      "uncovered_count": 8
     },
     "hamilton-oh": {
       "last_scraped": "2026-08-17",
@@ -135,7 +127,7 @@
   },
   "health": {
     "overall": "CRITICAL",
-    "run_date": "2026-11-26",
+    "run_date": "2026-11-27",
     "critical": [
       "broward-fl",
       "franklin-oh",
@@ -153,7 +145,7 @@
       },
       "broward-fl": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 101d old \u2014 past the 28d lead window; local run: 9 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 102d old \u2014 past the 28d lead window; local run: 8 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.broward (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -193,7 +185,7 @@
       },
       "franklin-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-11 is 107d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
+        "reason": "local run: last local run 2026-08-11 is 108d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.franklin (residential IP)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -217,7 +209,7 @@
       },
       "hamilton-oh": {
         "status": "CRITICAL",
-        "reason": "local run: last local run 2026-08-17 is 101d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
+        "reason": "local run: last local run 2026-08-17 is 102d old \u2014 past the 28d lead window; local run: 1 published lead(s) not covered by the last local run (shown docket-not-verified); local run: not a system fault \u2014 needs a manual run: python -m core.dockets.hamilton (residential IP, genuine-Chrome bridge)",
         "chip": {
           "label": "Local run overdue",
           "level": "critical"
@@ -322,11 +314,11 @@
       "evidence_level": "docket_reviewed"
     },
     {
-      "county": "Cuyahoga",
-      "state": "OH",
-      "case_number": "CV24999166 (67306)",
-      "address": "19413 SCOTTSDALE BLVD",
-      "surplus": 87945.23,
+      "county": "Duval",
+      "state": "FL",
+      "case_number": "16-2025-CA-007398-AXXX-MA",
+      "address": "7869 LAVENHAM CT",
+      "surplus": 80654.33,
       "money_status": "apparent_surplus",
       "evidence_level": "docket_reviewed"
     }

@@ -608,7 +608,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 63198.48,
-   "registry_as_of": "11/25/2026",
+   "registry_as_of": "11/26/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-11-03",
    "sale_datetime": "Nov 3, 2026 11:36 AM ET",
@@ -619,12 +619,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $63,198 as of 11/25/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $63,198 as of 11/26/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 63198.48,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $63,198 as of 11/25/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $63,198 as of 11/26/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -640,18 +640,18 @@
    "pipeline_ready": true,
    "pr_match": false,
    "local_run_county": true,
-   "docket_last_scraped": "2026-11-26",
+   "docket_last_scraped": "2026-11-27",
    "docket_stale": false,
    "docket_covered": true,
    "best_real_surplus": 63198.48,
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-26"
+   "confirmed_last_verified": "2026-11-27"
   },
   "sale_date": "2026-11-03",
   "confirmed_first_seen": "2026-11-21",
-  "last_verified": "2026-11-26"
+  "last_verified": "2026-11-27"
  },
  "orange-fl|2023-CA-014557-O": {
   "payload": {
@@ -678,7 +678,7 @@
    "taxdeed_claim_deadline_days": null,
    "registry_status": "distributed",
    "registry_balance": 48698.77,
-   "registry_as_of": "11/25/2026",
+   "registry_as_of": "11/26/2026",
    "registry_hoa_caution": false,
    "sale_date": "2026-11-03",
    "sale_datetime": "Nov 3, 2026 11:03 AM ET",
@@ -689,12 +689,12 @@
    "clerk_manual_search_url": "https://myeclerk.myorangeclerk.com/",
    "requires_manual_docket_verify": false,
    "classification": "green",
-   "classification_reason": "clerk registry: held surplus $48,699 as of 11/25/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "classification_reason": "clerk registry: held surplus $48,699 as of 11/26/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "prayer_amount": 0.0,
    "true_surplus": 48698.77,
    "debt_source": "orange_registry_balance",
    "kill_signals": [],
-   "proof_of_surplus": "clerk registry: held surplus $48,699 as of 11/25/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
+   "proof_of_surplus": "clerk registry: held surplus $48,699 as of 11/26/2026 \u2014 circuit mortgage foreclosure: clean owner surplus",
    "competing_filers": [],
    "additional_parties": [],
    "docket_url": "https://myeclerk.myorangeclerk.com/RegistryBalance/Index",
@@ -710,7 +710,7 @@
    "pipeline_ready": true,
    "pr_match": true,
    "local_run_county": true,
-   "docket_last_scraped": "2026-11-26",
+   "docket_last_scraped": "2026-11-27",
    "docket_stale": false,
    "docket_covered": true,
    "pr_radar_id": "P7C84B67",
@@ -719,9 +719,9 @@
    "pr_mailing_city": null,
    "pr_mailing_state": null,
    "pr_mailing_zip": null,
-   "pr_estimated_value": 239067.0,
+   "pr_estimated_value": 221278.0,
    "pr_total_loan_balance": 0.0,
-   "pr_available_equity": 239067.0,
+   "pr_available_equity": 221278.0,
    "pr_first_loan_amount": 0.0,
    "pr_first_loan_type": null,
    "pr_second_loan_amount": 0.0,
@@ -749,10 +749,10 @@
    "real_surplus_source": "confirmed_surplus",
    "priority_rank": 0,
    "confirmed_retained": false,
-   "confirmed_last_verified": "2026-11-26"
+   "confirmed_last_verified": "2026-11-27"
   },
   "sale_date": "2026-11-03",
   "confirmed_first_seen": "2026-11-21",
-  "last_verified": "2026-11-26"
+  "last_verified": "2026-11-27"
  }
 }
